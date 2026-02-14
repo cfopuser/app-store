@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+import sys
+
+from apkmirror import APKMirror
+
+apkm = APKMirror(timeout=3, results=5)
+
+search_query = input("Search:\n -> ")
+results = apkm.search(search_query)
+
+for result in enumerate(results):
+    print(f"[{result[0]}] {result[1]['name']}")
+
+download_id = int(input("Enter number to get details, or 99 to exit:\n -> "))
+
+if download_id == 99:
+    sys.exit("Exit")
+
+app_details = apkm.get_app_details(results[download_id]["link"])
+
+print(f"This app is for \"{app_details['architecture']}\" devices, running {app_details['android_version']} with {app_details['dpi']} DPI")
+
+ask_download = input("Do you want to download it? (y/n)\n -> ")
+
+if ask_download.lower() in ("y", ""):
+    app_link = app_details["download_link"]
+    print(f"Trying to get direct link, if the script cant get it, download by visiting this (not direct url): {app_link}")
+
+    direct_link = apkm.get_download_link(app_link)
+
+    print("Got the link i neded, trying to get a direct link...")
+    sys.exit(f"Done. Direct url: {apkm.get_direct_download_link(direct_link)}")
+
+else:
+    sys.exit("Exit")

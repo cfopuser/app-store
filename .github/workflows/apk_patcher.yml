@@ -1,11 +1,8 @@
 name: Patch and Sign APK
 
 on:
-  push:
-    paths:
-      - '**.apk'
   schedule:
-    - cron: '0 0 * * *' # Runs daily at midnight
+    - cron: '0 4 * * *' # Runs daily at 4 AM UTC
   workflow_dispatch:
 
 jobs:
@@ -29,22 +26,13 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Python Dependencies
+      - name: Install Dependencies
         run: |
-          pip install requests beautifulsoup4 google-play-scraper
+          pip install -r requirements.txt
 
-      - name: Check for New Version and Download
+      - name: Check APKMirror and Download
         id: check_version
-        run: |
-          # Run downloader and capture the output
-          OUTPUT=$(python downloader.py com.bnhp.payments.paymentsapp latest.apk)
-          echo "$OUTPUT"
-          
-          if echo "$OUTPUT" | grep -q "NEW_VERSION_FOUND=true"; then
-            echo "update_needed=true" >> $GITHUB_OUTPUT
-          else
-            echo "update_needed=false" >> $GITHUB_OUTPUT
-          fi
+        run: python download.py
 
       - name: Download Tools (Apktool & UberSigner)
         if: steps.check_version.outputs.update_needed == 'true'
@@ -52,22 +40,11 @@ jobs:
           wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.10.0.jar -O apktool.jar
           wget https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar -O ubersigner.jar
 
-      - name: Find and Decode APK
+      - name: Decode APK
         if: steps.check_version.outputs.update_needed == 'true'
         run: |
-          APK_FILE="latest.apk"
-          
-          if [ ! -f "$APK_FILE" ]; then
-            APK_FILE=$(find . -maxdepth 1 -name "*.apk" | head -n 1)
-          fi
-          
-          if [ -z "$APK_FILE" ]; then
-            echo "No APK found!"
-            exit 1
-          fi
-          
-          echo "Processing: $APK_FILE"
-          java -jar apktool.jar d -f "$APK_FILE" -o build_output
+          echo "Processing downloaded APK..."
+          java -jar apktool.jar d -f latest.apk -o build_output
 
       - name: Apply Python Patch
         if: steps.check_version.outputs.update_needed == 'true'
@@ -103,12 +80,12 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add version.txt
-          git commit -m "Update patched version to $(cat version.txt) [skip ci]" || echo "No changes to commit"
+          git commit -m "Update patched version to ${{ steps.check_version.outputs.new_version }}" || echo "No changes to commit"
           git push
 
       - name: Upload Patched APK
         if: steps.check_version.outputs.update_needed == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: Patched-App-${{ github.run_id }}
+          name: Patched-Bit-${{ steps.check_version.outputs.new_version }}
           path: release/*.apk
