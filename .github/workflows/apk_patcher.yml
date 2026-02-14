@@ -54,7 +54,7 @@ jobs:
       - name: Repack APK
         if: steps.check_version.outputs.update_needed == 'true'
         run: |
-          java -jar apktool.jar b build_output -o patched_unsigned.apk --use-aapt2
+          java -jar apktool.jar b build_output -o patched_unsigned.apk
 
       - name: Decode Keystore
         if: steps.check_version.outputs.update_needed == 'true'
