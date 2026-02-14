@@ -37,7 +37,7 @@ jobs:
       - name: Download Tools (Apktool & UberSigner)
         if: steps.check_version.outputs.update_needed == 'true'
         run: |
-          wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.10.0.jar -O apktool.jar
+          wget https://github.com/iBotPeaches/Apktool/releases/download/v2.12.1/apktool_2.12.1.jar -O apktool.jar
           wget https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar -O ubersigner.jar
 
       - name: Decode APK
