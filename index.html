@@ -131,9 +131,9 @@
         // --- Translations ---
         const i18n = {
             en: {
-                badge: "Unofficial Patch",
+                badge: "Unofficial Version",
                 title: "Download bit",
-                subtitle: "Patched to work on all devices.",
+                subtitle: "Patched to be installed from anywhere.",
                 downloadBtn: "Download APK",
                 released: "Released",
                 olderVersions: "Older Versions",
@@ -145,7 +145,7 @@
                 errorDetail: "The latest version ({version}) was detected but could not be patched automatically. The download below is the last stable version.",
             },
             he: {
-                badge: "תיקון לא רשמי",
+                badge: "גרסה לא רשמית",
                 title: "הורדת ביט",
                 subtitle: "גרסה פתוחה להתקנות מכול מקום.",
                 downloadBtn: "הורד APK",
@@ -160,7 +160,23 @@
             }
         };
 
-        let currentLang = 'en'; // default
+            // --- Logic to detect language ---
+        function getInitialLanguage() {
+            // 1. Check if user previously picked a language
+            const savedLang = localStorage.getItem('preferredLanguage');
+            if (savedLang) return savedLang;
+
+            // 2. Check browser language (e.g., "he-IL" or "en-US")
+            const browserLang = navigator.language || navigator.userLanguage;
+            if (browserLang.startsWith('he')) {
+                return 'he';
+            }
+
+            // 3. Default to English
+            return 'en';
+        }
+
+        let currentLang = getInitialLanguage();
 
         // --- DOM Elements ---
         const loader = document.getElementById('loader');
@@ -296,8 +312,10 @@
 
         function toggleLanguage() {
             currentLang = currentLang === 'en' ? 'he' : 'en';
+            // Save the preference
+            localStorage.setItem('preferredLanguage', currentLang);
             updateTexts();
-        }
+        }   
 
         // --- Event Listeners ---
 
@@ -309,6 +327,7 @@
         });
 
         // Initialize
+        updateTexts();
         fetchReleases();
 
     </script>
