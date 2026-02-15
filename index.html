@@ -66,6 +66,18 @@
     <!-- Main Content -->
     <main class="flex-grow flex flex-col items-center justify-center px-4 py-8 w-full max-w-2xl mx-auto">
         
+
+        <!-- Error Banner -->
+        <div id="statusBanner" class="hidden w-full mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-4 animate-fade-in">
+            <div class="bg-red-500 text-white p-3 rounded-xl">
+                <i class="fa-solid fa-circle-exclamation text-xl"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-red-800" data-key="errorTitle">Update Failed</h3>
+                <p class="text-sm text-red-600" id="errorDetail"></p>
+            </div>
+        </div>
+        
         <!-- Hero Card -->
         <div class="glass-panel rounded-3xl p-8 w-full text-center relative overflow-hidden animate-fade-in">
             <!-- Loading State -->
@@ -128,7 +140,9 @@
                 noAssets: "No APK found",
                 loading: "Loading releases...",
                 disclaimer: "This project is not affiliated with the official Bit application or Bank Hapoalim. Use at your own risk.",
-                langLabel: "עברית"
+                langLabel: "עברית",
+                errorTitle: "Patching Failed",
+                errorDetail: "The latest version ({version}) was detected but could not be patched automatically. The download below is the last stable version.",
             },
             he: {
                 badge: "תיקון לא רשמי",
@@ -140,7 +154,9 @@
                 noAssets: "לא נמצא קובץ",
                 loading: "טוען גרסאות...",
                 disclaimer: "פרויקט זה אינו קשור לאפליקציית ביט הרשמית או לבנק הפועלים. השימוש באחריות המשתמש בלבד.",
-                langLabel: "English"
+                langLabel: "English",
+                errorTitle: "העדכון נכשל",
+                errorDetail: "הגרסה האחרונה ({version}) זוהתה אך נכשלה בתהליך התיקון האוטומטי. הגרסה להורדה למטה היא הגרסה היציבה האחרונה.",    
             }
         };
 
@@ -175,6 +191,20 @@
                 const response = await fetch(API_URL);
                 const releases = await response.json();
                 
+                // Fetch Build Status
+                const statusResponse = await fetch('status.json');
+                const statusData = await statusResponse.json();
+
+                // Check if we should show the error banner
+                    if (statusData.success === false) {
+                    const banner = document.getElementById('statusBanner');
+                    const detail = document.getElementById('errorDetail');
+                    banner.classList.remove('hidden');
+                    
+                    let msg = i18n[currentLang].errorDetail;
+                    detail.textContent = msg.replace('{version}', statusData.failed_version);
+                }
+
                 // Filter out releases that have assets
                 const validReleases = releases.filter(r => r.assets && r.assets.length > 0);
                 

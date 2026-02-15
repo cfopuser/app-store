@@ -78,6 +78,35 @@ jobs:
           mkdir -p release
           mv patched_unsigned-aligned-signed.apk release/bit-patched-${{ steps.check_version.outputs.new_version }}.apk
 
+      - name: Reset Status on Success
+        if: steps.check_version.outputs.update_needed == 'true' && success()
+        run: |
+          echo '{"success": true, "failed_version": "", "error_message": "", "updated_at": "'$(date -u)'"}' > status.json
+
+      - name: Handle Failure
+        if: failure()
+        run: |
+          # Use the version from the check_version step if available
+          FAILED_VER="${{ steps.check_version.outputs.new_version || 'unknown' }}"
+          echo "{\"success\": false, \"failed_version\": \"$FAILED_VER\", \"error_message\": \"Patching or building failed\", \"updated_at\": \"$(date -u)\"}" > status.json
+          
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add status.json
+          git commit -m "Update status: Build failed for version $FAILED_VER" || exit 0
+          git push origin main
+
+      - name: Commit and Push Changes (Success Path)
+        if: steps.check_version.outputs.update_needed == 'true' && success()
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add version.txt status.json
+          git commit -m "Update patched version to ${{ steps.check_version.outputs.new_version }}" || echo "No changes to commit"
+          git pull origin main --rebase
+          git tag v${{ steps.check_version.outputs.new_version }}
+          git push origin main --tags
+
       - name: Commit and Push Changes
         if: steps.check_version.outputs.update_needed == 'true'
         run: |
