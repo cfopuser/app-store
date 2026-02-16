@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bit App Patcher - Download Latest</title>
-    
-    <!-- Google Fonts: Rubik for clean Hebrew/English -->
+    <title>APK Patcher — Download Patched Apps</title>
+    <meta name="description" content="Community-maintained patched Android apps. Download the latest versions automatically built and signed.">
+
+    <!-- Google Fonts: Rubik -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS (CDN for simplicity) -->
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-     <script data-goatcounter="https://cfopuser.goatcounter.com/count"
+    <!-- Analytics -->
+    <script data-goatcounter="https://cfopuser.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
-    
+
     <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <script>
         tailwind.config = {
@@ -28,311 +30,510 @@
                     },
                     colors: {
                         brand: {
-                            light: '#00F0D8', // Bright teal from logo
-                            DEFAULT: '#00D1BC', 
-                            dark: '#008C7E',
-                            bg: '#EAFDFB'
+                            50:  '#EAFDFB',
+                            100: '#C5FAF3',
+                            200: '#8EF5E6',
+                            300: '#4DEAD6',
+                            400: '#00F0D8',
+                            500: '#00D1BC',
+                            600: '#00A899',
+                            700: '#008C7E',
+                            800: '#006B61',
+                            900: '#004D46',
+                        },
+                        surface: {
+                            50:  '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
                         }
                     }
                 }
             }
         }
     </script>
-    
+
     <style>
-        /* Smooth transitions for RTL/LTR flipping */
         body { transition: all 0.3s ease; }
+
         .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 30px -5px rgba(0, 209, 188, 0.15);
+            box-shadow: 0 8px 32px -8px rgba(0, 209, 188, 0.12);
         }
-        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .app-card {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .app-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px -12px rgba(0, 209, 188, 0.25);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .animate-fade-in-delay {
+            animation: fadeIn 0.5s ease-out 0.15s forwards;
+            opacity: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            display: inline-block;
+        }
+        .status-dot.ok    { background: #22c55e; box-shadow: 0 0 6px #22c55e88; }
+        .status-dot.fail  { background: #ef4444; box-shadow: 0 0 6px #ef444488; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        .bg-mesh {
+            background-color: #EAFDFB;
+            background-image:
+                radial-gradient(at 20% 20%, rgba(0, 240, 216, 0.08) 0px, transparent 50%),
+                radial-gradient(at 80% 80%, rgba(0, 209, 188, 0.06) 0px, transparent 50%);
+        }
     </style>
 </head>
-<body class="bg-brand-bg text-slate-800 min-h-screen flex flex-col font-sans">
+<body class="bg-mesh text-slate-800 min-h-screen flex flex-col font-sans">
 
-    <!-- Navigation -->
-    <nav class="w-full py-6 px-4 sm:px-8 flex justify-between items-center max-w-4xl mx-auto">
+    <!-- ─── Navigation ─── -->
+    <nav class="w-full py-5 px-4 sm:px-8 flex justify-between items-center max-w-5xl mx-auto">
         <div class="flex items-center gap-3">
-            <img src="https://upload.wikimedia.org/wikipedia/he/e/eb/Bit_logo_2024.svg" alt="Bit Logo" class="h-10 w-10 shadow-sm rounded-lg">
-            <span class="font-bold text-2xl tracking-tight text-slate-700">bit<span class="text-brand-dark font-light">patched</span></span>
+            <div class="bg-brand-500 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-brand-500/30">
+                <i class="fa-solid fa-screwdriver-wrench text-lg"></i>
+            </div>
+            <span class="font-bold text-xl tracking-tight text-slate-700">APK<span class="text-brand-600 font-light">patcher</span></span>
         </div>
-        <button id="langToggle" class="bg-white px-4 py-2 rounded-full shadow-sm text-sm font-semibold text-brand-dark hover:bg-brand-light/20 transition flex items-center gap-2">
-            <i class="fa-solid fa-globe"></i>
-            <span id="langLabel">עברית</span>
-        </button>
+        <div class="flex items-center gap-3">
+            <a href="https://github.com/cfopuser/bit-updates" target="_blank"
+               class="text-slate-400 hover:text-slate-600 transition p-2">
+                <i class="fa-brands fa-github text-xl"></i>
+            </a>
+            <button id="langToggle"
+                class="bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-sm text-sm font-semibold text-brand-700 hover:bg-brand-100/50 transition flex items-center gap-2 border border-brand-100">
+                <i class="fa-solid fa-globe text-xs"></i>
+                <span id="langLabel">עברית</span>
+            </button>
+        </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="flex-grow flex flex-col items-center justify-center px-4 py-8 w-full max-w-2xl mx-auto">
-        
+    <!-- ─── Hero ─── -->
+    <header class="text-center px-4 pt-6 pb-4 max-w-2xl mx-auto animate-fade-in">
+        <span class="inline-block bg-brand-100 text-brand-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider" data-key="badge">Community Patches</span>
+        <h1 class="text-4xl sm:text-5xl font-bold mb-3 text-slate-800" data-key="heroTitle">Patched Apps</h1>
+        <p class="text-slate-500 text-lg max-w-md mx-auto" data-key="heroSubtitle">Automatically patched and signed. Updated daily.</p>
+    </header>
 
-        <!-- Error Banner -->
-        <div id="statusBanner" class="hidden w-full mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-4 animate-fade-in">
-            <div class="bg-red-500 text-white p-3 rounded-xl">
-                <i class="fa-solid fa-circle-exclamation text-xl"></i>
-            </div>
-            <div>
-                <h3 class="font-bold text-red-800" data-key="errorTitle">Update Failed</h3>
-                <p class="text-sm text-red-600" id="errorDetail"></p>
-            </div>
+    <!-- ─── App Catalog ─── -->
+    <main class="flex-grow px-4 py-6 w-full max-w-5xl mx-auto">
+
+        <!-- Loading spinner -->
+        <div id="loader" class="flex flex-col items-center justify-center py-16">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-brand-500"></div>
+            <p class="mt-4 text-brand-600 animate-pulse" data-key="loading">Loading apps...</p>
         </div>
-        
-        <!-- Hero Card -->
-        <div class="glass-panel rounded-3xl p-8 w-full text-center relative overflow-hidden animate-fade-in">
-            <!-- Loading State -->
-            <div id="loader" class="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-brand"></div>
-                <p class="mt-4 text-brand-dark animate-pulse">Checking GitHub...</p>
-            </div>
 
-            <!-- Header Text -->
-            <div class="mb-8">
-                <span class="inline-block bg-brand-light/30 text-brand-dark text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider" data-key="badge">Unofficial Patch</span>
-                <h1 class="text-4xl sm:text-5xl font-bold mb-3 text-slate-800" data-key="title">Download bit</h1>
-                <p class="text-slate-500 text-lg" data-key="subtitle">Patched version for compatibility.</p>
-            </div>
+        <!-- App grid (populated by JS) -->
+        <div id="appGrid" class="hidden grid gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in-delay">
+            <!-- Cards injected here -->
+        </div>
 
-            <!-- Main Download Action -->
-            <div id="latestContainer" class="mb-10">
-                <!-- Injected via JS -->
-            </div>
+        <!-- Empty state -->
+        <div id="emptyState" class="hidden text-center py-16 text-slate-400">
+            <i class="fa-solid fa-box-open text-4xl mb-3"></i>
+            <p data-key="noApps">No apps available yet.</p>
+        </div>
+    </main>
 
-            <!-- History Section -->
-            <div class="border-t border-slate-100 pt-6">
-                <button id="historyToggle" class="flex items-center justify-center gap-2 text-slate-400 hover:text-brand-dark transition mx-auto text-sm font-medium">
-                    <span data-key="olderVersions">Older Versions</span>
-                    <i class="fa-solid fa-chevron-down transition-transform duration-300" id="historyIcon"></i>
+    <!-- ─── App Detail Modal ─── -->
+    <div id="appModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="modalBackdrop"></div>
+        <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+            <div class="glass-panel rounded-3xl p-8 w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar relative animate-fade-in">
+                <button id="modalClose" class="absolute top-4 right-4 rtl:right-auto rtl:left-4 text-slate-400 hover:text-slate-600 transition p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
-                
-                <div id="historyList" class="hidden mt-4 space-y-2 text-left rtl:text-right max-h-60 overflow-y-auto custom-scrollbar">
-                    <!-- Injected via JS -->
+                <div id="modalContent">
+                    <!-- Injected by JS -->
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Disclaimer -->
-        <p class="mt-8 text-xs text-slate-400 text-center max-w-md mx-auto leading-relaxed" data-key="disclaimer">
-            This project is not affiliated with the official Bit application or Bank Hapoalim. 
-            Use at your own risk.
+    <!-- ─── Footer ─── -->
+    <footer class="text-center px-4 py-6">
+        <p class="text-xs text-slate-400 max-w-md mx-auto leading-relaxed" data-key="disclaimer">
+            This is an unofficial community project. Not affiliated with any app developer. Use at your own risk.
         </p>
-        
-        <a href="https://github.com/cfopuser/bit-updates" target="_blank" class="mt-4 text-slate-400 hover:text-brand-dark transition">
-            <i class="fa-brands fa-github text-xl"></i>
+        <a href="https://github.com/cfopuser/bit-updates/issues/new?template=new-app-request.yml"
+           target="_blank"
+           class="inline-flex items-center gap-2 mt-3 text-sm text-brand-600 hover:text-brand-800 transition font-medium">
+            <i class="fa-solid fa-plus"></i>
+            <span data-key="submitApp">Submit a new app</span>
         </a>
-
-    </main>
+    </footer>
 
     <script>
-        // --- Configuration ---
+        // ─── Configuration ───
         const REPO = "cfopuser/bit-updates";
-        const API_URL = `https://api.github.com/repos/${REPO}/releases`;
+        const RELEASES_API = `https://api.github.com/repos/${REPO}/releases`;
+        const APPS_DIR = "apps";
 
-        // --- Translations ---
+        // Static list of known apps — loaded from apps/*/app.json at build time.
+        // For GitHub Pages, we maintain this list here since we can't do directory listing.
+        // When a new app is added, this array should be updated.
+        const REGISTERED_APPS = [
+            "bit"
+        ];
+
+        // ─── i18n ───
         const i18n = {
             en: {
-                badge: "Unofficial Version",
-                title: "Download bit",
-                subtitle: "Patched to be installed from anywhere.",
+                badge: "Community Patches",
+                heroTitle: "Patched Apps",
+                heroSubtitle: "Automatically patched and signed. Updated daily.",
                 downloadBtn: "Download APK",
                 released: "Released",
                 olderVersions: "Older Versions",
                 noAssets: "No APK found",
-                loading: "Loading releases...",
-                disclaimer: "This project is not affiliated with the official Bit application or Bank Hapoalim. Use at your own risk.",
+                loading: "Loading apps...",
+                noApps: "No apps available yet.",
+                disclaimer: "This is an unofficial community project. Not affiliated with any app developer. Use at your own risk.",
                 langLabel: "עברית",
-                errorTitle: "Patching Failed",
-                errorDetail: "The latest version ({version}) was detected but could not be patched automatically. The download below is the last stable version.",
+                errorTitle: "Patch Failed",
+                errorDetail: "Version {version} could not be patched. Showing last stable version.",
+                submitApp: "Submit a new app",
+                latestVersion: "Latest Version",
+                maintainedBy: "Maintained by",
+                viewAll: "All Versions",
             },
             he: {
-                badge: "גרסה לא רשמית",
-                title: "הורדת ביט",
-                subtitle: "גרסה פתוחה להתקנה מכול מקום.",
+                badge: "תיקונים קהילתיים",
+                heroTitle: "אפליקציות מתוקנות",
+                heroSubtitle: "מתוקנות וחתומות אוטומטית. מתעדכנות יומית.",
                 downloadBtn: "הורד APK",
                 released: "שוחרר ב",
                 olderVersions: "גרסאות קודמות",
                 noAssets: "לא נמצא קובץ",
-                loading: "טוען גרסאות...",
-                disclaimer: "פרויקט זה אינו קשור לאפליקציית ביט הרשמית או לבנק הפועלים. השימוש באחריות המשתמש בלבד.",
+                loading: "טוען אפליקציות...",
+                noApps: "עדיין אין אפליקציות.",
+                disclaimer: "זהו פרויקט קהילתי לא רשמי. אינו קשור למפתחי האפליקציות. השימוש באחריותך בלבד.",
                 langLabel: "English",
-                errorTitle: "העדכון נכשל",
-                errorDetail: "הגרסה האחרונה ({version}) זוהתה אך נכשלה בתהליך התיקון האוטומטי. הגרסה להורדה למטה היא הגרסה היציבה האחרונה.",    
+                errorTitle: "התיקון נכשל",
+                errorDetail: "גרסה {version} לא ניתנה לתיקון. מוצגת הגרסה היציבה האחרונה.",
+                submitApp: "הגש אפליקציה חדשה",
+                latestVersion: "גרסה אחרונה",
+                maintainedBy: "מתוחזק ע״י",
+                viewAll: "כל הגרסאות",
             }
         };
 
-            // --- Logic to detect language ---
+        // ─── Language ───
         function getInitialLanguage() {
-            // 1. Check if user previously picked a language
-            const savedLang = localStorage.getItem('preferredLanguage');
-            if (savedLang) return savedLang;
-
-            // 2. Check browser language (e.g., "he-IL" or "en-US")
-            const browserLang = navigator.language || navigator.userLanguage;
-            if (browserLang.startsWith('he')) {
-                return 'he';
-            }
-
-            // 3. Default to English
+            const saved = localStorage.getItem('preferredLanguage');
+            if (saved) return saved;
+            if ((navigator.language || '').startsWith('he')) return 'he';
             return 'en';
         }
-
         let currentLang = getInitialLanguage();
 
-        // --- DOM Elements ---
+        // ─── DOM ───
         const loader = document.getElementById('loader');
-        const latestContainer = document.getElementById('latestContainer');
-        const historyList = document.getElementById('historyList');
-        const historyToggle = document.getElementById('historyToggle');
-        const historyIcon = document.getElementById('historyIcon');
+        const appGrid = document.getElementById('appGrid');
+        const emptyState = document.getElementById('emptyState');
         const langToggle = document.getElementById('langToggle');
         const langLabel = document.getElementById('langLabel');
+        const appModal = document.getElementById('appModal');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const modalClose = document.getElementById('modalClose');
+        const modalContent = document.getElementById('modalContent');
 
-        // --- Functions ---
+        // ─── Helpers ───
+        function t(key) { return i18n[currentLang][key] || key; }
 
         function formatDate(dateString) {
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
-            return new Date(dateString).toLocaleDateString(currentLang === 'he' ? 'he-IL' : 'en-US', options);
+            return new Date(dateString).toLocaleDateString(
+                currentLang === 'he' ? 'he-IL' : 'en-US',
+                { year: 'numeric', month: 'short', day: 'numeric' }
+            );
         }
 
         function formatSize(bytes) {
-            if (bytes === 0) return '0 B';
+            if (!bytes) return '?';
             const k = 1024;
             const sizes = ['B', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
 
-        async function fetchReleases() {
+        // ─── Data ───
+        let allReleases = [];
+        let appConfigs = {};
+
+        async function loadAppConfig(appId) {
             try {
-                const response = await fetch(API_URL);
-                const releases = await response.json();
-                
-                // Fetch Build Status
-                const statusResponse = await fetch('status.json');
-                const statusData = await statusResponse.json();
-
-                // Check if we should show the error banner
-                    if (statusData.success === false) {
-                    const banner = document.getElementById('statusBanner');
-                    const detail = document.getElementById('errorDetail');
-                    banner.classList.remove('hidden');
-                    
-                    let msg = i18n[currentLang].errorDetail;
-                    detail.textContent = msg.replace('{version}', statusData.failed_version);
-                }
-
-                // Filter out releases that have assets
-                const validReleases = releases.filter(r => r.assets && r.assets.length > 0);
-                
-                if (validReleases.length > 0) {
-                    renderLatest(validReleases[0]);
-                    renderHistory(validReleases.slice(1));
-                } else {
-                    latestContainer.innerHTML = `<p class="text-red-500">No releases found.</p>`;
-                }
-            } catch (error) {
-                console.error(error);
-                latestContainer.innerHTML = `<p class="text-red-500">Failed to load releases.</p>`;
-            } finally {
-                loader.classList.add('hidden');
+                const resp = await fetch(`${APPS_DIR}/${appId}/app.json`);
+                return await resp.json();
+            } catch (e) {
+                console.warn(`Failed to load config for ${appId}:`, e);
+                return null;
             }
         }
 
-        function renderLatest(release) {
-            const asset = release.assets.find(a => a.name.endsWith('.apk')) || release.assets[0];
-            const size = asset ? formatSize(asset.size) : '?';
-            const downloadUrl = asset ? asset.browser_download_url : '#';
-            
-            latestContainer.innerHTML = `
-                <div class="flex flex-col items-center">
-                    <span class="text-6xl mb-2 font-bold text-brand tracking-tighter">${release.tag_name.replace('v', '')}</span>
-                    <span class="text-sm text-slate-400 mb-6 flex items-center gap-2">
-                        <i class="fa-regular fa-calendar"></i>
-                        <span data-dynamic="date">${i18n[currentLang].released} ${formatDate(release.published_at)}</span>
-                        <span class="mx-1">•</span>
-                        <span>${size}</span>
-                    </span>
-                    
-                    <a href="${downloadUrl}" class="group relative bg-brand hover:bg-brand-dark text-white font-bold py-4 px-10 rounded-2xl shadow-lg shadow-brand/40 transition-all transform hover:-translate-y-1 w-full sm:w-auto flex items-center justify-center gap-3">
-                        <i class="fa-solid fa-download text-xl group-hover:animate-bounce"></i>
-                        <span class="text-lg" data-key="downloadBtn">${i18n[currentLang].downloadBtn}</span>
-                    </a>
-                    
-                    <div class="mt-3 text-xs text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded">
-                        ${asset ? asset.name : 'unknown'}
+        async function loadAppStatus(appId) {
+            try {
+                const resp = await fetch(`${APPS_DIR}/${appId}/status.json`);
+                return await resp.json();
+            } catch (e) {
+                return { success: true };
+            }
+        }
+
+        function getAppReleases(appId) {
+            // Releases tagged as "{appId}-v*"
+            return allReleases.filter(r =>
+                r.tag_name.startsWith(`${appId}-v`) &&
+                r.assets && r.assets.length > 0
+            );
+        }
+
+        function getAppReleasesLegacy(appId) {
+            // Fallback: old-style tags like "v6.10.1" (for the existing bit releases)
+            return allReleases.filter(r =>
+                r.tag_name.startsWith('v') &&
+                !r.tag_name.includes('-v') &&  // exclude new-style tags
+                r.assets && r.assets.length > 0
+            );
+        }
+
+        // ─── Render ───
+        function renderAppCard(appId, config, releases, status) {
+            const latest = releases[0];
+            const asset = latest ? (latest.assets.find(a => a.name.endsWith('.apk')) || latest.assets[0]) : null;
+            const version = latest ? latest.tag_name.replace(`${appId}-v`, '').replace('v', '') : '—';
+            const isOk = status.success !== false;
+
+            return `
+                <div class="app-card glass-panel rounded-2xl p-6 cursor-pointer" onclick="openAppModal('${appId}')">
+                    <div class="flex items-start gap-4 mb-4">
+                        <img src="${config.icon_url || ''}"
+                             alt="${config.name}"
+                             class="w-14 h-14 rounded-2xl shadow-md bg-white p-1 object-contain"
+                             onerror="this.style.display='none'">
+                        <div class="flex-1 min-w-0">
+                            <h2 class="font-bold text-lg text-slate-800 truncate">${config.name}</h2>
+                            <p class="text-xs text-slate-400 truncate font-mono">${config.package_name || ''}</p>
+                        </div>
+                        <span class="status-dot ${isOk ? 'ok' : 'fail'} mt-2 shrink-0" title="${isOk ? 'OK' : 'Failed'}"></span>
                     </div>
+
+                    <p class="text-sm text-slate-500 mb-4 line-clamp-2">${config.description || ''}</p>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-2xl font-bold text-brand-600 tracking-tight">${version}</span>
+                            ${latest ? `<span class="text-xs text-slate-400 block">${formatDate(latest.published_at)}</span>` : ''}
+                        </div>
+                        ${asset ? `
+                            <a href="${asset.browser_download_url}"
+                               onclick="event.stopPropagation()"
+                               class="bg-brand-500 hover:bg-brand-600 text-white font-semibold py-2.5 px-5 rounded-xl shadow-md shadow-brand-500/30 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 text-sm">
+                                <i class="fa-solid fa-download"></i>
+                                <span>${t('downloadBtn')}</span>
+                            </a>
+                        ` : `<span class="text-slate-400 text-sm">${t('noAssets')}</span>`}
+                    </div>
+
+                    ${!isOk ? `
+                        <div class="mt-3 bg-red-50 border border-red-100 rounded-xl p-3 text-xs text-red-600">
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                            ${t('errorDetail').replace('{version}', status.failed_version || '?')}
+                        </div>
+                    ` : ''}
                 </div>
             `;
         }
 
-        function renderHistory(releases) {
-            historyList.innerHTML = releases.map(release => {
-                const asset = release.assets.find(a => a.name.endsWith('.apk')) || release.assets[0];
-                if (!asset) return '';
-                
-                return `
-                    <a href="${asset.browser_download_url}" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition group">
-                        <div class="flex flex-col">
-                            <span class="font-bold text-slate-700">v${release.tag_name.replace('v', '')}</span>
-                            <span class="text-xs text-slate-400">${formatDate(release.published_at)}</span>
+        function openAppModal(appId) {
+            const config = appConfigs[appId];
+            let releases = getAppReleases(appId);
+            // Fallback for legacy tags
+            if (releases.length === 0 && appId === 'bit') {
+                releases = getAppReleasesLegacy(appId);
+            }
+
+            const latest = releases[0];
+            const latestAsset = latest ? (latest.assets.find(a => a.name.endsWith('.apk')) || latest.assets[0]) : null;
+            const olderReleases = releases.slice(1);
+
+            modalContent.innerHTML = `
+                <div class="text-center mb-6">
+                    <img src="${config.icon_url || ''}"
+                         alt="${config.name}"
+                         class="w-20 h-20 rounded-2xl shadow-lg mx-auto mb-3 bg-white p-2 object-contain"
+                         onerror="this.style.display='none'">
+                    <h2 class="text-2xl font-bold text-slate-800">${config.name}</h2>
+                    <p class="text-sm text-slate-400 font-mono">${config.package_name || ''}</p>
+                    ${config.maintainer ? `<p class="text-xs text-slate-400 mt-1">${t('maintainedBy')} <span class="font-medium text-brand-600">@${config.maintainer}</span></p>` : ''}
+                </div>
+
+                ${latest ? `
+                    <div class="text-center mb-6">
+                        <span class="text-sm text-slate-400 uppercase tracking-wider font-medium">${t('latestVersion')}</span>
+                        <div class="text-5xl font-bold text-brand-500 tracking-tighter mt-1 mb-1">
+                            ${latest.tag_name.replace(`${appId}-v`, '').replace('v', '')}
                         </div>
-                        <div class="flex items-center gap-3 text-slate-300 group-hover:text-brand transition">
-                            <span class="text-xs font-mono hidden sm:inline-block">${formatSize(asset.size)}</span>
-                            <i class="fa-solid fa-cloud-arrow-down"></i>
+                        <div class="text-sm text-slate-400 flex items-center justify-center gap-2">
+                            <i class="fa-regular fa-calendar"></i>
+                            ${t('released')} ${formatDate(latest.published_at)}
+                            <span class="mx-1">•</span>
+                            ${latestAsset ? formatSize(latestAsset.size) : '?'}
                         </div>
-                    </a>
-                `;
-            }).join('');
+                    </div>
+
+                    ${latestAsset ? `
+                        <a href="${latestAsset.browser_download_url}"
+                           class="group w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-brand-500/30 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 mb-2">
+                            <i class="fa-solid fa-download text-lg group-hover:animate-bounce"></i>
+                            <span class="text-lg">${t('downloadBtn')}</span>
+                        </a>
+                        <div class="text-center text-xs text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded mb-6">
+                            ${latestAsset.name}
+                        </div>
+                    ` : ''}
+                ` : '<p class="text-center text-slate-400 mb-6">No releases yet.</p>'}
+
+                ${olderReleases.length > 0 ? `
+                    <div class="border-t border-slate-100 pt-4">
+                        <button onclick="document.getElementById('olderList').classList.toggle('hidden'); this.querySelector('i').classList.toggle('rotate-180')"
+                                class="flex items-center justify-center gap-2 text-slate-400 hover:text-brand-700 transition mx-auto text-sm font-medium">
+                            <span>${t('olderVersions')}</span>
+                            <i class="fa-solid fa-chevron-down transition-transform duration-300"></i>
+                        </button>
+                        <div id="olderList" class="hidden mt-3 space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                            ${olderReleases.map(r => {
+                                const asset = r.assets.find(a => a.name.endsWith('.apk')) || r.assets[0];
+                                if (!asset) return '';
+                                const ver = r.tag_name.replace(`${appId}-v`, '').replace('v', '');
+                                return `
+                                    <a href="${asset.browser_download_url}"
+                                       class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition group">
+                                        <div>
+                                            <span class="font-bold text-slate-700">v${ver}</span>
+                                            <span class="text-xs text-slate-400 block">${formatDate(r.published_at)}</span>
+                                        </div>
+                                        <div class="flex items-center gap-3 text-slate-300 group-hover:text-brand-500 transition">
+                                            <span class="text-xs font-mono hidden sm:inline-block">${formatSize(asset.size)}</span>
+                                            <i class="fa-solid fa-cloud-arrow-down"></i>
+                                        </div>
+                                    </a>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+
+            appModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
 
+        function closeModal() {
+            appModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // ─── Init ───
+        async function init() {
+            try {
+                // Load all releases
+                const resp = await fetch(RELEASES_API);
+                allReleases = await resp.json();
+
+                // Load configs and statuses in parallel
+                const configs = await Promise.all(REGISTERED_APPS.map(id => loadAppConfig(id)));
+                const statuses = await Promise.all(REGISTERED_APPS.map(id => loadAppStatus(id)));
+
+                // Build the catalog
+                let html = '';
+                let validCount = 0;
+
+                for (let i = 0; i < REGISTERED_APPS.length; i++) {
+                    const appId = REGISTERED_APPS[i];
+                    const config = configs[i];
+                    const status = statuses[i] || { success: true };
+
+                    if (!config) continue;
+                    appConfigs[appId] = config;
+
+                    let releases = getAppReleases(appId);
+                    // Fallback for legacy tags
+                    if (releases.length === 0 && appId === 'bit') {
+                        releases = getAppReleasesLegacy(appId);
+                    }
+
+                    html += renderAppCard(appId, config, releases, status);
+                    validCount++;
+                }
+
+                loader.classList.add('hidden');
+
+                if (validCount > 0) {
+                    appGrid.innerHTML = html;
+                    appGrid.classList.remove('hidden');
+                } else {
+                    emptyState.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error('Init failed:', error);
+                loader.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            }
+        }
+
+        // ─── Language ───
         function updateTexts() {
-            const lang = i18n[currentLang];
-            
-            // Set direction
             document.documentElement.dir = currentLang === 'he' ? 'rtl' : 'ltr';
             document.documentElement.lang = currentLang;
 
-            // Static keys
             document.querySelectorAll('[data-key]').forEach(el => {
                 const key = el.getAttribute('data-key');
-                if (lang[key]) el.textContent = lang[key];
+                if (i18n[currentLang][key]) el.textContent = i18n[currentLang][key];
             });
 
-            // Button Label
-            langLabel.textContent = lang.langLabel;
+            langLabel.textContent = i18n[currentLang].langLabel;
 
-            // Re-render dates if content is loaded
-            if (latestContainer.innerHTML) {
-                // We re-fetch or just reload the page in a real SPA, 
-                // but here let's just re-trigger the fetch to keep it simple and accurate
-                loader.classList.remove('hidden');
-                fetchReleases();
-            }
+            // Re-render
+            loader.classList.remove('hidden');
+            appGrid.classList.add('hidden');
+            emptyState.classList.add('hidden');
+            init();
         }
 
         function toggleLanguage() {
             currentLang = currentLang === 'en' ? 'he' : 'en';
-            // Save the preference
             localStorage.setItem('preferredLanguage', currentLang);
             updateTexts();
-        }   
+        }
 
-        // --- Event Listeners ---
-
+        // ─── Events ───
         langToggle.addEventListener('click', toggleLanguage);
+        modalBackdrop.addEventListener('click', closeModal);
+        modalClose.addEventListener('click', closeModal);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-        historyToggle.addEventListener('click', () => {
-            historyList.classList.toggle('hidden');
-            historyIcon.style.transform = historyList.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
-        });
-
-        // Initialize
+        // ─── Start ───
         updateTexts();
-        fetchReleases();
-
     </script>
 </body>
 </html>

@@ -1,0 +1,65 @@
+"""Shared utility functions for the patching framework."""
+
+import json
+import os
+
+
+def set_github_output(key: str, value: str):
+    """Write a key=value pair to GITHUB_OUTPUT (or print if not in CI)."""
+    if "GITHUB_OUTPUT" in os.environ:
+        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+            f.write(f"{key}={value}\n")
+    else:
+        print(f"[Output] {key}={value}")
+
+
+def get_local_version(version_file: str) -> str:
+    """Read the locally tracked version from a file."""
+    if os.path.exists(version_file):
+        with open(version_file, "r") as f:
+            return f.read().strip()
+    return "0.0.0"
+
+
+def update_version(version_file: str, new_version: str):
+    """Write the new version to the tracking file."""
+    os.makedirs(os.path.dirname(version_file), exist_ok=True)
+    with open(version_file, "w") as f:
+        f.write(new_version)
+
+
+def update_status(status_file: str, success: bool, failed_version: str = "",
+                  error_message: str = ""):
+    """Write build status to the per-app status file."""
+    import datetime
+    os.makedirs(os.path.dirname(status_file), exist_ok=True)
+    status = {
+        "success": success,
+        "failed_version": failed_version,
+        "error_message": error_message,
+        "updated_at": datetime.datetime.utcnow().strftime("%a %b %d %H:%M:%S UTC %Y"),
+    }
+    with open(status_file, "w") as f:
+        json.dump(status, f)
+
+
+def load_app_config(app_id: str) -> dict:
+    """Load and return the app.json config for a given app ID."""
+    config_path = os.path.join("apps", app_id, "app.json")
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"App config not found: {config_path}")
+    with open(config_path, "r") as f:
+        return json.load(f)
+
+
+def discover_apps() -> list[str]:
+    """Return a list of all registered app IDs (subfolder names under apps/)."""
+    apps_dir = "apps"
+    if not os.path.isdir(apps_dir):
+        return []
+    app_ids = []
+    for name in sorted(os.listdir(apps_dir)):
+        config_path = os.path.join(apps_dir, name, "app.json")
+        if os.path.isfile(config_path):
+            app_ids.append(name)
+    return app_ids

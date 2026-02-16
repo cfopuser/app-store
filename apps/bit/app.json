@@ -1,0 +1,11 @@
+{
+  "id": "bit",
+  "name": "Bit",
+  "package_name": "com.bnhp.payments.paymentsapp",
+  "description": "Israeli P2P payment app — patched for sideloading",
+  "icon_url": "https://upload.wikimedia.org/wikipedia/he/e/eb/Bit_logo_2024.svg",
+  "source": "apkmirror",
+  "maintainer": "cfopuser",
+  "version_file": "apps/bit/version.txt",
+  "status_file": "apps/bit/status.json"
+}

@@ -1,61 +1,99 @@
-name: Patch and Sign APK
+name: Patch and Sign APKs
 
 on:
   schedule:
-    - cron: '0 4 * * *' # Runs daily at 4 AM UTC
+    - cron: '0 4 * * *'  # Runs daily at 4 AM UTC
   workflow_dispatch:
+    inputs:
+      app_id:
+        description: 'Specific app ID to process (leave empty for all)'
+        required: false
+        default: ''
 
 jobs:
+  # ──────────────────────────────────────────────
+  # Job 1: Discover which apps are registered
+  # ──────────────────────────────────────────────
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.find.outputs.apps }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Find registered apps
+        id: find
+        run: |
+          if [ -n "${{ github.event.inputs.app_id }}" ]; then
+            # Manual trigger for specific app
+            APPS='["${{ github.event.inputs.app_id }}"]'
+          else
+            # Auto-discover all apps
+            APPS=$(ls apps/*/app.json 2>/dev/null | xargs -I{} dirname {} | xargs -I{} basename {} | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          fi
+          echo "apps=$APPS" >> $GITHUB_OUTPUT
+          echo "Discovered apps: $APPS"
+
+  # ──────────────────────────────────────────────
+  # Job 2: Build each app in parallel
+  # ──────────────────────────────────────────────
   build:
+    needs: discover
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Needed to push version.txt and create releases
+      contents: write
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.discover.outputs.apps) }}
+      fail-fast: false  # Don't fail all apps if one fails
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
       - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
-      - name: Check APKMirror and Download
+      # ── Download ──
+      - name: Check for updates & download
         id: check_version
-        run: python download.py
+        run: python run.py --app ${{ matrix.app }} --step download
 
-      - name: Download Tools (Apktool & UberSigner)
+      # ── Tools ──
+      - name: Download Apktool & UberSigner
         if: steps.check_version.outputs.update_needed == 'true'
         run: |
-          wget https://github.com/iBotPeaches/Apktool/releases/download/v2.12.1/apktool_2.12.1.jar -O apktool.jar
-          wget https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar -O ubersigner.jar
+          wget -q https://github.com/iBotPeaches/Apktool/releases/download/v2.12.1/apktool_2.12.1.jar -O apktool.jar
+          wget -q https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar -O ubersigner.jar
 
+      # ── Decode ──
       - name: Decode APK
         if: steps.check_version.outputs.update_needed == 'true'
-        run: |
-          echo "Processing downloaded APK..."
-          java -jar apktool.jar d -f latest.apk -o build_output
+        run: java -jar apktool.jar d -f latest.apk -o build_output
 
-      - name: Apply Python Patch
+      # ── Patch ──
+      - name: Apply patch
         if: steps.check_version.outputs.update_needed == 'true'
-        run: |
-          python patcher.py build_output
+        run: python run.py --app ${{ matrix.app }} --step patch
 
+      # ── Repack ──
       - name: Repack APK
         if: steps.check_version.outputs.update_needed == 'true'
-        run: |
-          java -jar apktool.jar b build_output -o patched_unsigned.apk
+        run: java -jar apktool.jar b build_output -o patched_unsigned.apk
 
+      # ── Sign ──
       - name: Decode Keystore
         if: steps.check_version.outputs.update_needed == 'true'
         env:
@@ -65,77 +103,60 @@ jobs:
       - name: Sign with UberApkSigner
         if: steps.check_version.outputs.update_needed == 'true'
         run: |
-          # hello
           java -jar ubersigner.jar \
             -a patched_unsigned.apk \
             --ks my_keystore.jks \
             --ksAlias ${{ secrets.KEY_ALIAS }} \
             --ksKeyPass ${{ secrets.KEY_PASSWORD }} \
-            --ksPass ${{ secrets.KEYSTORE_PASSWORD }} \
+            --ksPass ${{ secrets.KEYSTORE_PASSWORD }}
 
-
-          # Create release directory and move the file
           mkdir -p release
-          mv patched_unsigned-aligned-signed.apk release/bit-patched-${{ steps.check_version.outputs.new_version }}.apk
+          mv patched_unsigned-aligned-signed.apk release/${{ matrix.app }}-patched-${{ steps.check_version.outputs.new_version }}.apk
 
-      - name: Reset Status on Success
+      # ── Status tracking ──
+      - name: Update status on success
         if: steps.check_version.outputs.update_needed == 'true' && success()
         run: |
-          echo '{"success": true, "failed_version": "", "error_message": "", "updated_at": "'$(date -u)'"}' > status.json
+          python -c "
+          from core.utils import update_status
+          update_status('apps/${{ matrix.app }}/status.json', success=True)
+          "
 
-      - name: Handle Failure
+      - name: Update status on failure
         if: failure()
         run: |
-          # Use the version from the check_version step if available
           FAILED_VER="${{ steps.check_version.outputs.new_version || 'unknown' }}"
-          echo "{\"success\": false, \"failed_version\": \"$FAILED_VER\", \"error_message\": \"Patching or building failed\", \"updated_at\": \"$(date -u)\"}" > status.json
-          
+          python -c "
+          from core.utils import update_status
+          update_status('apps/${{ matrix.app }}/status.json', success=False, failed_version='$FAILED_VER', error_message='Patching or building failed')
+          "
+
+      # ── Commit changes ──
+      - name: Commit version & status updates
+        if: always()
+        run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add status.json
-          git commit -m "Update status: Build failed for version $FAILED_VER" || exit 0
+          git add apps/${{ matrix.app }}/version.txt apps/${{ matrix.app }}/status.json
+          git commit -m "[${{ matrix.app }}] Update to ${{ steps.check_version.outputs.new_version || 'status update' }}" || echo "No changes to commit"
+          git pull origin main --rebase
           git push origin main
 
-      - name: Commit and Push Changes (Success Path)
+      # ── Tag & Release ──
+      - name: Create tag
         if: steps.check_version.outputs.update_needed == 'true' && success()
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add version.txt status.json
-          git commit -m "Update patched version to ${{ steps.check_version.outputs.new_version }}" || echo "No changes to commit"
           git pull origin main --rebase
-          git tag v${{ steps.check_version.outputs.new_version }}
-          git push origin main --tags
-
-      - name: Commit and Push Changes
-        if: steps.check_version.outputs.update_needed == 'true'
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          # 1. Stage the changes
-          git add version.txt
-          
-          # 2. Commit locally (this clears the "unstaged changes" error)
-          git commit -m "Update patched version to ${{ steps.check_version.outputs.new_version }}" || echo "No changes to commit"
-          
-          # 3. Pull remote changes. If others committed in the meantime, 
-          #    your local commit will be replayed on top of theirs.
-          git pull origin main --rebase
-          
-          # 4. Tag the new commit
-          git tag v${{ steps.check_version.outputs.new_version }}
-          
-          # 5. Push everything
-          git push origin main --tags
+          git tag ${{ matrix.app }}-v${{ steps.check_version.outputs.new_version }}
+          git push origin --tags
 
       - name: Create GitHub Release
-        if: steps.check_version.outputs.update_needed == 'true'
-        uses: softprops/action-gh-release@v1
+        if: steps.check_version.outputs.update_needed == 'true' && success()
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.check_version.outputs.new_version }}
-          name: ${{ steps.check_version.outputs.new_version }}
+          tag_name: ${{ matrix.app }}-v${{ steps.check_version.outputs.new_version }}
+          name: "${{ matrix.app }} ${{ steps.check_version.outputs.new_version }}"
           files: release/*.apk
-          body: "Automated patch for version ${{ steps.check_version.outputs.new_version }}"
+          body: "Automated patch for ${{ matrix.app }} version ${{ steps.check_version.outputs.new_version }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

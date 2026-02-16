@@ -1,0 +1,72 @@
+name: "\U0001F4F1 New App Request"
+description: Request support for a new app to be patched
+title: "[App Request] "
+labels: ["new-app"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for submitting a new app request! Please fill out the details below so a maintainer can evaluate and implement support.
+
+  - type: input
+    id: app_name
+    attributes:
+      label: App Name
+      description: The display name of the app
+      placeholder: "e.g., MyBank"
+    validations:
+      required: true
+
+  - type: input
+    id: package_name
+    attributes:
+      label: Package Name
+      description: The Android package name
+      placeholder: "e.g., com.example.mybank"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source
+    attributes:
+      label: APK Source
+      description: Where can the APK be downloaded from?
+      options:
+        - APKMirror
+        - APKPure
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: patch_description
+    attributes:
+      label: What needs to be patched?
+      description: Describe the check or restriction that needs to be bypassed
+      placeholder: "e.g., The app checks the installer package name and blocks sideloaded installs"
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical_details
+    attributes:
+      label: Technical Details (optional)
+      description: If you've investigated the APK, share any smali/code findings here
+      placeholder: "e.g., The check is in com/example/SplashActivity.smali, it calls PackageManager.getInstallerPackageName()"
+
+  - type: input
+    id: apkmirror_url
+    attributes:
+      label: APKMirror / Source URL
+      description: Link to the app on the download source
+      placeholder: "https://www.apkmirror.com/apk/..."
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Acknowledgment
+      options:
+        - label: I understand this is an unofficial community project
+          required: true
+        - label: I have verified this app is available on the specified source
+          required: true
