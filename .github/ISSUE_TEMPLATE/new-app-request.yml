@@ -65,5 +65,5 @@ body:
     attributes:
       label: Acknowledgment
       options:
-        - label: label: I have verified this app is available on the specified source and that the patch is possible
+        - label: I have verified this app is available on the specified source and that the patch is possible
           required: true
