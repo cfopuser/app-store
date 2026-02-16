@@ -1,36 +1,40 @@
 #!/usr/bin/env python3
 
 import sys
+import os
 
-from apkmirror import APKMirror
+# Add current directory to path so core can be imported
+sys.path.append(os.getcwd())
 
-apkm = APKMirror(timeout=3, results=5)
+from core.sources.apkmirror import APKMirrorSource
+
+source = APKMirrorSource(timeout=3, results=5)
 
 search_query = input("Search:\n -> ")
-results = apkm.search(search_query)
+version, link, title = source.get_latest_version(search_query)
 
-for result in enumerate(results):
-    print(f"[{result[0]}] {result[1]['name']}")
+if not version:
+    sys.exit("No results found.")
 
-download_id = int(input("Enter number to get details, or 99 to exit:\n -> "))
+print(f"[0] {title}")
+
+download_id = int(input("Enter number to get detail, or 99 to exit:\n -> "))
 
 if download_id == 99:
     sys.exit("Exit")
 
-app_details = apkm.get_app_details(results[download_id]["link"])
+if download_id != 0:
+    sys.exit("Only 0 is supported in this simplified CLI update.")
 
-print(f"This app is for \"{app_details['architecture']}\" devices, running {app_details['android_version']} with {app_details['dpi']} DPI")
-
-ask_download = input("Do you want to download it? (y/n)\n -> ")
+print(f"Latest version: {version}")
+ask_download = input("Do you want to get the direct download link? (y/n)\n -> ")
 
 if ask_download.lower() in ("y", ""):
-    app_link = app_details["download_link"]
-    print(f"Trying to get direct link, if the script cant get it, download by visiting this (not direct url): {app_link}")
-
-    direct_link = apkm.get_download_link(app_link)
-
-    print("Got the link i neded, trying to get a direct link...")
-    sys.exit(f"Done. Direct url: {apkm.get_direct_download_link(direct_link)}")
-
+    print(f"Trying to get direct link...")
+    direct_link = source.get_download_url(link)
+    if direct_link:
+        print(f"Done. Direct url: {direct_link}")
+    else:
+        print("Failed to get direct link.")
 else:
     sys.exit("Exit")

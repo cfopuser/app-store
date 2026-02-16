@@ -1,27 +1,17 @@
 """
-Generic APKMirror downloader — config-driven.
-
-Reads an app's app.json and checks APKMirror for updates.
-Downloads the APK if a newer version is available.
+Generic APK downloader — config-driven.
+Supports multiple sources (APKMirror, Aptoide).
 """
 
 import os
-import re
-import sys
-
-from apkmirror import APKMirror
-from core.utils import get_local_version, update_version, set_github_output
-
-
-def extract_version_from_title(title: str) -> str:
-    """Pull a version string like '6.10.1' out of an APKMirror result title."""
-    match = re.search(r"(\d+(?:\.\d+)+)", title)
-    return match.group(1) if match else "0.0.0"
+import requests
+from core.sources import APKMirrorSource, AptoideSource
+from core.utils import get_local_version, update_version
 
 
 def download_app(app_config: dict, output_filename: str = "latest.apk") -> tuple:
     """
-    Check APKMirror for updates and download if a newer version exists.
+    Check configured source for updates and download if a newer version exists.
 
     Args:
         app_config: Parsed app.json dict.
@@ -33,33 +23,33 @@ def download_app(app_config: dict, output_filename: str = "latest.apk") -> tuple
     package_name = app_config["package_name"]
     version_file = app_config["version_file"]
     app_name = app_config["name"]
+    source_name = app_config.get("source", "apkmirror").lower()
 
-    apkm = APKMirror(timeout=10, results=5)
+    # 1. Initialize source
+    if source_name == "aptoide":
+        source = AptoideSource()
+    else:
+        # Default to APKMirror
+        source = APKMirrorSource()
 
-    print(f"[*] [{app_name}] Checking APKMirror for: {package_name}")
+    print(f"[*] [{app_name}] Using source: {source_name}")
 
-    # 1. Get local version
+    # 2. Get local version
     local_version = get_local_version(version_file)
     print(f"[*] [{app_name}] Local version: {local_version}")
 
-    # 2. Search APKMirror
-    print(f"[*] [{app_name}] Searching APKMirror...")
+    # 3. Check for updates
     try:
-        results = apkm.search(package_name)
+        remote_version, release_url, title = source.get_latest_version(package_name)
     except Exception as e:
         print(f"[-] [{app_name}] Search failed: {e}")
         return False, None
 
-    if not results:
-        print(f"[-] [{app_name}] No results found on APKMirror.")
+    if not remote_version:
+        print(f"[-] [{app_name}] No results found on {source_name}.")
         return False, None
 
-    # 3. Analyze latest result
-    latest_result = results[0]
-    app_title = latest_result["name"]
-    remote_version = extract_version_from_title(app_title)
-
-    print(f"[*] [{app_name}] Latest release: {app_title}")
+    print(f"[*] [{app_name}] Latest release: {title}")
     print(f"[*] [{app_name}] Remote version: {remote_version}")
 
     # 4. Compare versions
@@ -69,30 +59,26 @@ def download_app(app_config: dict, output_filename: str = "latest.apk") -> tuple
 
     print(f"[!] [{app_name}] Update detected! ({local_version} -> {remote_version})")
 
-    # 5. Download
-    app_release_url = latest_result["link"]
-
+    # 5. Resolve final download link
     try:
-        print(f"[*] [{app_name}] Getting variant details...")
-        details = apkm.get_app_details(app_release_url)
-        variant_download_url = details["download_link"]
+        direct_link = source.get_download_url(release_url)
+        if not direct_link:
+            print(f"[-] [{app_name}] Failed to resolve direct download link.")
+            return False, None
 
-        print(f"[*] [{app_name}] Variant: {details['architecture']} / Android {details['android_version']}")
+        print(f"[*] [{app_name}] Downloading from {source_name} to {output_filename}...")
 
-        print(f"[*] [{app_name}] Getting download page...")
-        download_button_page = apkm.get_download_link(variant_download_url)
-
-        print(f"[*] [{app_name}] Extracting direct link...")
-        direct_link = apkm.get_direct_download_link(download_button_page)
-
-        print(f"[*] [{app_name}] Downloading to {output_filename}...")
-
+        # Common download logic
         headers = {
-            "User-Agent": apkm.user_agent,
-            "Referer": download_button_page,
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
         }
-
-        response = apkm.scraper.get(direct_link, stream=True, headers=headers)
+        
+        # APKMirror might need specific headers if we were using its scraper, 
+        # but for direct link it should be fine with standard requests.
+        # Actually, let's use the source's scraper if it exists to be safe.
+        scraper = getattr(source, 'scraper', requests)
+        
+        response = scraper.get(direct_link, stream=True, headers=headers)
 
         if response.status_code == 200:
             with open(output_filename, "wb") as f:

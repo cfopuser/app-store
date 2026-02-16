@@ -47,6 +47,7 @@ body:
       description: Where can the APK be downloaded from?
       options:
         - APKMirror
+        - Aptoide
         - Other (describe below)
     validations:
       required: true
