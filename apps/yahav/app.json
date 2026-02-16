@@ -1,0 +1,13 @@
+{
+  "id": "yahav",
+  "name": "yahav",
+  "name_he": "יהב",
+  "package_name": "il.co.yahav.mobbanking",
+  "description": "yahav bank app - patched for sideloading",
+  "description_he": "אפליקצית בנק יהב -  ערוכה להתקנה מקובץ",
+  "icon_url": "https://play-lh.googleusercontent.com/iYUutq7tm7SeG1_a7DAJMgF8WNxL2Oemjkq1ObR0D92_iWVhK9oggz_vu2coauhSV_4",
+  "source": "aptoide",
+  "maintainer": "cfopuser",
+  "version_file": "apps/yahav/version.txt",
+  "status_file": "apps/yahav/status.json"
+}
