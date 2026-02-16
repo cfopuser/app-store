@@ -1,4 +1,4 @@
-name: "\U0001F4F1 New App Request"
+name: "New App Request"
 description: Request support for a new app to be patched
 title: "[App Request] "
 labels: ["new-app"]
@@ -33,7 +33,6 @@ body:
       description: Where can the APK be downloaded from?
       options:
         - APKMirror
-        - APKPure
         - Other (describe below)
     validations:
       required: true
@@ -66,7 +65,5 @@ body:
     attributes:
       label: Acknowledgment
       options:
-        - label: I understand this is an unofficial community project
-          required: true
-        - label: I have verified this app is available on the specified source
+        - label: label: I have verified this app is available on the specified source and that the patch is possible
           required: true
