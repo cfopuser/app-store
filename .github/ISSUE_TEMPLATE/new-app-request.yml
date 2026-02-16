@@ -48,6 +48,7 @@ body:
       options:
         - APKMirror
         - Aptoide
+        - GitHub
         - Other (describe below)
     validations:
       required: true
@@ -71,7 +72,7 @@ body:
   - type: input
     id: apkmirror_url
     attributes:
-      label: APKMirror / Source URL
+      label: Source URL
       description: Link to the app on the download source
       placeholder: "https://www.apkmirror.com/apk/..."
 

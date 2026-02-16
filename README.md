@@ -1,3 +1,5 @@
+הפרויקט מוגן תחת רישיון  וחל איסור להשתמש למטרות מסחריות. כול שהן.
+
 # APK Patcher
 
 An open-source, modular platform that automatically patches Android apps and publishes them via GitHub Releases.
