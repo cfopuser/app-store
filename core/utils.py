@@ -16,7 +16,7 @@ def set_github_output(key: str, value: str):
 def get_local_version(version_file: str) -> str:
     """Read the locally tracked version from a file."""
     if os.path.exists(version_file):
-        with open(version_file, "r") as f:
+        with open(version_file, "r", encoding="utf-8") as f:
             return f.read().strip()
     return "0.0.0"
 
@@ -24,7 +24,7 @@ def get_local_version(version_file: str) -> str:
 def update_version(version_file: str, new_version: str):
     """Write the new version to the tracking file."""
     os.makedirs(os.path.dirname(version_file), exist_ok=True)
-    with open(version_file, "w") as f:
+    with open(version_file, "w", encoding="utf-8") as f:
         f.write(new_version)
 
 
@@ -39,7 +39,7 @@ def update_status(status_file: str, success: bool, failed_version: str = "",
         "error_message": error_message,
         "updated_at": datetime.datetime.utcnow().strftime("%a %b %d %H:%M:%S UTC %Y"),
     }
-    with open(status_file, "w") as f:
+    with open(status_file, "w", encoding="utf-8") as f:
         json.dump(status, f)
 
 
@@ -48,7 +48,7 @@ def load_app_config(app_id: str) -> dict:
     config_path = os.path.join("apps", app_id, "app.json")
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"App config not found: {config_path}")
-    with open(config_path, "r") as f:
+    with open(config_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -68,6 +68,6 @@ def discover_apps() -> list[str]:
 def generate_apps_listing(output_file: str = "apps.json"):
     """Discover all apps and write their IDs to a JSON file for the frontend."""
     app_ids = discover_apps()
-    with open(output_file, "w") as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(app_ids, f, indent=2)
     print(f"[+] Generated {output_file} with {len(app_ids)} apps.")

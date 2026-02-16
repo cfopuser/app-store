@@ -5,7 +5,7 @@ Supports multiple sources (APKMirror, Aptoide).
 
 import os
 import requests
-from core.sources import APKMirrorSource, AptoideSource
+from core.sources import APKMirrorSource, AptoideSource, GitHubSource
 from core.utils import get_local_version, update_version
 
 
@@ -28,6 +28,12 @@ def download_app(app_config: dict, output_filename: str = "latest.apk") -> tuple
     # 1. Initialize source
     if source_name == "aptoide":
         source = AptoideSource()
+    elif source_name == "github":
+        if "repo" not in app_config:
+            print(f"[-] [{app_name}] 'repo' field is required for github source.")
+            return False, None
+        source = GitHubSource()
+        package_name = app_config["repo"]  # For GitHub, we search by repo
     else:
         # Default to APKMirror
         source = APKMirrorSource()

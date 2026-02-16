@@ -1,13 +1,14 @@
-{ 
-  "id": "metrolist", 
-  "name": "MetroList Kosher", 
-  "name_he": "מטרוליסט כשר", 
-  "package_name": "com.metrolist.music", 
-  "description": "Patched version that blocks all images.", 
-  "description_he": "גרסה ערוכה החוסמת את כל התמונות.", 
-  "icon_url": "?", 
-  "source": "github", 
-  "maintainer": "lilor159357", 
-  "version_file": "apps/metrolist/version.txt", 
-  "status_file": "apps/metrolist/status.json" 
+{
+  "id": "metrolist",
+  "name": "MetroList Kosher",
+  "name_he": "מטרוליסט כשר",
+  "package_name": "com.metrolist.music",
+  "description": "Patched version that blocks all images.",
+  "description_he": "גרסה ערוכה החוסמת את כל התמונות.",
+  "icon_url": "https://raw.githubusercontent.com/MetrolistGroup/Metrolist/main/fastlane/metadata/android/en-US/images/icon.png",
+  "source": "github",
+  "repo": "MetrolistGroup/Metrolist",
+  "maintainer": "lilor159357",
+  "version_file": "apps/metrolist/version.txt",
+  "status_file": "apps/metrolist/status.json"
 }
