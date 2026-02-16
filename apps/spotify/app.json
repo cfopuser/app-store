@@ -1,0 +1,13 @@
+{
+  "id": "spotify",
+  "name": "Spotify",
+  "name_he": "ספוטיפיי (ללא תמונות)",
+  "package_name": "com.spotify.music",
+  "description": "Audio-only version: blocks images and videos to save data and reduce distractions.",
+  "description_he": "גרסה ללא תמונות וסרטונים - לחסכון בנתונים ומניעת הסחות דעת (ערוך).",
+  "icon_url": "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
+  "source": "apkmirror",
+  "maintainer": "lilor159357",
+  "version_file": "apps/spotify/version.txt",
+  "status_file": "apps/spotify/status.json"
+}
