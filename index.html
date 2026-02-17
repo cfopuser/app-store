@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" class="scroll-smooth">
+<html lang="en" dir="ltr" class="scroll-smooth antialiased">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>APK Store</title>
     <meta name="description"
         content="Community-maintained patched Android apps. Download the latest versions automatically built and signed.">
@@ -15,6 +15,10 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <script data-goatcounter="https://cfopuser.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -36,6 +40,9 @@
                             800: '#155e75',
                             900: '#164e63',
                         }
+                    },
+                    screens: {
+                        'xs': '475px',
                     }
                 }
             }
@@ -46,19 +53,35 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
 
+        /* Hide scrollbar for IE, Edge and Firefox */
         .no-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
 
-        /* Glass effect for cards */
-        .glass-panel {
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+        /* Custom Scrollbar for Modal Content */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(156, 163, 175, 0.5);
+            border-radius: 20px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(75, 85, 99, 0.5);
+        }
+
+        /* Tap Highlight Removal for Mobile */
+        * {
+            -webkit-tap-highlight-color: transparent;
         }
     </style>
 </head>
@@ -68,34 +91,34 @@
 
     <!-- ─── Header ─── -->
     <header
-        class="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
+        class="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 items-center justify-between">
                 <!-- Logo -->
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none" onclick="window.scrollTo(0,0)">
                     <div
-                        class="bg-gradient-to-br from-brand-400 to-brand-600 text-white w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20">
-                        <i class="fa-solid fa-layer-group text-sm"></i>
+                        class="bg-gradient-to-br from-brand-400 to-brand-600 text-white w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20 shrink-0">
+                        <i class="fa-solid fa-layer-group text-xs sm:text-sm"></i>
                     </div>
-                    <span class="font-bold text-xl tracking-tight text-slate-800 dark:text-white">Store</span>
+                    <span class="font-bold text-lg sm:text-xl tracking-tight text-slate-800 dark:text-white">Store</span>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5 sm:gap-2">
                     <button id="themeToggle"
-                        class="w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/50">
-                        <i class="fa-solid fa-moon text-lg transition-transform" id="themeIcon"></i>
+                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                        <i class="fa-solid fa-moon text-base sm:text-lg transition-transform" id="themeIcon"></i>
                     </button>
 
                     <button id="langToggle"
-                        class="h-10 px-4 rounded-full text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/50 flex items-center gap-2">
+                        class="h-9 sm:h-10 px-3 sm:px-4 rounded-full text-xs sm:text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/50 flex items-center gap-2">
                         <i class="fa-solid fa-globe text-xs opacity-70"></i>
                         <span id="langLabel">עברית</span>
                     </button>
 
                     <a href="https://github.com/cfopuser/app-store" target="_blank"
-                        class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
-                        <i class="fa-brands fa-github text-xl"></i>
+                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all">
+                        <i class="fa-brands fa-github text-lg sm:text-xl"></i>
                     </a>
                 </div>
             </div>
@@ -103,18 +126,18 @@
     </header>
 
     <!-- ─── Main Content ─── -->
-    <main class="flex-grow container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <main class="flex-grow container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
 
         <!-- Page Title -->
-        <div class="mb-10 animate-fade-in">
-            <h1 class="text-3xl sm:text-4xl font-bold mb-2 tracking-tight text-slate-900 dark:text-white"
+        <div class="mb-8 sm:mb-10 animate-fade-in">
+            <h1 class="text-2xl sm:text-4xl font-bold mb-2 tracking-tight text-slate-900 dark:text-white"
                 data-key="heroTitle">Discover Apps</h1>
-            <p class="text-lg text-slate-500 dark:text-slate-400 max-w-2xl" data-key="heroSubtitle">Community-maintained
+            <p class="text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed" data-key="heroSubtitle">Community-maintained
                 patched versions. Updated automatically.</p>
         </div>
 
         <!-- Loader -->
-        <div id="loader" class="flex flex-col items-center justify-center py-24">
+        <div id="loader" class="flex flex-col items-center justify-center py-20 sm:py-24">
             <div
                 class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 dark:border-slate-800 border-b-brand-500">
             </div>
@@ -122,17 +145,17 @@
         </div>
 
         <!-- App Grid -->
-        <div id="appGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div id="appGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             <!-- App cards injected here -->
         </div>
 
         <!-- Empty State -->
-        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-24 text-center">
-            <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
-                <i class="fa-solid fa-box-open text-3xl text-slate-300 dark:text-slate-600"></i>
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 sm:py-24 text-center px-4">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-box-open text-2xl sm:text-3xl text-slate-300 dark:text-slate-600"></i>
             </div>
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white">No apps found</h3>
-            <p class="text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto" data-key="noApps">Check back later for
+            <p class="text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto text-sm sm:text-base" data-key="noApps">Check back later for
                 updates.</p>
         </div>
 
@@ -140,14 +163,14 @@
 
     <!-- ─── Footer ─── -->
     <footer
-        class="border-t border-slate-200 dark:border-slate-800 mt-auto bg-white dark:bg-slate-900 transition-colors duration-300">
+        class="border-t border-slate-200 dark:border-slate-800 mt-auto bg-white dark:bg-slate-900 transition-colors duration-300 pb-safe">
         <div
-            class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p class="text-sm text-slate-500 dark:text-slate-400 text-center md:text-left" data-key="disclaimer">
+            class="max-w-7xl mx-auto px-4 py-6 sm:py-8 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 text-center md:text-left" data-key="disclaimer">
                 Unofficial project. Use at your own risk.
             </p>
             <a href="https://github.com/cfopuser/app-store/issues/new?template=new-app-request.yml" target="_blank"
-                class="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors flex items-center gap-2">
+                class="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-brand-50 dark:hover:bg-slate-800 active:scale-95 transition-transform">
                 <i class="fa-solid fa-plus-circle"></i>
                 <span data-key="submitApp">Request an App</span>
             </a>
@@ -156,20 +179,29 @@
 
     <!-- ─── App Detail Modal ─── -->
     <div id="appModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-all" id="modalBackdrop"></div>
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0" id="modalBackdrop"></div>
 
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-                <div
-                    class="relative transform overflow-hidden rounded-3xl bg-white dark:bg-slate-900 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100 dark:border-slate-800">
+            <div class="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
+                
+                <!-- Modal Panel -->
+                <div id="modalPanel"
+                    class="relative transform overflow-hidden rounded-t-[2rem] sm:rounded-3xl bg-white dark:bg-slate-900 text-left shadow-2xl transition-all w-full sm:max-w-lg border-t sm:border border-slate-100 dark:border-slate-800 flex flex-col max-h-[90vh] sm:max-h-[85vh] translate-y-full sm:translate-y-0 opacity-0 sm:opacity-100">
+
+                    <!-- Drag Handle (Mobile only) -->
+                    <div class="w-full flex justify-center pt-3 pb-1 sm:hidden">
+                        <div class="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                    </div>
 
                     <!-- Close Button -->
                     <button id="modalClose"
-                        class="absolute top-4 right-4 z-10 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        <i class="fa-solid fa-xmark text-xl"></i>
+                        class="absolute top-3 right-4 sm:top-4 sm:right-4 z-20 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                        <i class="fa-solid fa-xmark text-xl sm:text-xl"></i>
                     </button>
 
-                    <div id="modalContent" class="p-6 sm:p-8">
+                    <!-- Scrollable Content -->
+                    <div id="modalContent" class="p-5 sm:p-8 overflow-y-auto custom-scrollbar overscroll-contain">
                         <!-- Content Injected via JS -->
                     </div>
                 </div>
@@ -240,10 +272,10 @@
             const icon = document.getElementById('themeIcon');
             if (isDark) {
                 html.classList.add('dark');
-                icon.className = 'fa-solid fa-sun text-lg transition-transform';
+                icon.className = 'fa-solid fa-sun text-base sm:text-lg transition-transform';
             } else {
                 html.classList.remove('dark');
-                icon.className = 'fa-solid fa-moon text-lg transition-transform';
+                icon.className = 'fa-solid fa-moon text-base sm:text-lg transition-transform';
             }
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
@@ -257,15 +289,12 @@
             document.documentElement.dir = currentLang === 'he' ? 'rtl' : 'ltr';
             document.documentElement.lang = currentLang;
 
-            // Update text content
             document.querySelectorAll('[data-key]').forEach(el => {
                 const key = el.getAttribute('data-key');
                 if (i18n[currentLang][key]) el.textContent = i18n[currentLang][key];
             });
 
             document.getElementById('langLabel').textContent = i18n[currentLang].langLabel;
-
-            // Re-render grid if data exists
             if (Object.keys(appConfigs).length > 0) renderGrid();
         }
 
@@ -276,30 +305,27 @@
         }
 
         // ─── Data & Rendering ───
-
-        // DOM Elements
         const loader = document.getElementById('loader');
         const appGrid = document.getElementById('appGrid');
         const emptyState = document.getElementById('emptyState');
         const appModal = document.getElementById('appModal');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const modalPanel = document.getElementById('modalPanel');
         const modalContent = document.getElementById('modalContent');
 
-        // State
         let allReleases = [];
         let appConfigs = {};
         let appStatuses = {};
 
         async function loadData() {
             try {
-                // 1. Get List of Apps
                 try {
                     const r = await fetch('apps.json');
                     REGISTERED_APPS = await r.json();
                 } catch {
-                    REGISTERED_APPS = ['bit']; // fallback
+                    REGISTERED_APPS = ['bit']; 
                 }
 
-                // 2. Fetch Releases & Configs in Parallel
                 const [releasesResp, ...configsResps] = await Promise.all([
                     fetch(RELEASES_API).then(r => r.json()),
                     ...REGISTERED_APPS.map(id => fetch(`${APPS_DIR}/${id}/app.json`).then(r => r.json().catch(() => null))),
@@ -307,8 +333,6 @@
                 ]);
 
                 allReleases = releasesResp;
-
-                // configsResps contains configs then statuses. Need to split.
                 const configs = configsResps.slice(0, REGISTERED_APPS.length);
                 const statuses = configsResps.slice(REGISTERED_APPS.length);
 
@@ -366,25 +390,23 @@
                 const status = appStatuses[appId] || { success: true };
                 const releases = getAppReleases(appId);
                 const latest = releases[0];
-                const asset = latest?.assets.find(a => a.name.endsWith('.apk')) || latest?.assets[0];
                 const isOk = status.success !== false;
-
                 const name = currentLang === 'he' ? (config.name_he || config.name) : config.name;
                 const desc = currentLang === 'he' ? (config.description_he || config.description) : config.description;
 
                 return `
-                <div class="group relative bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col h-full" onclick="openModal('${appId}')">
+                <div class="group relative bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm active:scale-[0.98] active:bg-slate-50 dark:active:bg-slate-700/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col h-full touch-manipulation" onclick="openModal('${appId}')">
                     
                     <div class="flex items-start justify-between mb-4">
                         <img src="${config.icon_url}" alt="${name}" 
-                             class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-900 object-cover shadow-sm group-hover:scale-105 transition-transform duration-300"
+                             class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-900 object-cover shadow-sm flex-shrink-0"
                              onerror="this.src='https://placehold.co/64?text=${name[0]}'">
-                        ${!isOk ? `<span class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> Error</span>` : ''}
+                        ${!isOk ? `<span class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> Error</span>` : ''}
                     </div>
 
-                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-1 line-clamp-1">${name}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mb-3 truncate">${config.package_name}</p>
-                    <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-6 flex-grow">${desc || ''}</p>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-0.5 line-clamp-1">${name}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mb-2 truncate">${config.package_name}</p>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-4 flex-grow leading-relaxed">${desc || ''}</p>
                     
                     <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-50 dark:border-slate-700/50">
                         <div class="flex flex-col">
@@ -392,7 +414,7 @@
                              <span class="text-[10px] text-slate-400">${latest ? formatDate(latest.published_at) : ''}</span>
                         </div>
                         
-                        <button class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-brand-600 dark:text-brand-400 font-bold py-2 px-5 rounded-full text-sm transition-colors">
+                        <button class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 active:bg-slate-200 dark:active:bg-slate-500 text-brand-600 dark:text-brand-400 font-bold py-2 px-5 rounded-full text-sm transition-colors touch-manipulation">
                             ${t('downloadBtn')}
                         </button>
                     </div>
@@ -411,10 +433,10 @@
             const isOk = status.success !== false;
 
             modalContent.innerHTML = `
-                <div class="flex flex-col items-center mb-6">
-                    <img src="${config.icon_url}" class="w-24 h-24 rounded-[2rem] shadow-xl mb-5 bg-white dark:bg-slate-800" onerror="this.src='https://placehold.co/96?text=${name[0]}'">
-                    <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-1 text-center">${name}</h2>
-                    <p class="text-slate-400 font-mono text-sm mb-2">${config.package_name}</p>
+                <div class="flex flex-col items-center mb-6 pt-2">
+                    <img src="${config.icon_url}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-[1.5rem] sm:rounded-[2rem] shadow-xl mb-4 bg-white dark:bg-slate-800" onerror="this.src='https://placehold.co/96?text=${name[0]}'">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-1 text-center">${name}</h2>
+                    <p class="text-slate-400 font-mono text-xs sm:text-sm mb-3 break-all text-center px-4">${config.package_name}</p>
                     ${config.maintainer ? `
                         <p class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 px-3 py-1 rounded-full">
                             ${t('maintainedBy')} <span class="font-medium text-brand-600 dark:text-brand-400">@${config.maintainer}</span>
@@ -423,32 +445,31 @@
                 </div>
 
                 ${!isOk ? `
-                    <div class="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-2xl p-4 mb-6 text-center">
-                        <div class="text-red-600 dark:text-red-400 font-bold mb-1 flex items-center justify-center gap-2">
+                    <div class="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-2xl p-4 mb-6 text-center mx-1">
+                        <div class="text-red-600 dark:text-red-400 font-bold mb-1 flex items-center justify-center gap-2 text-sm sm:text-base">
                             <i class="fa-solid fa-circle-exclamation"></i>
                             <span>${t('errorTitle')}</span>
                         </div>
-                        <p class="text-sm text-red-600/80 dark:text-red-300 mb-2">
+                        <p class="text-xs sm:text-sm text-red-600/80 dark:text-red-300 mb-2">
                             ${t('errorDetail').replace('{version}', status.failed_version || '?')}
                         </p>
-                         ${status.error_message ? `<p class="text-xs font-mono text-red-500 dark:text-red-400/70 bg-white/50 dark:bg-black/20 p-2 rounded">${status.error_message}</p>` : ''}
-                        <p class="text-[10px] text-red-400 dark:text-red-500/50 mt-2">${status.updated_at || ''}</p>
+                         ${status.error_message ? `<p class="text-[10px] sm:text-xs font-mono text-red-500 dark:text-red-400/70 bg-white/50 dark:bg-black/20 p-2 rounded break-words text-left">${status.error_message}</p>` : ''}
                     </div>
                 ` : ''}
 
                 ${latest ? `
-                    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-5 mb-6 border border-slate-100 dark:border-slate-800">
+                    <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 sm:p-5 mb-6 border border-slate-100 dark:border-slate-800">
                         <div class="flex justify-between items-center mb-4">
                             <div>
-                                <h3 class="font-bold text-slate-900 dark:text-white">${t('latestVersion')}</h3>
-                                <p class="text-sm text-slate-500">v${latest.tag_name.replace(/.*-v|v/, '')}</p>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-sm sm:text-base">${t('latestVersion')}</h3>
+                                <p class="text-xs sm:text-sm text-slate-500">v${latest.tag_name.replace(/.*-v|v/, '')}</p>
                             </div>
                             <span class="text-xs text-slate-400">${formatDate(latest.published_at)}</span>
                         </div>
                         
                         ${asset ? `
                         <a href="${asset.browser_download_url}" 
-                           class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-brand-500/20 transition-all flex items-center justify-center gap-2">
+                           class="w-full bg-brand-600 hover:bg-brand-700 active:bg-brand-800 active:scale-[0.98] text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-brand-500/20 transition-all flex items-center justify-center gap-2 touch-manipulation">
                              <i class="fa-solid fa-download"></i>
                              <span>${t('downloadBtnFull')}</span>
                              <span class="text-brand-200 font-normal text-sm ml-1">(${formatSize(asset.size)})</span>
@@ -458,16 +479,16 @@
                 ` : ''}
 
                 ${releases.length > 1 ? `
-                    <div class="border-t border-slate-100 dark:border-slate-800 pt-6">
-                        <h3 class="font-bold text-slate-900 dark:text-white mb-4 px-1">${t('olderVersions')}</h3>
-                        <div class="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                    <div class="border-t border-slate-100 dark:border-slate-800 pt-6 pb-2">
+                        <h3 class="font-bold text-slate-900 dark:text-white mb-3 px-1 text-sm sm:text-base">${t('olderVersions')}</h3>
+                        <div class="space-y-2 max-h-52 overflow-y-auto pr-1 custom-scrollbar">
                             ${releases.slice(1).map(r => {
                 const a = r.assets.find(as => as.name.endsWith('.apk')) || r.assets[0];
                 if (!a) return '';
                 return `
-                                <a href="${a.browser_download_url}" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+                                <a href="${a.browser_download_url}" class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition border border-transparent hover:border-slate-100 dark:hover:border-slate-700 touch-manipulation">
                                     <div>
-                                        <div class="font-semibold text-slate-700 dark:text-slate-300">v${r.tag_name.replace(/.*-v|v/, '')}</div>
+                                        <div class="font-semibold text-slate-700 dark:text-slate-300 text-sm">v${r.tag_name.replace(/.*-v|v/, '')}</div>
                                         <div class="text-xs text-slate-400">${formatDate(r.published_at)}</div>
                                     </div>
                                     <i class="fa-solid fa-cloud-arrow-down text-slate-300 dark:text-slate-600"></i>
@@ -480,14 +501,25 @@
             `;
 
             appModal.classList.remove('hidden');
+            // Animate In
+            setTimeout(() => {
+                modalBackdrop.classList.remove('opacity-0');
+                modalPanel.classList.remove('translate-y-full', 'opacity-0');
+            }, 10);
+            
             document.body.style.overflow = 'hidden';
-
-            // Re-apply close events for the new content if needed
         }
 
         function closeModal() {
-            appModal.classList.add('hidden');
-            document.body.style.overflow = '';
+            // Animate Out
+            modalBackdrop.classList.add('opacity-0');
+            modalPanel.classList.add('translate-y-full');
+            // Wait for animation
+            setTimeout(() => {
+                 appModal.classList.add('hidden');
+                 modalPanel.classList.add('opacity-0'); // Reset opacity for next open
+                 document.body.style.overflow = '';
+            }, 300);
         }
 
         // ─── Listeners ───
