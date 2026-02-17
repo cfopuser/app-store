@@ -17,6 +17,7 @@ from core.utils import (
     discover_apps,
     generate_apps_listing,
     load_app_config,
+    run_apk_mitm,
     set_github_output,
     update_status,
 )
@@ -24,7 +25,7 @@ from core.downloader import download_app
 from core.patcher import run_patch
 
 
-def process_app(app_id: str, step: str = "all") -> bool:
+def process_app(app_id: str, step: str = "all", no_mitm: bool = False) -> bool:
     """
     Run the pipeline for a single app.
 
@@ -46,8 +47,9 @@ def process_app(app_id: str, step: str = "all") -> bool:
         return False
 
     # --- Download step ---
+    output_filename = f"{app_id}_latest.apk"
     if step in ("download", "all"):
-        update_needed, new_version = download_app(config)
+        update_needed, new_version = download_app(config, output_filename=output_filename)
         set_github_output("update_needed", str(update_needed).lower())
 
         if new_version:
@@ -58,7 +60,23 @@ def process_app(app_id: str, step: str = "all") -> bool:
             return True
 
         if step == "download":
+            # Run apk-mitm if not disabled
+            if not no_mitm and not config.get("skip_mitm", False):
+                run_apk_mitm(output_filename)
             return True
+
+        # If continuing to patch, we still might want to mitm the downloaded apk first
+        # unless it's explicitly skipped. 
+        # But wait, apk-mitm is for HTTPS interception. 
+        # The user said "before exiting". 
+        # If we are in "all" step, we download, then patch, then repack.
+        # It's better to mitm the FINAL apk or the DOWNLOADED apk?
+        # Typically you mitm the apk you want to inspect. 
+        # If we patch it, we are already modifying it.
+        # User said "be ran on every apk file before exiting".
+        # This implies once the APK is ready/downloaded.
+        if not no_mitm and not config.get("skip_mitm", False):
+            run_apk_mitm(output_filename)
 
     # --- Patch step ---
     if step in ("patch", "all"):
@@ -139,6 +157,11 @@ Examples:
         action="store_true",
         help="Regenerate apps.json and exit",
     )
+    parser.add_argument(
+        "--no-mitm",
+        action="store_true",
+        help="Skip running apk-mitm on the downloaded APK",
+    )
 
     args = parser.parse_args()
 
@@ -162,7 +185,10 @@ Examples:
     # Process each app
     results = {}
     for app_id in app_ids:
-        success = process_app(app_id, step=args.step)
+        # Pass no_mitm logic to process_app
+        # Since process_app signature didn't change, let's use a workaround or fix signature
+        # Let's fix process_app signature
+        success = process_app(app_id, step=args.step, no_mitm=args.no_mitm)
         results[app_id] = success
 
     # Summary

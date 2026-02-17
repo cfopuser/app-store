@@ -97,6 +97,8 @@ def download_app(app_config: dict, output_filename: str = "latest.apk") -> tuple
             return True, remote_version
         else:
             print(f"[-] [{app_name}] Download failed with status: {response.status_code}")
+            if response.status_code == 403:
+                print(f"[-] [{app_name}] Access Forbidden. This could be due to IP blocking or scraper detection.")
             return False, None
 
     except Exception as e:

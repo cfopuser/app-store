@@ -2,39 +2,81 @@
 
 import sys
 import os
+import argparse
+import requests
 
 # Add current directory to path so core can be imported
 sys.path.append(os.getcwd())
 
 from core.sources.apkmirror import APKMirrorSource
+from core.utils import run_apk_mitm
 
-source = APKMirrorSource(timeout=3, results=5)
+def main():
+    parser = argparse.ArgumentParser(description="APKMCLI - APK Mirror Search and Download")
+    parser.add_argument("--no-mitm", action="store_true", help="Skip running apk-mitm on the downloaded APK")
+    
+    # Keep interactive the rest
+    source = APKMirrorSource(timeout=3, results=5)
 
-search_query = input("Search:\n -> ")
-version, link, title = source.get_latest_version(search_query)
+    search_query = input("Search:\n -> ")
+    if not search_query:
+        sys.exit("Search query cannot be empty.")
+        
+    try:
+        version, link, title = source.get_latest_version(search_query)
+    except Exception as e:
+        sys.exit(f"Error searching: {e}")
 
-if not version:
-    sys.exit("No results found.")
+    if not version:
+        sys.exit("No results found.")
 
-print(f"[0] {title}")
+    print(f"[0] {title} (Version: {version})")
 
-download_id = int(input("Enter number to get detail, or 99 to exit:\n -> "))
+    download_id = input("Enter 0 to get detail/download, or 99 to exit:\n -> ")
 
-if download_id == 99:
-    sys.exit("Exit")
+    if download_id == "99":
+        sys.exit("Exit")
 
-if download_id != 0:
-    sys.exit("Only 0 is supported in this simplified CLI update.")
+    if download_id != "0":
+        sys.exit("Only 0 is supported in this simplified CLI update.")
 
-print(f"Latest version: {version}")
-ask_download = input("Do you want to get the direct download link? (y/n)\n -> ")
+    print(f"Latest version: {version}")
+    ask_download = input("Do you want to download this APK? (y/n)\n -> ")
 
-if ask_download.lower() in ("y", ""):
-    print(f"Trying to get direct link...")
-    direct_link = source.get_download_url(link)
-    if direct_link:
-        print(f"Done. Direct url: {direct_link}")
+    if ask_download.lower() in ("y", ""):
+        print(f"Trying to get direct link...")
+        try:
+            direct_link = source.get_download_url(link)
+            if direct_link:
+                print(f"Done. Direct url: {direct_link}")
+                
+                # Sanitize filename
+                filename = f"{title.replace(' ', '_')}_{version}.apk"
+                print(f"[*] Downloading to {filename}...")
+                
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+                }
+                
+                with requests.get(direct_link, stream=True, headers=headers) as r:
+                    r.raise_for_status()
+                    with open(filename, 'wb') as f:
+                        for chunk in r.iter_content(chunk_size=8192):
+                            f.write(chunk)
+                
+                print(f"[+] Download complete: {filename}")
+                
+                # Pass from parser
+                args = parser.parse_args()
+                if not args.no_mitm:
+                    run_apk_mitm(filename)
+                
+            else:
+                print("Failed to get direct link.")
+        except Exception as e:
+            print(f"Error during download: {e}")
     else:
-        print("Failed to get direct link.")
-else:
-    sys.exit("Exit")
+        sys.exit("Exit")
+
+if __name__ == "__main__":
+    main()
