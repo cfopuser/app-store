@@ -89,7 +89,7 @@ jobs:
         run: python run.py --app ${{ matrix.app }} --step patch
 
       # ── Repack ──
-      - name: Repack APK
+      - name: Repack 
         if: steps.check_version.outputs.update_needed == 'true'
         run: java -jar apktool.jar b build_output -o patched_unsigned.apk
 
@@ -181,6 +181,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
+
+      - name: Setup Node.js
+        if: steps.check_version.outputs.update_needed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install apk-mitm
+        if: steps.check_version.outputs.update_needed == 'true'
+        run: npm install -g apk-mitm
 
       - name: Install Dependencies
         run: pip install -r requirements.txt

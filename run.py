@@ -47,7 +47,9 @@ def process_app(app_id: str, step: str = "all", no_mitm: bool = False) -> bool:
         return False
 
     # --- Download step ---
-    output_filename = f"{app_id}_latest.apk"
+    
+    # Use a consistent name so the GitHub Action workflow knows what to look for
+    output_filename = "latest.apk"
     if step in ("download", "all"):
         update_needed, new_version = download_app(config, output_filename=output_filename)
         set_github_output("update_needed", str(update_needed).lower())
