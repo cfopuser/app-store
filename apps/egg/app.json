@@ -5,7 +5,7 @@
   "description": "Public transportation app for viewing routes, real-time arrivals, and planning trips. Patched for installation from a file.",
   "description_he": "אפליקציה לתחבורה ציבורית לצפייה בקווים, זמני הגעה בזמן אמת ותכנון נסיעות. נערכה להתקנה מקובץ.",
   "icon_url": "?",
-  "source": "aptoide",
+  "source": "?",
   "maintainer": "lilor159357",
   "version_file": "apps/egged/version.txt",
   "status_file": "apps/egged/status.json"
