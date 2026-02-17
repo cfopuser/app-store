@@ -1,3 +1,4 @@
+## File: run.py
 #!/usr/bin/env python3
 """
 Orchestrator for the modular APK patching framework.
@@ -20,6 +21,7 @@ from core.utils import (
     run_apk_mitm,
     set_github_output,
     update_status,
+    update_version,
 )
 from core.downloader import download_app
 from core.patcher import run_patch
@@ -46,10 +48,12 @@ def process_app(app_id: str, step: str = "all", no_mitm: bool = False) -> bool:
         print(f"[-] {e}")
         return False
 
+    # Variables to track version state
+    new_version = None
+    update_needed = False
+
     # --- Download step ---
-    
-    # Use a consistent name so the GitHub Action workflow knows what to look for
-    output_filename = "latest.apk"
+    output_filename = f"{app_id}_latest.apk"
     if step in ("download", "all"):
         update_needed, new_version = download_app(config, output_filename=output_filename)
         set_github_output("update_needed", str(update_needed).lower())
@@ -61,24 +65,15 @@ def process_app(app_id: str, step: str = "all", no_mitm: bool = False) -> bool:
             print(f"[i] [{app_id}] No update needed. Done.")
             return True
 
-        if step == "download":
-            # Run apk-mitm if not disabled
-            if not no_mitm and not config.get("skip_mitm", False):
-                run_apk_mitm(output_filename)
-            return True
-
-        # If continuing to patch, we still might want to mitm the downloaded apk first
-        # unless it's explicitly skipped. 
-        # But wait, apk-mitm is for HTTPS interception. 
-        # The user said "before exiting". 
-        # If we are in "all" step, we download, then patch, then repack.
-        # It's better to mitm the FINAL apk or the DOWNLOADED apk?
-        # Typically you mitm the apk you want to inspect. 
-        # If we patch it, we are already modifying it.
-        # User said "be ran on every apk file before exiting".
-        # This implies once the APK is ready/downloaded.
         if not no_mitm and not config.get("skip_mitm", False):
-            run_apk_mitm(output_filename)
+            # Run MITM and check success
+            mitm_success = run_apk_mitm(output_filename)
+            if not mitm_success:
+                print(f"[-] [{app_id}] apk-mitm failed. Aborting to prevent bad patch.")
+                return False
+
+        if step == "download":
+            return True
 
     # --- Patch step ---
     if step in ("patch", "all"):
@@ -90,13 +85,21 @@ def process_app(app_id: str, step: str = "all", no_mitm: bool = False) -> bool:
             update_status(
                 config["status_file"],
                 success=False,
-                failed_version=new_version if step == "all" else "unknown",
+                failed_version=new_version if (step == "all" and new_version) else "unknown",
                 error_message="Patching failed",
             )
             print(f"[-] [{app_id}] Patching failed!")
             return False
 
+        # If we are here, patch was successful.
         update_status(config["status_file"], success=True)
+        
+        # If running locally in 'all' mode, update the version file now.
+        # In CI, this is handled by the workflow file after the APK is signed.
+        if step == "all" and update_needed and new_version:
+            print(f"[+] [{app_id}] Updating version file to {new_version}")
+            update_version(config["version_file"], new_version)
+            
         print(f"[+] [{app_id}] Pipeline completed successfully!")
         return True
 
@@ -187,9 +190,6 @@ Examples:
     # Process each app
     results = {}
     for app_id in app_ids:
-        # Pass no_mitm logic to process_app
-        # Since process_app signature didn't change, let's use a workaround or fix signature
-        # Let's fix process_app signature
         success = process_app(app_id, step=args.step, no_mitm=args.no_mitm)
         results[app_id] = success
 

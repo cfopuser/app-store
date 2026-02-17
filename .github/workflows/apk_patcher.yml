@@ -1,3 +1,4 @@
+## File: .github/workflows/apk_patcher.yml
 name: Patch and Sign APKs
 
 on:
@@ -63,8 +64,16 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
+      # --- NEW: Setup Node.js for apk-mitm ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install System Dependencies
+        run: |
+          pip install -r requirements.txt
+          npm install -g apk-mitm
 
       # ── Download ──
       - name: Check for updates & download
@@ -89,7 +98,7 @@ jobs:
         run: python run.py --app ${{ matrix.app }} --step patch
 
       # ── Repack ──
-      - name: Repack 
+      - name: Repack APK
         if: steps.check_version.outputs.update_needed == 'true'
         run: java -jar apktool.jar b build_output -o patched_unsigned.apk
 
@@ -121,6 +130,11 @@ jobs:
           from core.utils import update_status
           update_status('apps/${{ matrix.app }}/status.json', success=True)
           "
+
+      # --- NEW: Explicitly update version file only on success ---
+      - name: Update version file
+        if: steps.check_version.outputs.update_needed == 'true' && success()
+        run: echo "${{ steps.check_version.outputs.new_version }}" > apps/${{ matrix.app }}/version.txt
 
       - name: Update status on failure
         if: failure()
@@ -167,10 +181,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: always()
-    # --- ADD THIS SECTION ---
     permissions:
       contents: write
-    # ------------------------
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -181,17 +193,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-
-
-      - name: Setup Node.js
-        if: steps.check_version.outputs.update_needed == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install apk-mitm
-        if: steps.check_version.outputs.update_needed == 'true'
-        run: npm install -g apk-mitm
 
       - name: Install Dependencies
         run: pip install -r requirements.txt

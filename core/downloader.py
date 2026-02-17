@@ -1,3 +1,4 @@
+## File: core/downloader.py
 """
 Generic APK downloader — config-driven.
 Supports multiple sources (APKMirror, Aptoide).
@@ -6,7 +7,7 @@ Supports multiple sources (APKMirror, Aptoide).
 import os
 import requests
 from core.sources import APKMirrorSource, AptoideSource, GitHubSource
-from core.utils import get_local_version, update_version
+from core.utils import get_local_version
 
 
 def download_app(app_config: dict, output_filename: str = "latest.apk") -> tuple:
@@ -79,9 +80,7 @@ def download_app(app_config: dict, output_filename: str = "latest.apk") -> tuple
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
         }
         
-        # APKMirror might need specific headers if we were using its scraper, 
-        # but for direct link it should be fine with standard requests.
-        # Actually, let's use the source's scraper if it exists to be safe.
+        # Use scraper if available, else requests
         scraper = getattr(source, 'scraper', requests)
         
         response = scraper.get(direct_link, stream=True, headers=headers)
@@ -93,7 +92,7 @@ def download_app(app_config: dict, output_filename: str = "latest.apk") -> tuple
                         f.write(chunk)
 
             print(f"[+] [{app_name}] Download complete: {output_filename}")
-            update_version(version_file, remote_version)
+            # Note: Version is updated by the orchestrator (run.py or CI) only on success
             return True, remote_version
         else:
             print(f"[-] [{app_name}] Download failed with status: {response.status_code}")
