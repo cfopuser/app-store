@@ -1,0 +1,12 @@
+{
+  "id": "egged",
+  "name": "Egged",
+  "package_name": "com.egged.egg",
+  "description": "Bypasses the 'pairip' license check (LicenseContentProvider crash) to allow the app to run without Google Play Services or when side-loaded.",
+  "description_he": "אפליקצית י.",
+  "icon_url": "?",
+  "source": "?",
+  "maintainer": "your-username",
+  "version_file": "apps/egged/version.txt",
+  "status_file": "apps/egged/status.json"
+}
