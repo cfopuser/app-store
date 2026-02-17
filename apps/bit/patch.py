@@ -1,52 +1,25 @@
+"""
+Bit App Patch — Bypass sideload/installer check
+
+Targets: AppInitiationViewModel.smali
+Method:  Replaces the `if-nez` branch (ArraysKt.contains check for
+         allowed installers) with a `goto` to always take the success path.
+"""
+
 import os
 import re
+import sys
 
-def _remove_profile_installer_manifest(decompiled_dir: str) -> bool:
+
+def patch(decompiled_dir: str) -> bool:
     """
-    Removes the ProfileInstallerInitializer meta-data from AndroidManifest.xml.
-    
-    Why: On Android 9 (API 28), androidx.startup initializes ProfileInstaller, 
-    which calls 'Trace.isEnabled()'. This method was added in API 29, causing 
-    a java.lang.NoSuchMethodError crash on startup.
-    """
-    manifest_path = os.path.join(decompiled_dir, "AndroidManifest.xml")
-    
-    if not os.path.exists(manifest_path):
-        print("[-] CRITICAL: AndroidManifest.xml not found.")
-        return False
+    Apply the sideload bypass patch to a decompiled Bit APK.
 
-    try:
-        with open(manifest_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+    Args:
+        decompiled_dir: Path to the apktool-decompiled directory.
 
-        # Regex to match the specific meta-data tag responsible for the crash
-        # Matches: <meta-data ... name="...ProfileInstallerInitializer" ... />
-        crash_tag_pattern = re.compile(
-            r'<meta-data\s+[^>]*android:name="androidx\.profileinstaller\.ProfileInstallerInitializer"[^>]*/>',
-            re.IGNORECASE
-        )
-
-        if crash_tag_pattern.search(content):
-            print("[i] Found crashing ProfileInstallerInitializer tag in Manifest.")
-            # Remove the tag by replacing it with an empty string
-            new_content = crash_tag_pattern.sub('', content)
-            
-            with open(manifest_path, 'w', encoding='utf-8') as f:
-                f.write(new_content)
-            
-            print("[+] PATCH SUCCESS: Removed ProfileInstallerInitializer (Fixed Android 9 crash).")
-            return True
-        else:
-            print("[?] ProfileInstallerInitializer tag not found. App might already be patched.")
-            return True 
-
-    except Exception as e:
-        print(f"[-] Error patching Manifest: {str(e)}")
-        return False
-
-def _bypass_sideload_check_smali(decompiled_dir: str) -> bool:
-    """
-    Patches AppInitiationViewModel.smali to bypass the installer verification.
+    Returns:
+        True if the patch was applied successfully, False otherwise.
     """
     target_filename = "AppInitiationViewModel.smali"
     file_found = False
@@ -63,7 +36,8 @@ def _bypass_sideload_check_smali(decompiled_dir: str) -> bool:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
 
-                # Regex: match invoke-static ArraysKt->contains ... if-nez
+                # Primary regex: match invoke-static ArraysKt->contains, then
+                # the move-result register, then the if-nez conditional branch.
                 pattern = re.compile(
                     r"(invoke-static \{[vp]\d+, [vp]\d+\}, Lkotlin\/collections\/ArraysKt.*?;->contains\(.*?\).*?move-result ([vp]\d+).*?)if-nez \2, (:cond_\w+)",
                     re.DOTALL
@@ -73,30 +47,38 @@ def _bypass_sideload_check_smali(decompiled_dir: str) -> bool:
 
                 if match:
                     print(f"[i] Logic found! Target label is: {match.group(3)}")
-                    # Force jump to success
                     new_content = pattern.sub(r"\1goto \3", content)
 
                     with open(file_path, 'w', encoding='utf-8') as f:
                         f.write(new_content)
 
-                    print("[+] PATCH SUCCESS: Sideload check bypassed (Method 1).")
+                    print("[+] PATCH APPLIED SUCCESSFULLY: Sideload check bypassed.")
                     return True
 
                 else:
                     print("[!] Complex regex failed, trying simple search fallback...")
-                    # Fallback heuristic
+
                     if "Lkotlin/collections/ArraysKt" in content and "contains" in content:
+                        print("[i] Found ArraysKt->contains usage. Attempting heuristic patch...")
+
                         fallback_pattern = re.compile(r"(if-nez p1, (:cond_\w+))")
                         if fallback_pattern.search(content):
                             new_content = fallback_pattern.sub(r"goto \2", content, count=1)
+
                             if new_content != content:
                                 with open(file_path, 'w', encoding='utf-8') as f:
                                     f.write(new_content)
-                                print("[+] PATCH SUCCESS: Sideload check bypassed (Fallback Method).")
+                                print("[+] Simple fallback patch applied successfully.")
                                 return True
 
-                    print("[-] Pattern not found in SMALI.")
-                    return False
+                    print("[-] Pattern not found. Dumping snippet for debugging:")
+                    lines = content.splitlines()
+                    for i, line in enumerate(lines):
+                        if "contains" in line and "ArraysKt" in line:
+                            print(f"Line {i}: {line}")
+                            for j in range(1, 6):
+                                if i + j < len(lines):
+                                    print(f"Line {i+j}: {lines[i+j]}")
 
             except Exception as e:
                 print(f"[-] Error reading/writing file: {str(e)}")
@@ -105,20 +87,6 @@ def _bypass_sideload_check_smali(decompiled_dir: str) -> bool:
     if not file_found:
         print(f"[-] CRITICAL: {target_filename} not found.")
         return False
-    
+
+    print("[-] CRITICAL: File found but patch logic could not be applied.")
     return False
-
-def patch(decompiled_dir: str) -> bool:
-    """
-    Main entry point for the patcher framework.
-    """
-    print("=== Applying Bit App Patches ===")
-    
-    # 1. Fix the Android 9 Crash
-    manifest_fixed = _remove_profile_installer_manifest(decompiled_dir)
-    
-    # 2. Bypass Sideload/Installer Check
-    sideload_fixed = _bypass_sideload_check_smali(decompiled_dir)
-
-    # Return True only if both critical operations succeed (or didn't fail catastrophically)
-    return manifest_fixed and sideload_fixed
