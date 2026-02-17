@@ -13,8 +13,8 @@ Want to add a new app to the patching platform? Here's how.
 ### 1. Fork & Clone
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/bit-updates.git
-cd bit-updates
+git clone https://github.com/cfopuser/app-store.git
+cd app-store
 pip install -r requirements.txt
 ```
 

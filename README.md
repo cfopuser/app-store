@@ -4,7 +4,7 @@
 
 An open-source, modular platform that automatically patches Android apps and publishes them via GitHub Releases.
 
-**Live site:** [https://cfopuser.github.io/app-store/](https://cfopuser.github.io/bit-updates/)
+**Live site:** [https://cfopuser.github.io/app-store/](https://cfopuser.github.io/app-store/)
 
 ## How It Works
 
