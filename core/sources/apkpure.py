@@ -1,6 +1,6 @@
 import re
 from urllib.parse import quote
-
+import cloudscraper
 import requests
 
 
@@ -10,17 +10,15 @@ class APKPureSource:
         self.file_type = file_type.upper()
         self.version = version
         self.base_direct_api = "https://d.apkpure.com/b"
-        self.headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
-            ),
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Referer": "https://apkpure.com/",
-            "Connection": "keep-alive",
-            "Upgrade-Insecure-Requests": "1",
-        }
+        
+        # Use cloudscraper to bypass 403/Cloudflare blocks
+        self.scraper = cloudscraper.create_scraper(
+            browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'desktop': True
+            }
+        )
 
     def _build_direct_url(self, package_name: str) -> str:
         package = quote(package_name, safe=".")
@@ -44,7 +42,8 @@ class APKPureSource:
 
         response = None
         try:
-            response = requests.get(
+            # Use self.scraper instead of requests
+            response = self.scraper.get(
                 release_url,
                 headers=self.headers,
                 timeout=self.timeout,
