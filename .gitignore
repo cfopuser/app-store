@@ -4,3 +4,4 @@ manual_aptoide.py
 .tmp_gplayapi
 *.js
 aurora_asset_list.txt
+__pycache__

@@ -38,11 +38,14 @@ class AuroraSource:
         self._version_code_by_package: dict[str, int] = {}
 
     def _get_dispenser_credentials(self) -> tuple[str, str]:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
         response = requests.get(
             self.dispenser_url,
-            headers={"User-Agent": self.dispenser_user_agent},
-            timeout=self.timeout,
-        )
+        headers=headers, # Use the browser header instead of the app header
+        timeout=self.timeout,
+    )
         response.raise_for_status()
 
         payload = response.json()
