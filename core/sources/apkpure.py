@@ -3,26 +3,33 @@ from urllib.parse import quote
 
 import cloudscraper
 
+
 class APKPureSource:
-    def __init__(self, timeout: int = 15, file_type: str = "XAPK", version: str = "latest"):
+    def __init__(self, timeout: int = 30, file_type: str = "XAPK", version: str = "latest"):
         self.timeout = timeout
         self.file_type = file_type.upper()
         self.version = version
         self.base_direct_api = "https://d.apkpure.com/b"
         
-        # Use cloudscraper to bypass Cloudflare/403 Forbidden errors
-        self.scraper = cloudscraper.create_scraper()
+        # Use cloudscraper to bypass Cloudflare/WAF 403 errors
+        self.scraper = cloudscraper.create_scraper(
+            browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'desktop': True
+            }
+        )
         
         self.headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
-            ),
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "Accept-Language": "en-US,en;q=0.9",
             "Referer": "https://apkpure.com/",
-            "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
         }
 
     def _build_direct_url(self, package_name: str) -> str:
@@ -47,7 +54,7 @@ class APKPureSource:
 
         response = None
         try:
-            # Use self.scraper instead of requests
+            # Use self.scraper instead of requests to bypass 403
             response = self.scraper.get(
                 release_url,
                 headers=self.headers,
