@@ -4,8 +4,8 @@
   "package_name": "com.egged.egg",
   "description": "Public transportation app for viewing routes, real-time arrivals, and planning trips. Patched for installation from a file.",
   "description_he": "אפליקציה לתחבורה ציבורית לצפייה בקווים, זמני הגעה בזמן אמת ותכנון נסיעות. נערכה להתקנה מקובץ.",
-  "icon_url": "?",
-  "source": "?",
+  "icon_url": "https://image.winudf.com/v2/image1/Y29tLmVnZ2VkLmVnZ19pY29uXzE3NTk5NDkzNzNfMDU2/icon.webp?w=140&fakeurl=1&type=.webp",
+  "source": "apkpure",
   "maintainer": "lilor159357",
   "version_file": "apps/egged/version.txt",
   "status_file": "apps/egged/status.json"
