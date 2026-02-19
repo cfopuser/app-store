@@ -95,7 +95,6 @@ jobs:
             | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
           echo "Downloading UberSigner from $UBER_URL"
           wget -q "$UBER_URL" -O ubersigner.jar
-          
       # ── Decode ──
       - name: Decode APK
         if: steps.check_version.outputs.update_needed == 'true'

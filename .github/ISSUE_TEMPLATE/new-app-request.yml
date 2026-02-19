@@ -48,6 +48,7 @@ body:
       options:
         - APKMirror
         - Aptoide
+        - APKPure
         - GitHub
         - Other (describe below)
     validations:
