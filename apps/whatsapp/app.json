@@ -1,0 +1,19 @@
+{
+  "id": "whatsapp",
+  "name": "WhatsApp",
+  "name_he": "וואטסאפ מסונן",
+  "package_name": "com.whatsapp",
+  "description": "WhatsApp with kosher patch applied.",
+  "description_he": "וואטסאפ מסונן: חסימת תמונות פרופיל, ערוצים ועוד.",
+  "icon_url": "https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg",
+  "source": "aptoide",
+  "skip_mitm": true,
+  "version_file": "apps/whatsapp/version.txt",
+  "status_file": "apps/whatsapp/status.json",
+  "updater_target_smali": "com/whatsapp/home/ui/HomeActivity.smali",
+  "clone_config": {
+    "old_pkg": "com.whatsapp",
+    "new_pkg": "com.whatsapp.kosher",
+    "app_name_suffix": ""
+  }
+}
