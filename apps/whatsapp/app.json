@@ -4,7 +4,7 @@
   "name_he": "וואטסאפ",
   "package_name": "com.whatsapp",
   "description": "WhatsApp with kosher patch applied.",
-  "description_he": "וואטסאפ מסונן: חסימת תמונות פרופיל, ערוצים ועוד.",
+  "description_he": "וואטסאפ מסונן: חסימת תמונות פרופיל, ערוצים מומלץ לשימוש כמכשיר מקושר.",
   "icon_url": "https://cdn-icons-png.flaticon.com/512/3992/3992601.png",
   "skip_mitm": true,
     "source": "aptoide",
