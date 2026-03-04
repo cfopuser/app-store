@@ -2,7 +2,7 @@ repomix-output.md
 manual_aptoide.py
 .tmp_aurora_store_2
 .tmp_gplayapi
-*.js
+
 aurora_asset_list.txt
 .pytest_cache/
 __pycache__/
