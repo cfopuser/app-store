@@ -2,7 +2,7 @@ import os
 import re
 
 def patch(decompiled_dir: str) -> bool:
-    print(f"[*] Starting WhatsApp Kosher patch (Double-Barrel Mode: Block & Kill)...")
+    print(f"[*] Starting WhatsApp Kosher patch (Precision Sniper Mode v18 - ZOMBIE SHELL)...")
     
     # 1. חסימות תוכן (תמונות, ניוזלטר, טאבים)
     photos = _patch_profile_photos(decompiled_dir)
@@ -13,11 +13,10 @@ def patch(decompiled_dir: str) -> bool:
     spi = _patch_secure_pending_intent(decompiled_dir)
     browser = _patch_force_external_browser(decompiled_dir)
     
-    # 3. מערכת כפולה לחסימת סטטוסים (גישה + יעד)
-    status_kill = _patch_kill_status_playback(decompiled_dir)      # שכבה 1: הרג היעד
-    status_redirect = _patch_redirect_status_intents(decompiled_dir) # שכבה 2: חסימת הגישה
+    # 3. חסימת סטטוסים - שיטת ה"לובוטומיה" (מונע קריסה ב-Init)
+    status_nuke = _patch_nuke_status_activity(decompiled_dir)
 
-    results = [photos, newsletter, tabs, spi, browser, status_kill, status_redirect]
+    results = [photos, newsletter, tabs, spi, browser, status_nuke]
     
     if all(results):
         print("\n[SUCCESS] All patches applied successfully!")
@@ -249,98 +248,66 @@ def _patch_force_external_browser(root_dir):
         return False
 
 # ---------------------------------------------------------
-# 6. הריגת נגן הסטטוסים (Layer 1: Destination Kill)
+# 6. הריגת נגן הסטטוסים (Shell Replacement / Lobotomy)
 # ---------------------------------------------------------
-def _patch_kill_status_playback(root_dir):
+def _patch_nuke_status_activity(root_dir):
+    """
+    מחליף את כל התוכן של StatusPlaybackActivity בקליפה ריקה (Shell).
+    זה מונע קריסות ב-Constructor (<init>) שנובעות מקוד מקורי פגום/מבולגן,
+    ומבטיח שהפעילות פשוט תיפתח ותיסגר מיד.
+    """
     target_filename = "StatusPlaybackActivity.smali"
-    print(f"\n[6] Neutralizing Status Playback Activity ({target_filename})...")
+    print(f"\n[6] Nuking Status Playback Activity ({target_filename})...")
 
     target_file = _find_file_recursive(root_dir, target_filename)
     if not target_file:
-        print("    [-] StatusPlaybackActivity.smali not found. Skipping layer 1.")
+        print("    [-] StatusPlaybackActivity.smali not found. Skipping.")
         return False
 
     try:
+        # קריאת הקובץ רק כדי לגלות מי האבא (Parent Class)
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read()
 
         super_class_match = re.search(r"^\.super\s+(L[^;]+;)", content, re.MULTILINE)
-        if not super_class_match: return False
+        if not super_class_match:
+            print("    [-] Could not determine parent class.")
+            return False
+        
         parent_class = super_class_match.group(1)
+        print(f"    [i] Detected parent class: {parent_class}")
 
-        method_pattern = re.compile(r"(\.method.*?onCreate\(Landroid\/os\/Bundle;\)V)(.*?)(\.end method)", re.DOTALL)
+        # יצירת הקובץ החדש - נקי לחלוטין
+        # אין שדות, אין שיטות מסובכות, רק בנאי פשוט ו-onCreate שסוגר.
+        new_content = f"""
+.class public Lcom/whatsapp/status/playback/StatusPlaybackActivity;
+.super {parent_class}
+.source "StatusPlaybackActivity.java"
 
-        if not method_pattern.search(content): return False
+# בנאי מינימלי למניעת קריסה ב-Init
+.method public constructor <init>()V
+    .locals 0
+    invoke-direct {{p0}}, {parent_class}-><init>()V
+    return-void
+.end method
 
-        # קוד "התאבדות": קריאה ל-super ואז finish מידי
-        new_body = f"""
+# onCreate מינימלי לסגירה מידית
+.method public onCreate(Landroid/os/Bundle;)V
     .locals 0
     invoke-super {{p0, p1}}, {parent_class}->onCreate(Landroid/os/Bundle;)V
     invoke-virtual {{p0}}, Landroid/app/Activity;->finish()V
     return-void
+.end method
 """
-        new_content = method_pattern.sub(r"\1" + new_body + r"\3", content)
-
-        with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content)
-        print(f"    [+] StatusPlaybackActivity neutralized.")
+        # דריסת הקובץ הישן
+        with open(target_file, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+            
+        print(f"    [+] StatusPlaybackActivity replaced with empty shell.")
         return True
 
     except Exception as e:
-        print(f"    [-] Error neutralizing status playback: {e}")
+        print(f"    [-] Error nuking status activity: {e}")
         return False
-
-# ---------------------------------------------------------
-# 7. הטיית הפניות לסטטוס (Layer 2: Access Block)
-# ---------------------------------------------------------
-def _patch_redirect_status_intents(root_dir):
-    """
-    סורק את כל הקבצים ומחפש הפניות (Intents) ל-StatusPlaybackActivity.
-    משנה את היעד ל-HomeActivity.
-    התוצאה: לחיצה על סטטוס פשוט מרעננת את מסך הבית במקום לפתוח את הנגן.
-    """
-    target_status_class = "Lcom/whatsapp/status/playback/StatusPlaybackActivity;"
-    redirect_class = "Lcom/whatsapp/HomeActivity;" # דף הבית
-    
-    # גיבוי: בגרסאות מסוימות דף הבית הוא Main
-    alt_redirect_class = "Lcom/whatsapp/Main;"
-
-    print(f"\n[7] Redirecting Status Intents (Sniper Mode)...")
-    
-    # בדיקה מקדימה איזה מחלקה קיימת כדי לא לגרום לקריסה
-    home_exists = _find_file_recursive(root_dir, "HomeActivity.smali")
-    main_exists = _find_file_recursive(root_dir, "Main.smali")
-    
-    final_redirect = redirect_class if home_exists else (alt_redirect_class if main_exists else None)
-    
-    if not final_redirect:
-        print("    [-] Neither HomeActivity nor Main found. Skipping redirect layer to prevent crashes.")
-        return True # לא מכשיל את הבנייה, מסתמך על שכבה 1
-
-    print(f"    [i] Redirect target identified: {final_redirect}")
-    
-    patched_count = 0
-    
-    for root, dirs, files in os.walk(root_dir):
-        for file in files:
-            if file.endswith(".smali") and file != "StatusPlaybackActivity.smali":
-                path = os.path.join(root, file)
-                try:
-                    with open(path, 'r', encoding='utf-8') as f: content = f.read()
-                    
-                    # חיפוש: const-class v0, L.../StatusPlaybackActivity;
-                    # החלפה: const-class v0, L.../HomeActivity;
-                    if target_status_class in content:
-                        new_content = content.replace(target_status_class, final_redirect)
-                        with open(path, 'w', encoding='utf-8') as f: f.write(new_content)
-                        patched_count += 1
-                except:
-                    continue
-
-    if patched_count > 0:
-        print(f"    [+] Successfully redirected {patched_count} access points to Home Screen.")
-    else:
-        print("    [-] No external references to StatusPlaybackActivity found (might be obfuscated).")
-    
-    return True
 
 # ---------------------------------------------------------
 # פונקציות עזר
