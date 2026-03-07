@@ -14,12 +14,13 @@ def patch(decompiled_dir: str) -> bool:
     browser = _patch_force_external_browser(decompiled_dir)
     
     # 3. טיפול בסטטוסים (מהשורש)
-    # שלב א': מחיקת הפעילות הבעייתית ויצירת קליפה ריקה (מונע את הקריסה ב-init)
     status_nuke = _patch_nuke_status_activity(decompiled_dir)
-    # שלב ב': הטיית קישורים שמצביעים לסטטוס (כדי למנוע מסך לבן/הבהוב)
     status_redirect = _patch_redirect_status_intents(decompiled_dir)
+    
+    # 4. חסימת טאב הגיפים (Expressions Tray)
+    gifs_tab = _patch_gifs_tab(decompiled_dir)
 
-    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect]
+    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab]
     
     if all(results):
         print("\n[SUCCESS] All patches applied successfully!")
@@ -251,10 +252,6 @@ def _patch_force_external_browser(root_dir):
 # 6. הריגת נגן הסטטוסים (Shell Replacement)
 # ---------------------------------------------------------
 def _patch_nuke_status_activity(root_dir):
-    """
-    מחליף את קובץ ה-Activity המקורי בקובץ חדש ונקי לחלוטין.
-    זה פותר את בעיית ה-NoSuchMethodError בקונסטרקטור.
-    """
     target_filename = "StatusPlaybackActivity.smali"
     print(f"\n[6] Nuking Status Playback Activity ({target_filename})...")
 
@@ -264,11 +261,9 @@ def _patch_nuke_status_activity(root_dir):
         return False
 
     try:
-        # אנו קוראים את הקובץ רק כדי לחלץ את שם מחלקת האב (המשתנה מגרסה לגרסה)
         with open(target_file, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # Regex לחילוץ שם האב: .super LX/0M6;
         super_match = re.search(r"^\.super\s+(L[^;]+;)", content, re.MULTILINE)
         if not super_match:
             print("    [-] Could not determine parent class from source.")
@@ -277,20 +272,17 @@ def _patch_nuke_status_activity(root_dir):
         parent_class = super_match.group(1)
         print(f"    [i] Detected parent class: {parent_class}")
 
-        # תוכן הקובץ החדש: קצר, נקי, ללא אתחול שדות מורכב
         new_content = f"""
 .class public final Lcom/whatsapp/status/playback/StatusPlaybackActivity;
 .super {parent_class}
 .source "StatusPlaybackActivity.java"
 
-# בנאי פשוט שקורא רק לאבא ויוצא. בלי LX/7z0 ובלי צרות.
 .method public constructor <init>()V
     .locals 0
     invoke-direct {{p0}}, {parent_class}-><init>()V
     return-void
 .end method
 
-# onCreate שפשוט סוגר את המסך.
 .method public onCreate(Landroid/os/Bundle;)V
     .locals 0
     invoke-super {{p0, p1}}, {parent_class}->onCreate(Landroid/os/Bundle;)V
@@ -298,7 +290,6 @@ def _patch_nuke_status_activity(root_dir):
     return-void
 .end method
 """
-        # כתיבת הקובץ מחדש
         with open(target_file, 'w', encoding='utf-8') as f:
             f.write(new_content)
             
@@ -313,17 +304,12 @@ def _patch_nuke_status_activity(root_dir):
 # 7. הטיית הפניות לסטטוס (Redirection)
 # ---------------------------------------------------------
 def _patch_redirect_status_intents(root_dir):
-    """
-    מחפש בכל הקוד מקומות שמנסים לפתוח את StatusPlaybackActivity
-    ומשנה אותם כך שיפתחו את HomeActivity (רענון מסך הבית).
-    """
     target_status_class = "Lcom/whatsapp/status/playback/StatusPlaybackActivity;"
     redirect_class = "Lcom/whatsapp/HomeActivity;" 
     alt_redirect_class = "Lcom/whatsapp/Main;"
 
     print(f"\n[7] Redirecting Status Intents...")
     
-    # בדיקה מהירה לאן להפנות
     home_exists = _find_file_recursive(root_dir, "HomeActivity.smali")
     main_exists = _find_file_recursive(root_dir, "Main.smali")
     final_redirect = redirect_class if home_exists else (alt_redirect_class if main_exists else None)
@@ -350,6 +336,85 @@ def _patch_redirect_status_intents(root_dir):
 
     print(f"    [+] Redirected {patched_count} references.")
     return True
+
+# ---------------------------------------------------------
+# 8. הסרת טאב הגיפים מלוח הביטויים (Expressions Tray)
+# ---------------------------------------------------------
+def _patch_gifs_tab(root_dir):
+    anchor = "ExpressionsKeyboardOpener = "
+    print(f"\n[8] Scanning for GIF Tab removal ({anchor})...")
+    
+    target_file = _find_file_by_string(root_dir, anchor)
+    if not target_file:
+        print("    [-] ExpressionsTrayTabHandler file not found.")
+        return False
+
+    try:
+        with open(target_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        original_content = content
+
+        # שלב 1: זיהוי אוטומטי של שם המחלקה המייצגת GIF (לדוגמה LX/6N5;) מתוך הבלוק הייחודי של Opener 11
+        gif_class_match = re.search(
+            r"invoke-virtual \{[vp]\d+,\s*[vp]\d+\},\s*Ljava/util/AbstractCollection;->add\(Ljava/lang/Object;\)Z\s+"
+            r"(:cond_\w+)\s+"
+            r"sget-object [vp]\d+,\s*(L[^;]+;)->A00", 
+            content
+        )
+
+        if not gif_class_match:
+            print("    [-] Could not dynamically identify GIF class pattern.")
+            return False
+
+        gif_class = gif_class_match.group(2)
+        print(f"    [i] Identified GIF class automatically: {gif_class}")
+
+        # שלב 2: תיקון הקפיצה (goto) במקרה של Opener 11
+        goto_match = re.search(
+            rf"sget-object [vp]\d+,\s*{re.escape(gif_class)};->A00:{re.escape(gif_class)};\s+"
+            r"goto (:goto_\w+)", 
+            content
+        )
+        if goto_match:
+            goto_label = goto_match.group(1)
+            # איתור הלייבל שנמצא *אחרי* ההוספה כדי לדלג עליה
+            target_match = re.search(
+                rf"({goto_label}\s+invoke-virtual \{{\w+,\s*\w+\}},\s*Ljava/util/AbstractCollection;->add\(Ljava/lang/Object;\)Z\s+)(:cond_\w+)", 
+                content
+            )
+            if target_match:
+                next_cond = target_match.group(2)
+                content = re.sub(
+                    rf"sget-object [vp]\d+,\s*{re.escape(gif_class)};->A00:{re.escape(gif_class)};\s+goto {goto_label}",
+                    f"goto {next_cond}",
+                    content
+                )
+                print(f"    [+] Opener 11 patched (Jump redirected to {next_cond}).")
+            else:
+                print("    [-] Could not find goto target condition for Opener 11.")
+
+        # שלב 3: מחיקת כל יתר ההוספות הישירות של אובייקט ה-GIF
+        add_pattern = re.compile(
+            rf"\s*sget-object [vp]\d+,\s*{re.escape(gif_class)};->A00:{re.escape(gif_class)};\s+"
+            r"invoke-virtual \{[vp]\d+,\s*[vp]\d+\},\s*Ljava/util/AbstractCollection;->add\(Ljava/lang/Object;\)Z"
+        )
+        
+        content, subs_count = add_pattern.subn("", content)
+        print(f"    [+] Removed {subs_count} standard GIF tab additions.")
+
+        if content != original_content:
+            with open(target_file, 'w', encoding='utf-8') as f:
+                f.write(content)
+            print("    [SUCCESS] GIF Tab completely removed.")
+            return True
+        else:
+            print("    [-] No replacements made. Might be already patched.")
+            return False
+
+    except Exception as e:
+        print(f"    [-] Error patching GIF tab: {e}")
+        return False
+
 
 # ---------------------------------------------------------
 # פונקציות עזר
