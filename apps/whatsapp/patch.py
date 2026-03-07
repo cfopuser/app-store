@@ -354,55 +354,60 @@ def _patch_gifs_tab(root_dir):
             content = f.read()
         original_content = content
 
-        # שלב 1: זיהוי אוטומטי של שם המחלקה המייצגת GIF 
-        # משתמש ב- [\s\S]*? כדי להתעלם מהערות דיקומפיילר כמו .line
-        pattern_11 = re.compile(
-            r"if-eqz ([vp]\d+),\s*(:cond_\w+)[\s\S]*?"
-            r"Ljava/util/[a-zA-Z]+;->add\(Ljava/lang/Object;\)Z[\s\S]*?"
-            r"^\s*\2\s*[\s\S]*?"
-            r"sget-object [vp]\d+,\s*(L[^;]+;)->A00[\s\S]*?"
-            r"goto (:goto_\w+)",
-            re.MULTILINE
+        # 1. Identify GIF class dynamically (strict adjacent pattern)
+        gif_class_pattern = re.compile(
+            r"sget-object [vp]\d+,\s*(L[^;]+;)->A00:L[^;]+;\s*"
+            r"invoke-(?:virtual|interface) \{[vp]\d+,\s*[vp]\d+\},\s*Ljava/util/[a-zA-Z]+;->add\(Ljava/lang/Object;\)Z\s*"
+            r"iget-object [vp]\d+,\s*[vp]\d+,\s*L[^;]+;->\w+:L[^;]+;\s*"
+            r"invoke-(?:virtual|interface) \{[vp]\d+\},\s*L[^;]+;->\w+\(\)Z"
         )
-
-        match_11 = pattern_11.search(content)
-        if not match_11:
+        
+        match = gif_class_pattern.search(content)
+        if not match:
             print("    [-] Could not dynamically identify GIF class pattern.")
             return False
-
-        cond_label = match_11.group(2)
-        gif_class = match_11.group(3)
-        goto_label = match_11.group(4)
-        
+            
+        gif_class = match.group(1)
         print(f"    [i] Identified GIF class automatically: {gif_class}")
 
-        # שלב 2: תיקון הקפיצה (goto) במקרה של Opener 11 כדי לדלג על הוספת הטאב
-        target_goto_pattern = re.compile(
-            rf"^\s*{goto_label}\s+"
-            r"invoke-(?:virtual|interface) \{[vp]\d+,\s*[vp]\d+\},\s*Ljava/util/[a-zA-Z]+;->add\(Ljava/lang/Object;\)Z[\s\S]*?"
-            r"^\s*(:cond_\w+)",
-            re.MULTILINE
+        # 2. Patch Opener 11 (the goto case)
+        match_goto = re.search(
+            rf"sget-object ([vp]\d+),\s*{re.escape(gif_class)};->A00:{re.escape(gif_class)};\s+goto (:goto_\w+)", 
+            content
         )
-        target_match = target_goto_pattern.search(content)
         
-        if target_match:
-            next_cond = target_match.group(1)
-            # החלפת ההוספה בקפיצה ישירה לתנאי הבא (מדלג על ה-GIF לחלוטין)
-            patch_11_regex = re.compile(
-                rf"sget-object [vp]\d+,\s*{re.escape(gif_class)};->A00:{re.escape(gif_class)};[\s\S]*?"
-                rf"goto {goto_label}"
+        if match_goto:
+            reg_v = match_goto.group(1)
+            goto_lbl = match_goto.group(2)
+            
+            # Find the label definition
+            lbl_pattern = re.compile(
+                rf"^\s*{goto_lbl}\s+invoke-(?:virtual|interface) \{{[vp]\d+,\s*{reg_v}\}},\s*Ljava/util/[a-zA-Z]+;->add\(Ljava/lang/Object;\)Z", 
+                re.MULTILINE
             )
-            content = patch_11_regex.sub(f"goto {next_cond}", content)
-            print(f"    [+] Opener 11 patched (Jump redirected to {next_cond}).")
+            lbl_match = lbl_pattern.search(content)
+            
+            if lbl_match:
+                # Insert skip label right after the `add`
+                content = content[:lbl_match.end()] + "\n    :goto_skip_gif_11" + content[lbl_match.end():]
+                
+                # Replace the original goto to jump to the skip label
+                content = re.sub(
+                    rf"sget-object {reg_v},\s*{re.escape(gif_class)};->A00:{re.escape(gif_class)};\s+goto {goto_lbl}",
+                    "goto :goto_skip_gif_11",
+                    content
+                )
+                print(f"    [+] Opener 11 patched (Jump redirected to :goto_skip_gif_11).")
+            else:
+                print("    [-] Warning: Could not find label definition for Opener 11.")
         else:
-            print("    [-] Could not find goto target condition for Opener 11.")
+            print("    [-] Warning: Could not find Opener 11 goto pattern (maybe already patched).")
 
-        # שלב 3: מחיקת כל יתר ההוספות הישירות של אובייקט ה-GIF מכל שאר המקלדות בצ'אט
+        # 3. Patch all standard unconditional additions
         add_pattern = re.compile(
-            rf"\s*sget-object [vp]\d+,\s*{re.escape(gif_class)};->A00:{re.escape(gif_class)};[\s\S]*?"
-            r"invoke-(?:virtual|interface) \{[vp]\d+,\s*[vp]\d+\},\s*Ljava/util/[a-zA-Z]+;->add\(Ljava/lang/Object;\)Z"
+            rf"\s*sget-object ([vp]\d+),\s*{re.escape(gif_class)};->A00:{re.escape(gif_class)};\s*"
+            rf"invoke-(?:virtual|interface) \{{[vp]\d+,\s*\1\}},\s*Ljava/util/[a-zA-Z]+;->add\(Ljava/lang/Object;\)Z"
         )
-        
         content, subs_count = add_pattern.subn("", content)
         print(f"    [+] Removed {subs_count} standard GIF tab additions.")
 
