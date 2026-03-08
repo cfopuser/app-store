@@ -336,24 +336,31 @@ def _patch_gifs_tab(root_dir):
         # 1. זיהוי דינאמי של מחלקת הגיפים על ידי חיפוש האחורה מהלייבל הראשי 
         gif_class = None 
         for i, line in enumerate(lines): 
-            if "goto :goto_0" in line: 
-                # סורק לאחור עד 6 שורות כדי למצוא את האובייקט 
-                for j in range(i-1, max(-1, i-6), -1): 
+            # שינוי: מחפש כל goto ולא רק goto_0
+            if "goto :goto_" in line: 
+                # שינוי: סורק לאחור עד 15 שורות (במקום 6) למקרה שהקוד התרחק
+                for j in range(i-1, max(-1, i-15), -1): 
                     if "sget-object" in lines[j]: 
                         match = re.search(r"(LX/[a-zA-Z0-9_]+;)->A00", lines[j]) 
                         if match: 
                             gif_class = match.group(1) 
                         break 
-                break 
+                if gif_class:
+                    break 
                  
         if not gif_class: 
             print("    [-] Could not dynamically identify GIF class.") 
+            print("    [DEBUG] הדפסת 150 שורות ראשונות של הקובץ לטובת דיבאג:")
+            print("    " + "="*40)
+            for idx, debug_line in enumerate(lines[:150]):
+                print(f"    {idx:03d}: {debug_line.strip()}")
+            print("    " + "="*40)
             return False 
              
-        print(f"    [i] Identified GIF class automatically: {gif_class}") 
+        print(f"[i] Identified GIF class automatically: {gif_class}") 
          
-        new_lines = [] 
-        patch_goto_targets = [] 
+        new_lines =[] 
+        patch_goto_targets =[] 
         removed_count = 0 
         i = 0 
          
