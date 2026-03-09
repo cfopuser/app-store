@@ -2,7 +2,6 @@
 {
   "id": "egg",
   "name": "EGG",
-  "name_he": "אגד",
   "package_name": "com.egged.egg",
   "description": "Public transportation app – patched for sideloading.",
   "description_he": "אפליקציית תחבורה ציבורית  - ערוכה להתקנה מקובץ.",
