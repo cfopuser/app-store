@@ -1,1 +1,1 @@
-{"success": false, "failed_version": "unknown", "error_message": "[EGG] No results found on apkpure_mobile.", "updated_at": "Mon Mar 09 17:16:33 UTC 2026"}
+{"success": false, "failed_version": "unknown", "error_message": "[EGG] Error during download process: XAPK conversion failed: executable apktool not found in $PATH, please install it before running xapktoapk", "updated_at": "Mon Mar 09 17:20:35 UTC 2026"}
