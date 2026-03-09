@@ -5,6 +5,7 @@ from .apkmirror import APKMirrorSource
 from .aptoide import AptoideSource
 from .aurora import AuroraSource
 from .apkpure import APKPureSource
+from .apkpure_mobile import APKPureMobileSource
 from .github import GitHubSource
 
 
@@ -33,6 +34,7 @@ SOURCE_DEFINITIONS: dict[str, SourceDefinition] = {
             version=cfg.get("apkpure_version", "latest"),
         )
     ),
+    "apkpure_mobile": SourceDefinition(factory=lambda _cfg: APKPureMobileSource()),
     "github": SourceDefinition(factory=lambda _cfg: GitHubSource(), lookup_field="repo"),
 }
 
