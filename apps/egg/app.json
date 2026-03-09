@@ -5,6 +5,7 @@
   "package_name": "com.egged.egg",
   "description": "Public transportation app – patched for sideloading.",
   "description_he": "אפליקציית תחבורה ציבורית  - ערוכה להתקנה מקובץ.",
+  "icon_url": "https://image.winudf.com/v2/image1/Y29tLmVnZ2VkLmVnZ19pY29uXzE3NTk5NDkzNzNfMDU2/icon.webp?w=280&fakeurl=1&type=.webp"
   "source": "apkpure_mobile",
   "maintainer": "lilor159357",
   "inject_updater": true,
