@@ -19,8 +19,9 @@ def patch(decompiled_dir: str) -> bool:
      
     # 4. חסימת טאב הגיפים - אלגוריתם חכם חדש 
     gifs_tab = _patch_gifs_tab(decompiled_dir) 
+    mime_crash = _patch_mime_type_crash(decompiled_dir) 
  
-    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab] 
+    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
