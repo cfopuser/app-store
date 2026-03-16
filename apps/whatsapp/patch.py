@@ -3,6 +3,7 @@ import re
 import zipfile
 from cryptography.hazmat.primitives.serialization import pkcs7
 from cryptography.hazmat.primitives import serialization
+import xml.etree.ElementTree as ET
 
 
 def patch(decompiled_dir: str) -> bool: 
@@ -25,8 +26,9 @@ def patch(decompiled_dir: str) -> bool:
     gifs_tab = _patch_gifs_tab(decompiled_dir) 
     mime_crash = _patch_mime_type_crash(decompiled_dir) 
     sig_bypass = _patch_signature_bypass(decompiled_dir)
- 
-    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass] 
+    kotlin_fix = _patch_kotlin_null_check(decompiled_dir)
+
+    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
