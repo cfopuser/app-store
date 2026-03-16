@@ -570,7 +570,7 @@ def _patch_signature_bypass(decompiled_dir: str) -> bool:
 
     :not_null
     # נוודא שמדובר בוואטסאפ
-    const-string v1, "com.whatsapp"
+    const-string v1, "com.whatsapp.kosher"
     invoke-virtual {{v1, p1}}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
     move-result v1
     if-nez v1, :is_whatsapp
