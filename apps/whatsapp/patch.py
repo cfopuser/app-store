@@ -452,7 +452,7 @@ import re
 # ---------------------------------------------------------
 # 10. תיקון צלף (Sniper Patch) למסך EULA בעזרת מחרוזת אנליטיקה
 # ---------------------------------------------------------
-def _patch_eula_registration_intent(decompiled_dir: str) -> bool:
+def _patch_registration_intent_crash(decompiled_dir: str) -> bool:
     print("\n[*] Sniper Patch: EULA Registration Intent...")
     
     # העוגנים המושלמים שלנו
