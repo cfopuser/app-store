@@ -27,8 +27,9 @@ def patch(decompiled_dir: str) -> bool:
     mime_crash = _patch_mime_type_crash(decompiled_dir) 
     sig_bypass = _patch_signature_bypass(decompiled_dir)
     kotlin_fix = _patch_kotlin_null_check(decompiled_dir)
-
-    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix] 
+    reg_crash_fix = _patch_registration_intent_crash(decompiled_dir)
+    
+    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, reg_crash_fix] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
@@ -443,6 +444,66 @@ def _patch_gifs_tab(root_dir):
              
     except Exception as e: 
         print(f"    [-] Error patching GIF tab: {e}") 
+        return False
+
+# ---------------------------------------------------------
+# 10. תיקון כירורגי לקריסת מסך ההרשמה (עקב שינוי שם חבילה)
+# ---------------------------------------------------------
+def _patch_registration_intent_crash(decompiled_dir: str) -> bool:
+    target_filename = "7Ut.smali"
+    print(f"\n[*] Surgically patching Registration Intent Crash ({target_filename})...")
+
+    target_file = None
+    for root, dirs, files in os.walk(decompiled_dir):
+        if 'X' in os.path.basename(root) and target_filename in files:
+            target_file = os.path.join(root, target_filename)
+            break
+            
+    if not target_file:
+        print(f"    [-] {target_filename} not found in expected directory. Skipping.")
+        return True
+
+    try:
+        with open(target_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # מוחק את הקריאה ל-getPackageName() ואת פונקציית העזר הבעייתית
+        # ומחליף אותה בקריאה ל-setClassName
+        pattern = re.compile(
+            r"(\.line \d+\s*\n\s*invoke-virtual \{([vp]\d+)\}, Landroid/content/Context;->getPackageName\(\)Ljava/lang/String;\s*\n\s*\.line \d+\s*\n\s*const-string ([vp]\d+), \"com.whatsapp.registration.app.phonenumberentry.RegisterPhone\"\s*\n\s*\.line \d+\s*\n\s*)invoke-static \{([vp]\d+), \3\}, LX/1kW;->A07\(Landroid/content/Intent;Ljava/lang/String;\)Landroid/content/Intent;",
+            re.MULTILINE
+        )
+        
+        match = pattern.search(content)
+        if not match:
+            print("    [i] Registration intent pattern not found (already patched or code changed).")
+            return True
+
+        # הרגיסטרים שלכדנו:
+        leading_code = match.group(1)   # קוד מקדים שצריך לשמור
+        context_reg = match.group(2)    # הרגיסטר שמחזיק את ה-Context
+        class_name_reg = match.group(3) # הרגיסטר עם שם המחלקה
+        intent_reg = match.group(4)     # הרגיסטר עם ה-Intent
+
+        # בניית קוד התיקון המדויק
+        replacement = (
+            f"{leading_code}"
+            f"invoke-virtual {{{intent_reg}, {context_reg}, {class_name_reg}}}, Landroid/content/Intent;->setClassName(Landroid/content/Context;Ljava/lang/String;)Landroid/content/Intent;"
+        )
+
+        new_content, count = pattern.subn(replacement, content)
+
+        if count > 0:
+            with open(target_file, 'w', encoding='utf-8') as f:
+                f.write(new_content)
+            print("    [+] Successfully patched the hardcoded registration intent!")
+            return True
+        else:
+             print("    [-] Failed to apply substitution.")
+             return False
+
+    except Exception as e:
+        print(f"    [-] Error patching registration intent: {e}")
         return False
 # --------------------------------------------------------- 
 # 9. מעקף חכם לקריסת MimeType של מערכת ההפעלה 
