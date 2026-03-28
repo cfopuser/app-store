@@ -92,15 +92,19 @@ def patch(decompiled_dir: str) -> bool:
     # 2. הזרקת JS וחסימת תמונות ב-WebView של YouTube
     yt_webview_client = _find_webview_client_target(decompiled_dir)
     if yt_webview_client:
-        _patch_webview(yt_webview_client)
+        if not _patch_webview(yt_webview_client):
+            print("[-] Warning: Failed to patch YouTube WebViewClient.")
     else:
         print("[-] Warning: YouTube WebViewClient not found.")
 
     # 3. חסימת תמונות ב-WebView של התחברות ספוטיפיי
-    _patch_spotify_ui_image_block(decompiled_dir)
+    if not _patch_spotify_ui_image_block(decompiled_dir):
+        print("[-] Warning: Failed to block images in Spotify UI. Continuing...")
 
-    # 4. הזרקת חומת האש (URL Whitelist) ל-WebViewClient של ספוטיפיי
-    _patch_spotify_login_filter(decompiled_dir)
+    # 4. הזרקת חומת האש (URL Whitelist) ל-WebViewClient של ספוטיפיי - כאן נעשה עצירה קשיחה!
+    if not _patch_spotify_login_filter(decompiled_dir):
+        print("[-] CRITICAL: Spotify URL filter patch failed. Aborting build to maintain security!")
+        return False # זה מה שיכשיל את הבילד ב-GitHub Actions
         
     print("[+] MetroList patch applied successfully.")
     return True
@@ -236,8 +240,8 @@ def _patch_spotify_login_filter(root_dir):
     print(f"[+] Found Spotify WebViewClient: {os.path.basename(target_file)}")
     with open(target_file, 'r', encoding='utf-8') as f: content = f.read()
 
-    # מאתר את בלוק ההדפסה המקורי כדי לחלץ את האוגר המכיל את כתובת ה-URL, ולדעת היכן להזריק
-    pattern = r'(const-string[vp]\d+, "SpotifyLogin: navigating to: "(?:.*?)invoke-virtual \{[vp]\d+, ([vp]\d+)\}, Ljava/lang/String;->concat\(Ljava/lang/String;\)Ljava/lang/String;.*?)(const-string [vp]\d+, "https://open\.spotify\.com")'
+    # Regex מעודכן (הוסף הרווח החסר אחרי ה-const-string)
+    pattern = r'(const-string [vp]\d+, "SpotifyLogin: navigating to: "(?:.*?)invoke-virtual \{[vp]\d+, ([vp]\d+)\}, Ljava/lang/String;->concat\(Ljava/lang/String;\)Ljava/lang/String;.*?)(const-string [vp]\d+, "https://open\.spotify\.com")'
     match = re.search(pattern, content, re.DOTALL)
     
     if match:
@@ -254,5 +258,19 @@ def _patch_spotify_login_filter(root_dir):
             print("[i] Spotify URL filter already injected. Skipping.")
             return True
     else:
-        print("[-] Could not map injection points for the URL filter.")
+        print("[-] CRITICAL: Could not map injection points for the URL filter.")
+        
+        # --- מנגנון הדפסת הדיבאג ל-GitHub Actions ---
+        print("\n================ DEBUG DUMP ================")
+        anchor = '"SpotifyLogin: navigating to: "'
+        anchor_idx = content.find(anchor)
+        if anchor_idx != -1:
+            start_idx = max(0, anchor_idx - 200)
+            end_idx = min(len(content), anchor_idx + 800)
+            print(f"[*] Found anchor at index {anchor_idx}. Printing surrounding Smali code:\n")
+            print(content[start_idx:end_idx])
+        else:
+            print("[-] Anchor string completely missing from the file!")
+        print("============================================\n")
+        
         return False
