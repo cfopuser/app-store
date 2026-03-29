@@ -10,6 +10,9 @@
   "repo": "FrancescoGrazioso/Meld",
   "maintainer": "lilor159357",
   "skip_mitm": true,
+  "hotfixes": {
+    "0.6.2": ".1"
+  },
   "version_file": "apps/meld/version.txt",
   "status_file": "apps/meld/status.json"
 }
