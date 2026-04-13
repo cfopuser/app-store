@@ -1,1 +1,1 @@
-{"success": true, "failed_version": "", "error_message": "", "updated_at": "Wed Apr 01 05:51:03 UTC 2026"}
+{"success": false, "failed_version": "13.4.1", "error_message": "Build/sign/release failed after patch stage", "updated_at": "Mon Apr 13 06:09:14 UTC 2026"}
