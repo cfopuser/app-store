@@ -7,7 +7,7 @@
   "description_he": "אפליקציית טרמינל לאנדרואיד — ערוכה לשימוש בנטפרי. שימו לב שאפליקצייה זו יכולה לשמש כדפדפן.",
   "icon_url": "http://upload.wikimedia.org/wikipedia/commons/b/b5/Termux.svg",
   "source": "github",
-  "github_repo": "termux/termux-app",
+  "repo": "termux/termux-app",
   "github_asset_regex": ".*universal.*\\.apk",
   "maintainer": "cfopuser",
   "version_file": "apps/termux/version.txt",
