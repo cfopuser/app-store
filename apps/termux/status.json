@@ -1,1 +1,1 @@
-{"success": true, "failed_version": "", "error_message": "", "updated_at": "Tue Apr 14 23:47:33 UTC 2026"}
+{"success": false, "failed_version": "unknown", "error_message": "[Termux] Source configuration error: 'repo' field is required for source 'github'.", "updated_at": "Wed Apr 15 00:00:51 UTC 2026"}
