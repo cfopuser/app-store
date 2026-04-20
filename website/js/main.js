@@ -7,13 +7,23 @@ let isDark = localStorage.getItem('theme') === 'dark' ||
 
 function updateTheme() {
     const html = document.documentElement;
-    const icon = document.getElementById('themeIcon');
+    const themeBtnOuter = document.getElementById('themeToggle');
+    
     if (isDark) {
         html.classList.add('dark');
-        icon.className = 'fa-solid fa-sun text-base sm:text-lg transition-transform';
+        themeBtnOuter.innerHTML = `<i data-lucide="sun" id="themeIcon" class="w-4 h-4"></i>`;
     } else {
         html.classList.remove('dark');
-        icon.className = 'fa-solid fa-moon text-base sm:text-lg transition-transform';
+        themeBtnOuter.innerHTML = `<i data-lucide="moon" id="themeIcon" class="w-4 h-4"></i>`;
+    }
+    
+    if (window.lucide) {
+        window.lucide.createIcons({
+            attrs: {
+                class: 'w-4 h-4'
+            },
+            nameAttr: 'data-lucide'
+        });
     }
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
 }
@@ -32,8 +42,18 @@ function updateLangUI() {
         if (i18n[currentLang][key]) el.textContent = i18n[currentLang][key];
     });
 
+    document.querySelectorAll('[data-key-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-key-placeholder');
+        if (i18n[currentLang][key]) el.placeholder = i18n[currentLang][key];
+    });
+
     document.getElementById('langLabel').textContent = i18n[currentLang].langLabel;
-    if (Object.keys(appConfigs).length > 0) renderGrid();
+    
+    // Re-render grid if data is loaded
+    if (Object.keys(appConfigs).length > 0) {
+        const query = document.getElementById('searchInput').value;
+        renderGrid(query);
+    }
 }
 
 function toggleLang() {
@@ -49,20 +69,23 @@ async function init() {
 
     loader.classList.add('hidden');
     if (success && Object.keys(appConfigs).length > 0) {
-        renderGrid();
-        appGrid.classList.remove('hidden');
+        const query = document.getElementById('searchInput').value;
+        renderGrid(query);
     } else {
         emptyState.classList.remove('hidden');
     }
 }
 
-// Ensure the DOM is fully loaded before attaching listeners
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
     document.getElementById('langToggle').addEventListener('click', toggleLang);
     document.getElementById('modalClose').addEventListener('click', closeModal);
     document.getElementById('modalBackdrop').addEventListener('click', closeModal);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        renderGrid(e.target.value);
+    });
 
     init();
 });

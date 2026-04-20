@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" class="scroll-smooth antialiased">
+<html lang="en" dir="ltr" class="scroll-smooth antialiased dark">
 
 <head>
     <meta charset="UTF-8">
@@ -8,15 +8,13 @@
     <meta name="description"
         content="Community-maintained patched Android apps. Download the latest versions automatically built and signed.">
 
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
     <script data-goatcounter="https://cfopuser.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
         tailwind.config = {
@@ -25,158 +23,119 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#ecfeff',
-                            100: '#cffafe',
-                            200: '#a5f3fc',
-                            300: '#67e8f9',
-                            400: '#22d3ee',
-                            500: '#06b6d4',
-                            600: '#0891b2',
-                            700: '#0e7490',
-                            800: '#155e75',
-                            900: '#164e63',
-                        }
-                    },
-                    screens: {
-                        'xs': '475px',
                     }
                 }
             }
         }
     </script>
-
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
     <link rel="stylesheet" href="website/style.css">
 </head>
 
-<body
-    class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 min-h-screen flex flex-col font-sans selection:bg-brand-500/30 overflow-x-hidden">
+<body class="bg-[#F9F9FA] text-zinc-900 dark:bg-[#0E0E12] dark:text-zinc-100 transition-colors duration-500 min-h-screen font-sans selection:bg-rose-500/30 overflow-x-hidden">
+    
+    <!-- Restrained Magic: Subtle iridescent top border on the screen -->
+    <div class="fixed top-0 left-0 w-full h-[2px] bg-gradient-to-r from-rose-400 via-fuchsia-400 to-indigo-400 z-[100] opacity-80"></div>
 
-    <!-- ─── Header ─── -->
-    <header class="sticky top-0 z-40 w-full glass-panel transition-colors duration-300 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex h-16 items-center justify-between">
+    <!-- Navbar - Frosted Office Glass -->
+    <nav class="sticky top-0 z-40 backdrop-blur-2xl border-b transition-colors duration-500 bg-[#F9F9FA]/70 border-zinc-200/80 dark:bg-[#0E0E12]/70 dark:border-zinc-800/80">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
-                <div class="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none"
-                    onclick="window.scrollTo(0,0)">
-                    <div
-                        class="bg-gradient-to-br from-brand-400 via-brand-500 to-brand-600 text-white w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/30 shrink-0 transform transition-transform group-hover:scale-105">
-                        <i class="fa-solid fa-layer-group text-xs sm:text-sm"></i>
+                <div class="flex items-center gap-3 group cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-transparent border border-zinc-300 dark:border-zinc-700 overflow-hidden transition-all duration-300 group-hover:border-transparent">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-rose-400 via-purple-400 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <i data-lucide="smartphone" class="w-4 h-4 relative z-10 group-hover:text-white transition-colors text-inherit"></i>
                     </div>
-                    <span
-                        class="font-bold text-lg sm:text-xl tracking-tight text-slate-800 dark:text-white">Store</span>
+                    <span class="font-semibold text-lg tracking-tight" data-key="title">Store</span>
                 </div>
 
-                <!-- Actions -->
-                <div class="flex items-center gap-1.5 sm:gap-2">
-                    <button id="themeToggle"
-                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/50">
-                        <i class="fa-solid fa-moon text-base sm:text-lg transition-transform" id="themeIcon"></i>
-                    </button>
+                <!-- Search -->
+                <div class="hidden md:flex flex-1 max-w-sm mx-8">
+                    <div class="relative w-full rounded-md transition-all bg-white border border-zinc-200 shadow-sm focus-within:border-zinc-400 dark:bg-[#1A1A21] dark:border-zinc-800 dark:focus-within:border-zinc-600">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none rtl:right-0 rtl:pr-3 rtl:left-auto rtl:pl-0" id="searchIconWrapper">
+                            <i data-lucide="search" class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500"></i>
+                        </div>
+                        <input type="text" id="searchInput"
+                            class="block w-full rounded-md border-0 py-1.5 pl-9 pr-3 rtl:pr-9 rtl:pl-3 bg-transparent outline-none text-sm font-mono placeholder:font-sans transition-colors"
+                            data-key-placeholder="searchPlaceholder" placeholder="Search index...">
+                    </div>
+                </div>
 
-                    <button id="langToggle"
-                        class="h-9 sm:h-10 px-3 sm:px-4 rounded-full text-xs sm:text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/50 flex items-center gap-2">
-                        <i class="fa-solid fa-globe text-xs opacity-70"></i>
-                        <span id="langLabel">עברית</span>
+                <!-- Controls -->
+                <div class="flex items-center gap-1">
+                    <button id="langToggle" class="p-2 rounded-md text-xs font-mono font-medium transition-all text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200">
+                        <span id="langLabel">HE</span>
                     </button>
-
-                    <a href="https://github.com/cfopuser/app-store" target="_blank"
-                        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all">
-                        <i class="fa-brands fa-github text-lg sm:text-xl"></i>
+                    <div class="w-[1px] h-4 bg-zinc-300 dark:bg-zinc-700 mx-1"></div>
+                    <button id="themeToggle" class="p-2 rounded-md transition-all text-zinc-500 hover:bg-zinc-200 hover:text-rose-500 dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-rose-300" aria-label="Toggle theme">
+                        <i data-lucide="sun" id="themeIcon" class="w-4 h-4"></i>
+                    </button>
+                    <!-- Mobile Search or GitHub link -->
+                     <a href="https://github.com/cfopuser/app-store" target="_blank"
+                       class="p-2 rounded-md transition-all text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white">
+                        <i data-lucide="github" class="w-4 h-4"></i>
                     </a>
                 </div>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <!-- ─── Main Content ─── -->
-    <main class="flex-grow container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
-
-        <!-- Page Title -->
-        <div class="mb-8 sm:mb-10 animate-fade-in">
-            <h1 class="text-2xl sm:text-4xl font-bold mb-2 tracking-tight text-slate-900 dark:text-white"
-                data-key="heroTitle">Discover Apps</h1>
-            <p class="text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed"
-                data-key="heroSubtitle">Community-maintained
-                patched versions. Updated automatically.</p>
-        </div>
+    <!-- Main Content -->
+    <main class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-12 space-y-16">
+        
+        <!-- Hero Section -->
+        <section class="space-y-4 max-w-2xl animate-fade-in">
+            <h1 class="text-4xl md:text-5xl font-medium tracking-tight" data-key="discover">Curated Artifacts</h1>
+            <p class="text-lg leading-relaxed text-zinc-500 dark:text-zinc-400" data-key="subtitle">Patched and maintained for the community. Crafted with precision.</p>
+        </section>
 
         <!-- Loader -->
-        <div id="loader" class="flex flex-col items-center justify-center py-20 sm:py-24">
-            <div
-                class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 dark:border-slate-800 border-b-brand-500">
-            </div>
-            <p class="mt-4 text-slate-400 text-sm animate-pulse" data-key="loading">Loading library...</p>
+        <div id="loader" class="flex flex-col items-center justify-center py-20">
+            <i data-lucide="loader-2" class="w-8 h-8 animate-spin text-zinc-400"></i>
+            <p class="mt-4 text-zinc-400 text-sm animate-pulse" data-key="loading">Loading library...</p>
         </div>
 
-        <!-- App Grid -->
-        <div id="appGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            <!-- App cards injected here -->
-        </div>
+        <!-- Featured App Area -->
+        <div id="featuredAppArea" class="hidden"></div>
+
+        <!-- The Grid -->
+        <section class="space-y-6 hidden" id="gridContainer">
+            <div class="flex items-center gap-4">
+                <h2 class="text-xs font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500" data-key="allApps" id="gridTitle">Repository</h2>
+                <div class="h-[1px] flex-1 bg-zinc-200/50 dark:bg-zinc-800/50"></div>
+            </div>
+            
+            <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- App cards injected here -->
+            </div>
+        </section>
 
         <!-- Empty State -->
-        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 sm:py-24 text-center px-4">
-            <div
-                class="w-16 h-16 sm:w-20 sm:h-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
-                <i class="fa-solid fa-box-open text-2xl sm:text-3xl text-slate-300 dark:text-slate-600"></i>
+        <div id="emptyState" class="hidden py-24 text-center rounded-2xl border border-dashed border-zinc-300 bg-white/50 dark:border-zinc-800 dark:bg-[#15151A]/50">
+            <div class="relative inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-zinc-100 dark:bg-zinc-800/50">
+                <i data-lucide="search" class="w-6 h-6 text-zinc-400 dark:text-zinc-500"></i>
             </div>
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">No apps found</h3>
-            <p class="text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto text-sm sm:text-base" data-key="noApps">
-                Check back later for
-                updates.</p>
+            <p class="text-base font-medium dark:text-zinc-100 text-zinc-900" data-key="noApps">Nothing found in the index.</p>
+            <p class="text-sm mt-1 text-zinc-500 dark:text-zinc-400" data-key="tryAdjusting">Try adjusting your query parameters.</p>
         </div>
 
     </main>
 
-    <!-- ─── Footer ─── -->
-    <footer
-        class="border-t border-slate-200 dark:border-slate-800 mt-auto bg-white dark:bg-slate-900 transition-colors duration-300 pb-safe">
-        <div
-            class="max-w-7xl mx-auto px-4 py-6 sm:py-8 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 text-center md:text-left drop-shadow-sm"
-                data-key="disclaimer">
-                Unofficial project. Use at your own risk.
-            </p>
-            <a href="https://github.com/cfopuser/app-store/issues/new?template=new-app-request.yml" target="_blank"
-                class="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-brand-50 dark:hover:bg-slate-800 active:scale-95 transition-transform">
-                <i class="fa-solid fa-plus-circle"></i>
-                <span data-key="submitApp">Request an App</span>
-            </a>
-        </div>
-    </footer>
-
-    <!-- ─── App Detail Modal ─── -->
+    <!-- Modal -->
     <div id="appModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0" id="modalBackdrop">
-        </div>
-
+        <div class="fixed inset-0 bg-[#0E0E12]/80 backdrop-blur-sm transition-opacity opacity-0" id="modalBackdrop"></div>
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
             <div class="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
-
-                <!-- Modal Panel -->
                 <div id="modalPanel"
-                    class="relative transform overflow-hidden rounded-t-[2rem] sm:rounded-3xl bg-white dark:bg-slate-900 text-left shadow-2xl transition-all w-full sm:max-w-lg border-t sm:border border-slate-100 dark:border-slate-800 flex flex-col max-h-[90vh] sm:max-h-[85vh] translate-y-full sm:translate-y-0 opacity-0 sm:opacity-100">
-
-                    <!-- Drag Handle (Mobile only) -->
+                    class="relative transform overflow-hidden rounded-t-[2rem] sm:rounded-3xl bg-white dark:bg-[#15151A] text-left shadow-2xl transition-all w-full sm:max-w-lg border-t sm:border border-zinc-200 dark:border-zinc-800 flex flex-col max-h-[90vh] sm:max-h-[85vh] translate-y-full sm:translate-y-0 opacity-0 sm:opacity-100">
                     <div class="w-full flex justify-center pt-3 pb-1 sm:hidden">
-                        <div class="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                        <div class="w-12 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800"></div>
                     </div>
-
-                    <!-- Close Button -->
                     <button id="modalClose"
-                        class="absolute top-3 right-4 sm:top-4 sm:right-4 z-20 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500/50">
-                        <i class="fa-solid fa-xmark text-xl sm:text-xl"></i>
+                        class="absolute top-3 right-4 sm:top-4 sm:right-4 z-20 p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none">
+                        <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
-
-                    <!-- Scrollable Content -->
-                    <div id="modalContent" class="p-5 sm:p-8 overflow-y-auto custom-scrollbar overscroll-contain">
-                        <!-- Content Injected via JS -->
+                    <div id="modalContent" class="p-5 sm:p-8 overflow-y-auto custom-scrollbar overscroll-contain text-zinc-900 dark:text-zinc-100">
                     </div>
                 </div>
             </div>
@@ -184,6 +143,9 @@
     </div>
 
     <script type="module" src="website/js/main.js"></script>
+    <script>
+        // Init Lucide icons initially
+        lucide.createIcons();
+    </script>
 </body>
-
 </html>

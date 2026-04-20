@@ -47,7 +47,6 @@
         opacity: 0;
         transform: translateY(10px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -56,17 +55,4 @@
 
 .animate-fade-in {
     animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Glassmorphism utilities */
-.glass-panel {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-.dark .glass-panel {
-    background: rgba(15, 23, 42, 0.7);
-    border-color: rgba(255, 255, 255, 0.05);
 }
