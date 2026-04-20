@@ -42,38 +42,52 @@ function buildAppGridCard(appId) {
 
     return `
     <div class="group relative rounded-2xl transition-all duration-500 p-[1px] hover:-translate-y-1 cursor-pointer" onclick="window.openAppModal('${appId}')">
-        <!-- The Restrained Rainbow border trick -->
         <div class="absolute inset-0 rounded-2xl transition-opacity duration-500 bg-zinc-200/50 dark:bg-zinc-800/50 group-hover:opacity-0"></div>
         <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-rose-400/80 via-fuchsia-400/80 to-indigo-400/80 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         
         <div class="relative h-full flex flex-col p-6 rounded-[15px] bg-white dark:bg-[#15151A] shadow-sm group-hover:shadow-xl transition-shadow duration-500">
             <div class="flex items-start justify-between mb-5">
-                <div class="w-14 h-14 rounded-xl ${visual.bg} flex items-center justify-center shadow-sm relative overflow-hidden">
-                    <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity mix-blend-overlay"></div>
-                    <i data-lucide="${visual.icon}" class="w-6 h-6 ${visual.iconClass}"></i>
+                <div class="w-14 h-14 rounded-xl shadow-sm relative overflow-hidden bg-white dark:bg-zinc-950 p-1 flex items-center justify-center">
+                    <img src="${config.icon_url}" class="w-full h-full object-contain rounded-lg" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full rounded-lg ${visual.bg} flex items-center justify-center\\'><i data-lucide=\\'${visual.icon}\\' class=\\'w-6 h-6 ${visual.iconClass}\\'></i></div>'">
                 </div>
                 
                 <div class="flex flex-col items-end gap-2">
                     ${!isOk ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest bg-rose-500/10 text-rose-500 dark:text-rose-400"><i data-lucide="alert-circle" class="w-3 h-3"></i> ${t('errorTitle')}</span>` : ''}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200/50 dark:border-zinc-700/50">
+                        <i data-lucide="download" class="w-3 h-3"></i> ${formatNumber(downloads)}
+                    </span>
                 </div>
             </div>
 
             <div class="flex-1 space-y-2 mb-6">
-                <h3 class="font-semibold text-lg text-zinc-900 dark:text-zinc-100">${name}</h3>
+                <div class="flex justify-between items-start">
+                    <h3 class="font-semibold text-lg text-zinc-900 dark:text-zinc-100">${name}</h3>
+                </div>
                 <p class="font-mono text-[10px] text-zinc-400 dark:text-zinc-500 truncate">${config.package_name}</p>
                 <p class="text-sm leading-relaxed line-clamp-2 text-zinc-500 dark:text-zinc-400">${desc || ''}</p>
+                
+                ${config.maintainer ? `
+                <div class="flex items-center gap-1.5 mt-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                    <div class="w-4 h-4 rounded-full bg-gradient-to-tr from-rose-400 to-indigo-500 p-[1px]">
+                         <div class="w-full h-full rounded-full bg-white dark:bg-[#15151A] flex items-center justify-center">
+                            <i data-lucide="user" class="w-2 h-2 text-zinc-400"></i>
+                         </div>
+                    </div>
+                    <span class="text-[10px] text-zinc-400 font-medium">@${config.maintainer}</span>
+                </div>
+                ` : ''}
             </div>
 
             <div class="flex items-end justify-between pt-4 border-t border-zinc-100 dark:border-zinc-800/60">
                 <div class="font-mono text-[10px] uppercase tracking-widest space-y-1.5 text-zinc-400 dark:text-zinc-500">
-                    <div class="text-zinc-700 dark:text-zinc-300">${latest ? 'v' + latest.tag_name.replace(/.*-v|v/, '') : '-'}</div>
-                    <div class="flex items-center gap-1">
-                        <i data-lucide="download" class="w-3 h-3 opacity-60"></i> ${formatNumber(downloads)}
+                    <div class="text-zinc-700 dark:text-zinc-300 font-bold">${latest ? 'v' + latest.tag_name.replace(/.*-v|v/, '') : '-'}</div>
+                    <div class="flex items-center gap-1 opacity-70">
+                         ${latest ? formatDate(latest.published_at) : ''}
                     </div>
                 </div>
                 
                 <button onclick="${asset ? `event.stopPropagation(); window.trackDownload('${appId}'); window.location.href='${asset.browser_download_url}';` : `event.stopPropagation();`}" 
-                        class="px-4 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-100 text-zinc-600 group-hover:bg-zinc-200 group-hover:text-zinc-900 dark:bg-zinc-800 dark:text-zinc-300 dark:group-hover:bg-zinc-700 dark:group-hover:text-white transform active:scale-95">
+                        class="px-5 py-2 rounded-full text-xs font-semibold transition-all bg-zinc-100 text-zinc-600 group-hover:bg-zinc-900 group-hover:text-white dark:bg-zinc-800 dark:text-zinc-300 dark:group-hover:bg-zinc-100 dark:group-hover:text-zinc-900 shadow-sm transform active:scale-95">
                     ${t('get')}
                 </button>
             </div>
@@ -107,9 +121,8 @@ function buildFeaturedApp(appId) {
             <div class="relative p-[1px] rounded-[2rem] overflow-hidden bg-zinc-200 dark:bg-zinc-800">
                 <div class="relative px-6 py-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center gap-8 rounded-[calc(2rem-1px)] z-10 bg-white dark:bg-[#15151A]">
                     
-                    <div class="w-28 h-28 shrink-0 rounded-[1.5rem] ${visual.bg} flex items-center justify-center shadow-sm relative overflow-hidden">
-                        <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity mix-blend-overlay"></div>
-                        <i data-lucide="${visual.icon}" class="w-12 h-12 ${visual.iconClass}"></i>
+                    <div class="w-28 h-28 shrink-0 rounded-[1.5rem] bg-white dark:bg-zinc-950 p-2 shadow-sm relative overflow-hidden flex items-center justify-center">
+                        <img src="${config.icon_url}" class="w-full h-full object-contain rounded-xl" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full rounded-xl ${visual.bg} flex items-center justify-center\\'><i data-lucide=\\'${visual.icon}\\' class=\\'w-12 h-12 ${visual.iconClass}\\'></i></div>'">
                     </div>
                     
                     <div class="flex-1 space-y-3 w-full">
@@ -123,6 +136,14 @@ function buildFeaturedApp(appId) {
                         <p class="text-base leading-relaxed text-zinc-500 dark:text-zinc-400 max-w-xl">
                             ${desc}
                         </p>
+                        ${config.maintainer ? `
+                        <div class="flex items-center gap-2 opacity-70">
+                             <div class="w-5 h-5 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                                <i data-lucide="user" class="w-3 h-3 text-zinc-400"></i>
+                             </div>
+                             <span class="text-xs text-zinc-500 font-medium">${t('maintainedBy')} @${config.maintainer}</span>
+                        </div>
+                        ` : ''}
                     </div>
 
                     <div class="flex flex-col sm:items-end gap-3 w-full sm:w-auto mt-4 sm:mt-0">
@@ -200,8 +221,8 @@ export function openModal(appId) {
 
     modalContent.innerHTML = `
         <div class="flex flex-col items-center mb-6 pt-2">
-            <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-[1.5rem] sm:rounded-[2rem] shadow-xl mb-4 ${visual.bg} flex items-center justify-center ring-4 ring-white dark:ring-zinc-800/50">
-                <i data-lucide="${visual.icon}" class="w-10 h-10 ${visual.iconClass}"></i>
+            <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-[1.5rem] sm:rounded-[2rem] shadow-xl mb-4 bg-white dark:bg-zinc-950 flex items-center justify-center ring-4 ring-white dark:ring-zinc-800/50 p-2 overflow-hidden">
+                <img src="${config.icon_url}" class="w-full h-full object-contain rounded-[1rem]" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full rounded-[1rem] ${visual.bg} flex items-center justify-center\\'><i data-lucide=\\'${visual.icon}\\' class=\\'w-10 h-10 ${visual.iconClass}\\'></i></div>'">
             </div>
             <h2 class="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-1 text-center">${name}</h2>
             <p class="text-zinc-400 dark:text-zinc-500 font-mono text-xs sm:text-sm mb-4 break-all text-center px-4">${config.package_name}</p>

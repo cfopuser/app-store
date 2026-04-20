@@ -121,6 +121,26 @@
 
     </main>
 
+    <!-- Footer - Restrained & Clean -->
+    <footer class="border-t border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-[#0E0E12]/50 backdrop-blur-md mt-auto transition-colors duration-500 pb-safe">
+        <div class="max-w-7xl mx-auto px-6 py-8 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex flex-col gap-1 text-center md:text-left">
+                <p class="text-xs sm:text-sm text-zinc-500 dark:text-zinc-500" data-key="disclaimer">
+                    Unofficial project. Not affiliated with app developers. Use at your own risk.
+                </p>
+                <p class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+                    Built for the community • v2.0
+                </p>
+            </div>
+            
+            <a href="https://github.com/cfopuser/app-store/issues/new?template=new-app-request.yml" target="_blank"
+                class="group relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200 transition-all overflow-hidden active:scale-95">
+                <i data-lucide="plus-circle" class="w-4 h-4 transition-transform group-hover:rotate-90"></i>
+                <span data-key="submitApp">Request an App</span>
+            </a>
+        </div>
+    </footer>
+
     <!-- Modal -->
     <div id="appModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 bg-[#0E0E12]/80 backdrop-blur-sm transition-opacity opacity-0" id="modalBackdrop"></div>
