@@ -52,7 +52,7 @@ function buildAppGridCard(appId) {
                 </div>
                 
                 <div class="flex flex-col items-end gap-2">
-                    ${!isOk ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest bg-rose-500/10 text-rose-500 dark:text-rose-400"><i data-lucide="alert-circle" class="w-3 h-3"></i> ${t('errorTitle')}</span>` : ''}
+                    ${!isOk ? `<span title="${t('patchErrorTooltip')}" class="inline-flex items-center justify-center p-1 rounded-full bg-rose-500/10 text-rose-500 dark:text-rose-400"><i data-lucide="alert-circle" class="w-4 h-4"></i></span>` : ''}
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200/50 dark:border-zinc-700/50">
                         <i data-lucide="download" class="w-3 h-3"></i> ${formatNumber(downloads)}
                     </span>
@@ -251,7 +251,7 @@ export function openModal(appId) {
                         <i data-lucide="alert-triangle" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h4 class="text-rose-800 dark:text-rose-300 font-bold text-base mb-1">${t('errorTitle')}</h4>
+                        <h4 class="text-rose-800 dark:text-rose-300 font-bold text-base mb-1">${t('patchErrorTooltip')}</h4>
                         <p class="text-sm text-rose-600/90 dark:text-rose-300 mb-3">
                             ${t('errorDetail').replace('{version}', status.failed_version || '?')}
                         </p>
