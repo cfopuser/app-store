@@ -85,7 +85,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('searchInput').addEventListener('input', (e) => {
         renderGrid(e.target.value);
+        // Sync with mobile search if visible
+        const mobSearch = document.getElementById('mobileSearchInput');
+        if (mobSearch) mobSearch.value = e.target.value;
     });
+
+    const mobSearch = document.getElementById('mobileSearchInput');
+    if (mobSearch) {
+        mobSearch.addEventListener('input', (e) => {
+            renderGrid(e.target.value);
+            // Sync with desktop search
+            document.getElementById('searchInput').value = e.target.value;
+        });
+    }
+
+    const mobBtn = document.getElementById('mobileSearchBtn');
+    if (mobBtn) {
+        mobBtn.addEventListener('click', () => {
+            const container = document.getElementById('mobileSearchContainer');
+            container.classList.toggle('hidden');
+            if (!container.classList.contains('hidden')) {
+                document.getElementById('mobileSearchInput').focus();
+            }
+        });
+    }
 
     init();
 });

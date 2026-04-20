@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APK Store</title>
     <meta name="description"
         content="Community-maintained patched Android apps. Download the latest versions automatically built and signed.">
@@ -38,15 +38,15 @@
 
     <!-- Navbar - Frosted Office Glass -->
     <nav class="sticky top-0 z-40 backdrop-blur-2xl border-b transition-colors duration-500 bg-[#F9F9FA]/70 border-zinc-200/80 dark:bg-[#0E0E12]/70 dark:border-zinc-800/80">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
-                <div class="flex items-center gap-3 group cursor-pointer" onclick="window.scrollTo(0,0)">
+                <div class="flex items-center gap-3 group cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
                     <div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-transparent border border-zinc-300 dark:border-zinc-700 overflow-hidden transition-all duration-300 group-hover:border-transparent">
                         <div class="absolute inset-0 bg-gradient-to-tr from-rose-400 via-purple-400 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <i data-lucide="smartphone" class="w-4 h-4 relative z-10 group-hover:text-white transition-colors text-inherit"></i>
                     </div>
-                    <span class="font-semibold text-lg tracking-tight" data-key="title">Store</span>
+                    <span class="font-semibold text-lg tracking-tight" data-key="title text-base sm:text-lg">Store</span>
                 </div>
 
                 <!-- Search -->
@@ -63,6 +63,9 @@
 
                 <!-- Controls -->
                 <div class="flex items-center gap-1">
+                    <button id="mobileSearchBtn" class="md:hidden p-2 rounded-md text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800 dark:text-zinc-400 transition-all">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                    </button>
                     <button id="langToggle" class="p-2 rounded-md text-xs font-mono font-medium transition-all text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200">
                         <span id="langLabel">HE</span>
                     </button>
@@ -70,23 +73,35 @@
                     <button id="themeToggle" class="p-2 rounded-md transition-all text-zinc-500 hover:bg-zinc-200 hover:text-rose-500 dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-rose-300" aria-label="Toggle theme">
                         <i data-lucide="sun" id="themeIcon" class="w-4 h-4"></i>
                     </button>
-                    <!-- Mobile Search or GitHub link -->
-                     <a href="https://github.com/cfopuser/app-store" target="_blank"
+                    
+                    <a href="https://github.com/cfopuser/app-store" target="_blank"
                        class="p-2 rounded-md transition-all text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:hover:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white">
                         <i data-lucide="github" class="w-4 h-4"></i>
                     </a>
+                </div>
+            </div>
+            
+            <!-- Mobile Search Bar (Expandable) -->
+            <div id="mobileSearchContainer" class="hidden md:hidden pb-4 px-2 animate-fade-in">
+                <div class="relative w-full rounded-xl bg-white border border-zinc-200 shadow-sm dark:bg-[#1A1A21] dark:border-zinc-800">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none rtl:right-0 rtl:pr-4 rtl:left-auto rtl:pl-0">
+                        <i data-lucide="search" class="w-4 h-4 text-zinc-400"></i>
+                    </div>
+                    <input type="text" id="mobileSearchInput"
+                        class="block w-full rounded-xl border-0 py-3 pl-11 pr-4 rtl:pr-11 rtl:pl-4 bg-transparent outline-none text-base"
+                        data-key-placeholder="searchPlaceholder" placeholder="Search index...">
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-12 space-y-16">
+    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-12 sm:space-y-16">
         
         <!-- Hero Section -->
         <section class="space-y-4 max-w-2xl animate-fade-in">
-            <h1 class="text-4xl md:text-5xl font-medium tracking-tight" data-key="discover">Curated Artifacts</h1>
-            <p class="text-lg leading-relaxed text-zinc-500 dark:text-zinc-400" data-key="subtitle">Patched and maintained for the community. Crafted with precision.</p>
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight" data-key="discover">Curated Artifacts</h1>
+            <p class="text-base sm:text-lg leading-relaxed text-zinc-500 dark:text-zinc-400" data-key="subtitle">Patched and maintained for the community. Crafted with precision.</p>
         </section>
 
         <!-- Loader -->
@@ -101,19 +116,19 @@
         <!-- The Grid -->
         <section class="space-y-6 hidden" id="gridContainer">
             <div class="flex items-center gap-4">
-                <h2 class="text-xs font-sans uppercase tracking-[0.15em] font-bold text-zinc-400 dark:text-zinc-500" data-key="allApps" id="gridTitle">Repository</h2>
+                <h2 class="text-[10px] sm:text-xs font-sans uppercase tracking-[0.15em] font-bold text-zinc-400 dark:text-zinc-500" data-key="allApps" id="gridTitle">Repository</h2>
                 <div class="h-[1px] flex-1 bg-zinc-200/50 dark:bg-zinc-800/50"></div>
             </div>
             
-            <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                 <!-- App cards injected here -->
             </div>
         </section>
 
         <!-- Empty State -->
-        <div id="emptyState" class="hidden py-24 text-center rounded-2xl border border-dashed border-zinc-300 bg-white/50 dark:border-zinc-800 dark:bg-[#15151A]/50">
-            <div class="relative inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-zinc-100 dark:bg-zinc-800/50">
-                <i data-lucide="search" class="w-6 h-6 text-zinc-400 dark:text-zinc-500"></i>
+        <div id="emptyState" class="hidden py-16 sm:py-24 text-center rounded-2xl border border-dashed border-zinc-300 bg-white/50 dark:border-zinc-800 dark:bg-[#15151A]/50">
+            <div class="relative inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 mb-4 rounded-full bg-zinc-100 dark:bg-zinc-800/50">
+                <i data-lucide="search" class="w-5 h-5 sm:w-6 sm:h-6 text-zinc-400 dark:text-zinc-500"></i>
             </div>
             <p class="text-base font-medium dark:text-zinc-100 text-zinc-900" data-key="noApps">Nothing found in the index.</p>
             <p class="text-sm mt-1 text-zinc-500 dark:text-zinc-400" data-key="tryAdjusting">Try adjusting your query parameters.</p>

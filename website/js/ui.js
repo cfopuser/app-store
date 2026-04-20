@@ -119,21 +119,21 @@ function buildFeaturedApp(appId) {
             <div class="absolute -inset-1 bg-gradient-to-r from-rose-400 via-fuchsia-400 to-indigo-400 rounded-3xl blur-xl opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
             
             <div class="relative p-[1px] rounded-[2rem] overflow-hidden bg-zinc-200 dark:bg-zinc-800">
-                <div class="relative px-6 py-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center gap-8 rounded-[calc(2rem-1px)] z-10 bg-white dark:bg-[#15151A]">
+                <div class="relative px-5 py-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8 rounded-[calc(2rem-1px)] z-10 bg-white dark:bg-[#15151A]">
                     
-                    <div class="w-28 h-28 shrink-0 rounded-[1.5rem] bg-white dark:bg-zinc-950 p-2 shadow-sm relative overflow-hidden flex items-center justify-center">
-                        <img src="${config.icon_url}" class="w-full h-full object-contain rounded-xl" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full rounded-xl ${visual.bg} flex items-center justify-center\\'><i data-lucide=\\'${visual.icon}\\' class=\\'w-12 h-12 ${visual.iconClass}\\'></i></div>'">
+                    <div class="w-20 h-20 sm:w-28 sm:h-28 shrink-0 rounded-[1.25rem] sm:rounded-[1.5rem] bg-white dark:bg-zinc-950 p-2 shadow-sm relative overflow-hidden flex items-center justify-center ring-1 ring-zinc-100 dark:ring-zinc-800">
+                        <img src="${config.icon_url}" class="w-full h-full object-contain rounded-xl" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full rounded-xl ${visual.bg} flex items-center justify-center\\'><i data-lucide=\\'${visual.icon}\\' class=\\'w-10 h-10 sm:w-12 sm:h-12 ${visual.iconClass}\\'></i></div>'">
                     </div>
                     
-                    <div class="flex-1 space-y-3 w-full">
-                        <div class="flex flex-wrap items-baseline gap-3">
-                            <h3 class="text-3xl font-semibold text-zinc-900 dark:text-zinc-100">${name}</h3>
-                            <span class="text-xs font-mono px-2 py-0.5 rounded border bg-zinc-100 border-zinc-200 text-zinc-500 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400">
+                    <div class="flex-1 space-y-2 sm:space-y-3 w-full">
+                        <div class="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                            <h3 class="text-2xl sm:text-3xl font-semibold text-zinc-900 dark:text-zinc-100">${name}</h3>
+                            <span class="text-[10px] sm:text-xs font-mono px-2 py-0.5 rounded border bg-zinc-100 border-zinc-200 text-zinc-500 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400">
                                 ${latest ? 'v' + latest.tag_name.replace(/.*-v|v/, '') : '-'}
                             </span>
                         </div>
-                        <p class="font-mono text-xs text-zinc-400 dark:text-zinc-500">${config.package_name}</p>
-                        <p class="text-base leading-relaxed text-zinc-500 dark:text-zinc-400 max-w-xl">
+                        <p class="font-mono text-[10px] sm:text-xs text-zinc-400 dark:text-zinc-500">${config.package_name}</p>
+                        <p class="text-sm sm:text-base leading-relaxed text-zinc-500 dark:text-zinc-400 max-w-xl">
                             ${desc}
                         </p>
                         ${config.maintainer ? `
@@ -141,14 +141,14 @@ function buildFeaturedApp(appId) {
                              <div class="w-5 h-5 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
                                 <i data-lucide="user" class="w-3 h-3 text-zinc-400"></i>
                              </div>
-                             <span class="text-xs text-zinc-500 font-medium">${t('maintainedBy')} @${config.maintainer}</span>
+                             <span class="text-[10px] sm:text-xs text-zinc-500 font-medium">${t('maintainedBy')} @${config.maintainer}</span>
                         </div>
                         ` : ''}
                     </div>
 
-                    <div class="flex flex-col sm:items-end gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+                    <div class="flex flex-col sm:items-end gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-zinc-100 dark:border-zinc-800">
                         <button onclick="${asset ? `event.stopPropagation(); window.trackDownload('${appId}'); window.location.href='${asset.browser_download_url}';` : `event.stopPropagation();`}" 
-                            class="group/btn relative flex items-center justify-center gap-2 px-8 py-3 w-full sm:w-auto rounded-full font-medium bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 overflow-hidden transition-transform hover:-translate-y-0.5 active:translate-y-0">
+                            class="group/btn relative flex items-center justify-center gap-2 px-8 py-3.5 w-full sm:w-auto rounded-full font-medium bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 overflow-hidden transition-transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg sm:shadow-md">
                             <div class="absolute inset-0 bg-gradient-to-r from-rose-400 via-fuchsia-400 to-indigo-400 opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></div>
                             <span class="relative z-10">${t('get')}</span>
                             <i data-lucide="download" class="w-4 h-4 relative z-10 opacity-70 group-hover/btn:opacity-100 transition-opacity"></i>
@@ -319,9 +319,9 @@ export function openModal(appId) {
     appModal.classList.remove('hidden');
     // Animate In
     requestAnimationFrame(() => {
-        modalBackdrop.classList.remove('opacity-0');
-        modalPanel.classList.remove('translate-y-full', 'scale-95', 'opacity-0');
-        modalPanel.classList.add('scale-100');
+        modalBackdrop.classList.replace('opacity-0', 'opacity-100');
+        modalPanel.classList.remove('translate-y-full', 'opacity-0');
+        modalPanel.classList.add('translate-y-0', 'opacity-100');
     });
 
     if (window.lucide) window.lucide.createIcons();
