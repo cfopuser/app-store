@@ -3,6 +3,7 @@ import { RELEASES_API, APPS_DIR, REGISTERED_APPS, setRegisteredApps } from './co
 export let allReleases = [];
 export let appConfigs = {};
 export let appStatuses = {};
+export let appStats = {};
 
 export async function fetchAppData() {
     try {
@@ -18,12 +19,14 @@ export async function fetchAppData() {
         const [releasesResp, ...configsResps] = await Promise.all([
             fetch(RELEASES_API).then(r => r.json()),
             ...REGISTERED_APPS.map(id => fetch(`${APPS_DIR}/${id}/app.json`).then(r => r.json().catch(() => null))),
-            ...REGISTERED_APPS.map(id => fetch(`${APPS_DIR}/${id}/status.json`).then(r => r.json().catch(() => ({ success: true }))))
+            ...REGISTERED_APPS.map(id => fetch(`${APPS_DIR}/${id}/status.json`).then(r => r.json().catch(() => ({ success: true })))),
+            fetch('download_stats.json').then(r => r.json().catch(() => ({})))
         ]);
 
         allReleases = releasesResp;
         const configs = configsResps.slice(0, REGISTERED_APPS.length);
-        const statuses = configsResps.slice(REGISTERED_APPS.length);
+        const statuses = configsResps.slice(REGISTERED_APPS.length, REGISTERED_APPS.length * 2);
+        appStats = configsResps[configsResps.length - 1] || {};
 
         REGISTERED_APPS.forEach((id, i) => {
             if (configs[i]) {

@@ -18,6 +18,7 @@ export const i18n = {
         latestVersion: "Latest Version",
         maintainedBy: "Maintained by",
         viewAll: "See All",
+        downloads: "Downloads",
     },
     he: {
         heroTitle: "חנות האפליקציות",
@@ -38,6 +39,7 @@ export const i18n = {
         latestVersion: "גרסה אחרונה",
         maintainedBy: "מתוחזק ע״י",
         viewAll: "הצג הכל",
+        downloads: "הורדות",
     }
 };
 
@@ -58,6 +60,14 @@ export function formatDate(dateString) {
         currentLang === 'he' ? 'he-IL' : 'en-US',
         { year: 'numeric', month: 'short', day: 'numeric' }
     );
+}
+
+export function formatNumber(num) {
+    if (!num) return '0';
+    return new Intl.NumberFormat(currentLang === 'he' ? 'he-IL' : 'en-US', {
+        notation: "compact",
+        maximumFractionDigits: 1
+    }).format(num);
 }
 
 export function formatSize(bytes) {

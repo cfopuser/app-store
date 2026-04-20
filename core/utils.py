@@ -118,3 +118,67 @@ def run_apk_mitm(apk_path: str):
     except Exception as e:
         print(f"[-] An error occurred while running apk-mitm: {e}")
         return False
+
+def generate_download_stats(repo_name: str = "cfopuser/app-store", output_file: str = "download_stats.json"):
+    """
+    Fetch all releases from GitHub and aggregate download counts per app.
+    Only counts .apk assets.
+    """
+    import requests
+    
+    print(f"[*] Fetching release statistics for {repo_name}...")
+    
+    app_ids = discover_apps()
+    stats = {app_id: 0 for app_id in app_ids}
+    
+    # GitHub API usually returns 30 per page. We'll fetch a few pages to be sure.
+    page = 1
+    total_releases_processed = 0
+    
+    headers = {}
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"] = f"token {token}"
+        
+    while True:
+        url = f"https://api.github.com/repos/{repo_name}/releases?per_page=100&page={page}"
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            print(f"[-] Failed to fetch releases: {response.status_code} {response.text}")
+            break
+            
+        releases = response.json()
+        if not releases:
+            break
+            
+        for release in releases:
+            tag = release.get("tag_name", "")
+            assets = release.get("assets", [])
+            
+            # Determine which app this release belongs to
+            target_app = None
+            for app_id in app_ids:
+                if tag.startswith(f"{app_id}-v"):
+                    target_app = app_id
+                    break
+            
+            # Special case for 'bit' which might use 'vX.Y.Z' without app prefix
+            if not target_app and "bit" in app_ids:
+                if tag.startswith("v") and "-" not in tag:
+                    target_app = "bit"
+            
+            if target_app:
+                for asset in assets:
+                    if asset.get("name", "").endswith(".apk"):
+                        stats[target_app] += asset.get("download_count", 0)
+            
+        total_releases_processed += len(releases)
+        if len(releases) < 100:
+            break
+        page += 1
+        
+    print(f"[+] Processed {total_releases_processed} releases. Saving stats...")
+    
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(stats, f, indent=2)
+    print(f"[+] Download stats saved to {output_file}")

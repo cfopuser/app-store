@@ -195,15 +195,19 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Update listing
-        run: python run.py --update-listing
+      - name: Update listing & stats
+        run: |
+          python run.py --update-listing
+          python run.py --update-stats
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit & Push apps.json
+      - name: Commit & Push changes
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add apps.json
-          git commit -m "update apps.json listing [skip ci]" || echo "No changes to commit"
+          git add apps.json download_stats.json
+          git commit -m "update apps.json and stats [skip ci]" || echo "No changes to commit"
           
           git pull origin main --rebase -X theirs
           git push origin HEAD:main

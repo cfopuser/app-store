@@ -1,5 +1,5 @@
-import { appConfigs, appStatuses, getAppReleases } from './api.js';
-import { currentLang, t, formatDate, formatSize } from './i18n.js';
+import { appConfigs, appStatuses, appStats, getAppReleases } from './api.js';
+import { currentLang, t, formatDate, formatSize, formatNumber } from './i18n.js';
 
 export const appGrid = document.getElementById('appGrid');
 export const emptyState = document.getElementById('emptyState');
@@ -18,6 +18,7 @@ export function renderGrid() {
         const isOk = status.success !== false;
         const name = currentLang === 'he' ? (config.name_he || config.name) : config.name;
         const desc = currentLang === 'he' ? (config.description_he || config.description) : config.description;
+        const downloads = appStats[appId] || 0;
 
         return `
         <div class="group relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl p-5 border border-white/20 dark:border-slate-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] active:scale-[0.98] active:bg-slate-50 dark:active:bg-slate-800 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col h-full touch-manipulation" onclick="window.openAppModal('${appId}')">
@@ -26,7 +27,10 @@ export function renderGrid() {
                 <img src="${config.icon_url}" alt="${name}" 
                      class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white dark:bg-slate-950 object-cover shadow-sm flex-shrink-0"
                      onerror="this.src='https://placehold.co/64?text=${name[0]}'">
-                ${!isOk ? `<span class="bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-red-500/20 backdrop-blur-sm shadow-sm"><i class="fa-solid fa-triangle-exclamation"></i> Error</span>` : ''}
+                <div class="flex flex-col items-end gap-1.5">
+                    ${!isOk ? `<span class="bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-red-500/20 backdrop-blur-sm shadow-sm"><i class="fa-solid fa-triangle-exclamation"></i> Error</span>` : ''}
+                    <span class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-slate-200/50 dark:border-slate-700/50 shadow-sm"><i class="fa-solid fa-download opacity-70"></i> ${formatNumber(downloads)}</span>
+                </div>
             </div>
 
             <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-0.5 line-clamp-1 group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors">${name}</h3>
@@ -115,7 +119,7 @@ export function openModal(appId) {
                 </div>
                 
                 ${asset ? `
-                <a href="${asset.browser_download_url}" 
+                <a href="${asset.browser_download_url}" onclick="window.trackDownload('${appId}')"
                    class="relative z-10 w-full bg-brand-600 hover:bg-brand-500 active:bg-brand-700 active:scale-[0.98] text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-brand-500/25 transition-all flex items-center justify-center gap-3 touch-manipulation group ring-1 ring-white/10">
                      <i class="fa-solid fa-download text-lg group-hover:animate-bounce"></i>
                      <span class="text-base">${t('downloadBtnFull')}</span>
@@ -135,7 +139,7 @@ export function openModal(appId) {
         const a = r.assets.find(as => as.name.endsWith('.apk')) || r.assets[0];
         if (!a) return '';
         return `
-                        <a href="${a.browser_download_url}" class="group flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/30 hover:bg-white dark:hover:bg-slate-800 active:bg-slate-100 dark:active:bg-slate-700 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm touch-manipulation">
+                        <a href="${a.browser_download_url}" onclick="window.trackDownload('${appId}')" class="group flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/30 hover:bg-white dark:hover:bg-slate-800 active:bg-slate-100 dark:active:bg-slate-700 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm touch-manipulation">
                             <div>
                                 <div class="font-semibold text-slate-700 dark:text-slate-200 text-sm mb-0.5 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">v${r.tag_name.replace(/.*-v|v/, '')}</div>
                                 <div class="text-xs text-slate-500">${formatDate(r.published_at)}</div>
@@ -175,3 +179,13 @@ export function closeModal() {
 }
 
 window.openAppModal = openModal; // Expose for inline onclick in grid
+
+window.trackDownload = (appId) => {
+    if (window.goatcounter && window.goatcounter.count) {
+        window.goatcounter.count({
+            path: 'download-' + appId,
+            event: true
+        });
+    }
+    console.log(`Tracking download for ${appId}`);
+};

@@ -20,6 +20,7 @@ from core.utils import (
     set_github_output,
     update_status,
     update_version,
+    generate_download_stats,
 )
 from core.downloader import DownloadError, download_app
 from core.pre_patcher import run_pre_patch
@@ -194,6 +195,11 @@ Examples:
         action="store_true",
         help="Skip running apk-mitm on the downloaded APK",
     )
+    parser.add_argument(
+        "--update-stats",
+        action="store_true",
+        help="Fetch download counts from GitHub and exit",
+    )
 
     args = parser.parse_args()
 
@@ -203,6 +209,10 @@ Examples:
 
     if args.update_listing:
         generate_apps_listing()
+        return
+
+    if args.update_stats:
+        generate_download_stats()
         return
 
     # Determine which apps to process
