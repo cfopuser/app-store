@@ -50,7 +50,7 @@ export const i18n = {
         errorMessage: "שגיאה: {message}",
         submitApp: "בקשת אפליקציה חדשה",
         latestVersion: "גרסה אחרונה",
-        maintainedBy: "מתוחזק ע״י",
+        maintainedBy: "נערך ע״י",
         viewAll: "הצג הכל",
         downloads: "הורדות",
         mostDownloads: "הכי הרבה הורדות"
