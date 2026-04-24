@@ -73,7 +73,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y zipalign apksigner
           pip install -r requirements.txt
-          npm install -g https://github.com/cfopuser/apk-mitm
+          git clone https://github.com/cfopuser/apk-mitm.git
+          cd apk-mitm && npm install && npm run build && sudo npm install -g . && cd ..
           APKTOOL_URL=$(curl -s https://api.github.com/repos/iBotPeaches/Apktool/releases/latest | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
           sudo wget -q "$APKTOOL_URL" -O /usr/local/bin/apktool.jar
           echo -e '#!/bin/bash\njava -jar /usr/local/bin/apktool.jar "$@"' | sudo tee /usr/local/bin/apktool
