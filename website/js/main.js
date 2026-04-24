@@ -1,4 +1,4 @@
-import { currentLang, i18n, setLang } from './i18n.js';
+import { currentLang, i18n, setLang, t } from './i18n.js';
 import { fetchAppData, appConfigs } from './api.js';
 import { renderGrid, closeModal, loader, appGrid, emptyState } from './ui.js';
 
