@@ -1,6 +1,8 @@
 import { currentLang, i18n, setLang, t } from './i18n.js';
 import { fetchAppData, appConfigs } from './api.js';
 import { renderGrid, closeModal, loader, appGrid, emptyState } from './ui.js';
+import { openRequestForm } from './requestForm.js';
+
 
 let isDark = localStorage.getItem('theme') === 'dark' ||
     (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -85,6 +87,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('modalClose').addEventListener('click', closeModal);
     document.getElementById('modalBackdrop').addEventListener('click', closeModal);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // Wire up all Request App buttons to the custom form modal
+    document.querySelectorAll('#requestAppBtn, #requestAppBtnMobile').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.preventDefault();
+            openRequestForm();
+        });
+    });
+
 
     document.getElementById('searchInput').addEventListener('input', (e) => {
         renderGrid(e.target.value, currentSort);

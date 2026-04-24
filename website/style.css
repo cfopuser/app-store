@@ -64,3 +64,29 @@ html {
     animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     will-change: transform, opacity;
 }
+
+/* ─── Request Form ─────────────────────────────────────── */
+
+/* Peer-checked visibility for custom checkbox */
+#ack:checked ~ div > #ackCheck {
+    opacity: 1 !important;
+}
+
+#ack:checked ~ div {
+    background-color: rgb(168 85 247) !important; /* fuchsia-500 */
+    border-color: rgb(168 85 247) !important;
+}
+
+/* Source card focus ring */
+.source-card:focus-visible {
+    outline: 2px solid rgb(168 85 247);
+    outline-offset: 2px;
+}
+
+/* Smooth step transition */
+#rfBody > div {
+    animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+
+

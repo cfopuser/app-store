@@ -85,13 +85,14 @@
                     </a>
 
                     <!-- Request an App button -->
-                    <a href="https://github.com/cfopuser/app-store/issues/new?template=new-app-request.yml" target="_blank" rel="noopener noreferrer"
+                    <button
                        id="requestAppBtn"
                        class="group hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-fuchsia-400/60 hover:text-fuchsia-600 dark:hover:border-fuchsia-500/50 dark:hover:text-fuchsia-400 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-950/30 active:scale-95"
                        aria-label="Request an App">
                         <i data-lucide="plus-circle" class="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-90"></i>
                         <span data-key="requestApp">Request App</span>
-                    </a>
+                    </button>
+
                 </div>
             </div>
             
@@ -165,11 +166,13 @@
                 </p>
             </div>
             <!-- Mobile-only Request App button (visible on small screens where navbar button is hidden) -->
-            <a href="https://github.com/cfopuser/app-store/issues/new?template=new-app-request.yml" target="_blank" rel="noopener noreferrer"
+            <button
+                id="requestAppBtnMobile"
                 class="group sm:hidden flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-fuchsia-400/60 hover:text-fuchsia-600 dark:hover:border-fuchsia-500/50 dark:hover:text-fuchsia-400 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-950/30 transition-all active:scale-95">
                 <i data-lucide="plus-circle" class="w-4 h-4 transition-transform group-hover:rotate-90"></i>
                 <span data-key="requestApp">Request App</span>
-            </a>
+            </button>
+
         </div>
     </footer>
 
