@@ -41,7 +41,8 @@ function updateLangUI() {
 
     document.querySelectorAll('[data-key]').forEach(el => {
         const key = el.getAttribute('data-key');
-        if (i18n[currentLang][key]) el.textContent = i18n[currentLang][key];
+        const val = t(key);
+        if (val !== key) el.textContent = val;
     });
 
     document.querySelectorAll('[data-key-placeholder]').forEach(el => {
@@ -117,13 +118,13 @@ document.addEventListener('DOMContentLoaded', () => {
         sortBtn.addEventListener('click', () => {
             currentSort = currentSort === 'downloads' ? 'default' : 'downloads';
             
-            // Visual feedback - change only text color
+            // Visual feedback - highlight pill when active
             if (currentSort === 'downloads') {
-                sortBtn.classList.add('text-rose-500', 'dark:text-rose-400');
-                sortBtn.classList.remove('text-zinc-400', 'dark:text-zinc-500');
+                sortBtn.classList.add('border-rose-400/60', 'dark:border-rose-500/50', 'bg-rose-50', 'dark:bg-rose-950/30', 'text-rose-600', 'dark:text-rose-400');
+                sortBtn.classList.remove('border-zinc-200', 'dark:border-zinc-700/80', 'bg-zinc-100', 'dark:bg-zinc-800/60', 'text-zinc-500', 'dark:text-zinc-400');
             } else {
-                sortBtn.classList.remove('text-rose-500', 'dark:text-rose-400');
-                sortBtn.classList.add('text-zinc-400', 'dark:text-zinc-500');
+                sortBtn.classList.remove('border-rose-400/60', 'dark:border-rose-500/50', 'bg-rose-50', 'dark:bg-rose-950/30', 'text-rose-600', 'dark:text-rose-400');
+                sortBtn.classList.add('border-zinc-200', 'dark:border-zinc-700/80', 'bg-zinc-100', 'dark:bg-zinc-800/60', 'text-zinc-500', 'dark:text-zinc-400');
             }
 
             const query = document.getElementById('searchInput').value;
