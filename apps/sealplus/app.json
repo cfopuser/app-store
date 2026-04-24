@@ -1,0 +1,15 @@
+{
+  "id": "sealplus",
+  "name": "SealPlus",
+  "name_he": "SealPlus",
+  "package_name": "com.maheshtechnicals.sealplus",
+  "description": "SealPlus is a powerful and user-friendly app that allows you to download files from the web and organize them easily. - patched to work with netfree",
+  "description_he": "SealPlus היא אפליקצייה עוצמתית וידידותית למשתמש המאפשרת לך להוריד קבצים מהאינטרנט ולארגן אותם בקלות. - ערוכה לשימוש בנטפרי",
+  "icon_url": "https://raw.githubusercontent.com/MaheshTechnicals/Sealplus/refs/heads/main/fastlane/metadata/android/en-US/images/icon.png",
+  "source": "github",
+  "repo": "MaheshTechnicals/Sealplus",
+  "github_asset_regex": ".*universal.*\\.apk",
+  "maintainer": "cfopuser",
+  "version_file": "apps/sealplus/version.txt",
+  "status_file": "apps/sealplus/status.json"
+}
