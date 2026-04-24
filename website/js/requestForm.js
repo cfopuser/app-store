@@ -152,8 +152,20 @@ function renderStep1() {
 }
 
 const SOURCES = ['APKMirror', 'APKPure', 'Aptoide', 'GitHub', 'Other'];
-const SOURCE_ICONS = { APKMirror: 'globe', APKPure: 'smartphone', Aptoide: 'shopping-bag', GitHub: 'code-2', Other: 'more-horizontal' };
-const SOURCE_LABEL_KEYS = { APKMirror: 'formSourceAPKMirror', APKPure: 'formSourceAPKPure', Aptoide: 'formSourceAptoide', GitHub: 'formSourceGitHub', Other: 'formSourceOther' };
+const SOURCE_ICONS = { 
+    APKMirror: 'globe', 
+    APKPure: 'smartphone', 
+    Aptoide: 'shopping-bag', 
+    GitHub: 'code-2', 
+    Other: 'more-horizontal' 
+};
+const SOURCE_LABEL_KEYS = { 
+    APKMirror: 'formSourceAPKMirror', 
+    APKPure: 'formSourceAPKPure', 
+    Aptoide: 'formSourceAptoide', 
+    GitHub: 'formSourceGitHub', 
+    Other: 'formSourceOther' 
+};
 
 function renderStep2() {
     const sourceCards = SOURCES.map(src => {
@@ -202,20 +214,23 @@ function renderStep() {
     const prevStep = parseInt(rfPanel.dataset.prevStep || '0');
     rfPanel.dataset.prevStep = step;
 
-    const fromWidth = (prevStep / (TOTAL_STEPS - 1)) * 100;
-    const toWidth = (step / (TOTAL_STEPS - 1)) * 100;
+    const klinePos = (step / (TOTAL_STEPS - 1)) * 100;
     
     // Animate the line fill, and a slide effect for the step content!
     const slideOffset = step > prevStep ? (isRTL ? '-30px' : '30px') : (step < prevStep ? (isRTL ? '30px' : '-30px') : '0px');
     
     const animStyles = `
     <style>
-    @keyframes fillProgress {
-        from { width: ${fromWidth}%; }
-        to { width: ${toWidth}%; }
+    .kline-line {
+        position: absolute;
+        top: 0;
+        ${isRTL ? 'right' : 'left'}: 0;
+        height: 100%;
+        background: #d946ef;
+        transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+        width: ${klinePos}%;
+        z-index: 10;
     }
-    .animate-progress-line { animation: fillProgress 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-    
     @keyframes slideFadeContent {
         from { opacity: 0; transform: translateX(${slideOffset}) scale(0.98); }
         to { opacity: 1; transform: translateX(0) scale(1); }
@@ -285,11 +300,11 @@ function renderStep() {
     </div>
 
     <!-- Progress Stepper (Animated Line) -->
-    <div class="relative mb-10 pt-2">
+    <div class="relative mb-10 pt-2 px-8">
         <div class="absolute top-[22px] left-[2rem] right-[2rem] h-[3px] bg-zinc-100 dark:bg-zinc-800/80 rounded-full overflow-hidden z-0">
-            <div class="absolute top-0 bottom-0 ${isRTL ? 'right-0' : 'left-0'} bg-fuchsia-400 animate-progress-line rounded-full shadow-[0_0_8px_rgba(232,121,249,0.5)]"></div>
+            <div class="kline-line"></div>
         </div>
-        <div class="relative z-10 flex justify-between items-start w-full">
+        <div class="relative z-20 flex justify-between items-start w-full">
             ${dots}
         </div>
     </div>
