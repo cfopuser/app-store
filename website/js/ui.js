@@ -86,7 +86,7 @@ function buildAppGridCard(appId) {
                     </div>
                 </div>
                 
-                <button onclick="${asset ? `event.stopPropagation(); window.trackDownload('${appId}'); window.location.href='${asset.browser_download_url}';` : `event.stopPropagation();`}" 
+                <button onclick="${asset ? `event.stopPropagation(); window.location.href='${asset.browser_download_url}';` : `event.stopPropagation();`}" 
                         class="px-5 py-2 rounded-full text-xs font-semibold transition-all bg-zinc-100 text-zinc-600 group-hover:bg-zinc-900 group-hover:text-white dark:bg-zinc-800 dark:text-zinc-300 dark:group-hover:bg-zinc-100 dark:group-hover:text-zinc-900 shadow-sm transform active:scale-95">
                     ${t('get')}
                 </button>
@@ -147,7 +147,7 @@ function buildFeaturedApp(appId) {
                     </div>
 
                     <div class="flex flex-col sm:items-end gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-zinc-100 dark:border-zinc-800">
-                        <button onclick="${asset ? `event.stopPropagation(); window.trackDownload('${appId}'); window.location.href='${asset.browser_download_url}';` : `event.stopPropagation();`}" 
+                        <button onclick="${asset ? `event.stopPropagation(); window.location.href='${asset.browser_download_url}';` : `event.stopPropagation();`}" 
                             class="group/btn relative flex items-center justify-center gap-2 px-8 py-3.5 w-full sm:w-auto rounded-full font-medium bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 overflow-hidden transition-transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg sm:shadow-md">
                             <div class="absolute inset-0 bg-gradient-to-r from-rose-400 via-fuchsia-400 to-indigo-400 opacity-0 group-hover/btn:opacity-20 transition-opacity duration-300"></div>
                             <span class="relative z-10">${t('get')}</span>
@@ -282,7 +282,7 @@ export function openModal(appId) {
                 </div>
                 
                 ${asset ? `
-                <a href="${asset.browser_download_url}" onclick="window.trackDownload('${appId}')"
+                <a href="${asset.browser_download_url}" 
                    class="relative z-10 w-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:scale-[1.01] active:scale-[0.99] font-bold py-3.5 px-6 rounded-full shadow-lg transition-all flex items-center justify-center gap-3 touch-manipulation group/dwn ring-1 ring-white/10 overflow-hidden">
                      <div class="absolute inset-0 bg-gradient-to-r from-rose-400 via-fuchsia-400 to-indigo-400 opacity-0 group-hover/dwn:opacity-20 transition-opacity duration-300"></div>
                      <i data-lucide="download" class="w-5 h-5 relative z-10"></i>
@@ -303,7 +303,7 @@ export function openModal(appId) {
         const a = r.assets.find(as => as.name.endsWith('.apk')) || r.assets[0];
         if (!a) return '';
         return `
-                        <a href="${a.browser_download_url}" onclick="window.trackDownload('${appId}')" class="group flex items-center justify-between p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/30 hover:bg-zinc-100 dark:hover:bg-zinc-800 active:bg-zinc-200 dark:active:bg-zinc-700 transition-all border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 touch-manipulation">
+                        <a href="${a.browser_download_url}" class="group flex items-center justify-between p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/30 hover:bg-zinc-100 dark:hover:bg-zinc-800 active:bg-zinc-200 dark:active:bg-zinc-700 transition-all border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 touch-manipulation">
                             <div>
                                 <div class="font-bold text-zinc-800 dark:text-zinc-200 text-base mb-0.5 transition-colors">v${r.tag_name.replace(/.*-v|v/, '')}</div>
                                 <div class="text-sm text-zinc-600 dark:text-zinc-400">${formatDate(r.published_at)}</div>
@@ -345,13 +345,3 @@ export function closeModal() {
 }
 
 window.openAppModal = openModal; // Expose for inline onclick in grid
-
-window.trackDownload = (appId) => {
-    if (window.goatcounter && window.goatcounter.count) {
-        window.goatcounter.count({
-            path: 'download-' + appId,
-            event: true
-        });
-    }
-    console.log(`Tracking download for ${appId}`);
-};
