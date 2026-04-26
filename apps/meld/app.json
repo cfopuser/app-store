@@ -14,5 +14,7 @@
     "0.6.2": ".1"
   },
   "version_file": "apps/meld/version.txt",
-  "status_file": "apps/meld/status.json"
+  "status_file": "apps/meld/status.json",
+  "category": "Music & Audio",
+  "category_he": "מוזיקה ושמע"
 }

@@ -1,11 +1,11 @@
 {
   "id": "whatsapp",
-  "name": "WhatsApp",
-  "name_he": "וואטסאפ",
+  "name": "WhatsApp Messenger",
+  "name_he": "WhatsApp Messenger",
   "package_name": "com.whatsapp",
   "description": "WhatsApp with kosher patch applied.",
   "description_he": "וואטסאפ מסונן: חסימת תמונות פרופיל, ערוצים וסטטוסים. מומלץ לשימוש כמכשיר מקושר ולא כמכשיר ראשי.",
-  "icon_url": "https://cdn-icons-png.flaticon.com/512/3992/3992601.png",
+  "icon_url": "apps/whatsapp/icon.png",
   "skip_mitm": true,
   "source": "aptoide",
   "maintainer": "lilor159357",
@@ -20,5 +20,24 @@
     "old_pkg": "com.whatsapp",
     "new_pkg": "com.whatsapp.kosher",
     "app_name_suffix": ""
-  }
+  },
+  "name_play": "WhatsApp Messenger",
+  "full_description": "WhatsApp from Meta is a FREE messaging and video calling app. It’s used by over 2B people in more than 180 countries. It’s simple, reliable, and private, so you can easily keep in touch with your friends and family. WhatsApp works across mobile and desktop even on slow connections, with no subscription fees*.<br>    <br> <br>  Private messaging across the world<br> <br>  Your personal messages and calls to friends and family are end-to-end encrypted. No one outside of your chats, not even WhatsApp, can read or listen to them.<br> <br> <br>  Simple and secure connections, right away <br> All you need is your phone number, no user names or logins. You can quickly view your contacts who are on WhatsApp and start messaging. <br> <br> High quality voice and video calls <br> Make secure video and voice calls with up to 32 people for free*. Your calls work across mobile devices using your phone’s Internet service, even on slow connections. <br> <br> Group chats to keep you in contact <br> Stay in touch with your friends and family. End-to-end encrypted group chats let you share messages, photos, videos and documents across mobile and desktop. <br> <br> Stay connected in real time <br> Share your location with only those in your individual or group chat, and stop sharing at any time. Or record a voice message to connect quickly.<br> <br> <br> Share daily moments through Status <br> Status allows you to share text, photos, video and GIF updates that disappear after 24 hours. You can choose to share status posts with all your contacts or just selected ones. <br> <br> Use WhatsApp on your Wear OS watch to continue conversations, reply to messages, and take calls - all from your wrist. And, leverage tiles and complications to easily access your chats and send voice messages.   <br> <br> *In some regions, WhatsApp uses SMS verification to authenticate your phone number and secure transactions.<br> *Data charges may apply. Contact your provider for details.     <br>______________________________________________________________<br> <br> <br> If you have any feedback or questions, please go to WhatsApp &gt; Settings &gt; Help &gt; Contact Us.<br>  <br> Terms of Service: https://www.whatsapp.com/legal/terms-of-service  <br> Learn more about messaging privately: https://www.whatsapp.com/privacy  <br> Learn more about WhatsApp safety: https://www.whatsapp.com/security",
+  "screenshots": [
+    "apps/whatsapp/screenshots/screen_1.png",
+    "apps/whatsapp/screenshots/screen_2.png",
+    "apps/whatsapp/screenshots/screen_3.png",
+    "apps/whatsapp/screenshots/screen_4.png",
+    "apps/whatsapp/screenshots/screen_5.png"
+  ],
+  "category": "Communication",
+  "full_description_he": "‏WhatsApp from Meta היא אפליקציה חינמית להתכתבות ולשיחות וידאו, עם יותר מ-2 מיליארד משתמשים ביותר מ-180 מדינות. היא פשוטה, אמינה ופרטית, כך שאפשר לשמור בקלות על קשר עם המשפחה והחברים. ל-‏WhatsApp יש גרסאות לנייד ולשולחן עבודה והיא פועלת גם כשהחיבור לאינטרנט איטי, ואין דמי מינוי*.<br>    <br> <br>  התכתבות פרטית בכל העולם<br> <br>  ההודעות האישיות והשיחות שלך עם המשפחה והחברים תמיד מוגנות באמצעות הצפנה מקצה לקצה. לאף אחד מחוץ לצ&#39;אטים, אפילו לא ל-WhatsApp, אין אפשרות לקרוא אותן ולהאזין להן.<br> <br> <br>  יצירת קשר באופן מאובטח, מהיר ומיידי <br> כל מה שצריך זה מספר טלפון, בלי שם משתמש ובלי להתחבר – אפשר לראות במהירות אילו אנשי קשר משתמשים ב-WhatsApp ולהתחיל להתכתב איתם. <br> <br> שיחות קוליות ושיחות וידאו באיכות גבוהה <br> אפשר לבצע שיחות וידאו ושיחות קוליות מאובטחות עם עד 32 אנשים במקביל, בחינם* – יש תמיכה בשיחות במכשירים ניידים שונים דרך שירות האינטרנט של הטלפון – גם כשהחיבור איטי. <br> <br> שמירה על קשר עם צ&#39;אטים קבוצתיים <br> חשוב לשמור על קשר עם המשפחה והחברים, ובצ&#39;אטים קבוצתיים שמוצפנים מקצה לקצה אפשר לשתף הודעות, תמונות, סרטונים ומסמכים בגרסאות לנייד ולשולחן עבודה. <br> <br> שמירה על קשר בזמן אמת <br> אפשר לשתף את המיקום שלך רק עם המשתתפים בצ&#39;אט הפרטי או הקבוצתי ולהפסיק את השיתוף מתי שרוצים, ואפשר גם להקליט הודעה קולית כדי להעביר מסר במהירות.<br> <br> <br> שיתוף רגעים יומיומיים בסטטוס <br> בסטטוס אפשר לשתף עדכון טקסט, תמונות, סרטונים ו-GIF – שייעלמו אחרי 24 שעות. אפשר לבחור לשתף סטטוס עם כל אנשי הקשר, או רק עם אנשים ספציפיים. <br> <br> ב-WhatsApp בשעון Wear OS אפשר להמשיך לשוחח, להגיב להודעות ולענות לשיחות – ישירות מפרק היד. דרך האריחים והתצוגות אפשר להיכנס בקלות לצ&#39;אטים ולשלוח הודעות קוליות.   <br> <br>* באזורים מסוימים, WhatsApp משתמשת באימות בהודעות טקסט כדי לאמת את מספר הטלפון שלך ולאבטח את העסקאות.<br> * יכול להיות שיחולו חיובים על שימוש בנתונים – למידע נוסף צריך לפנות לספק הסלולר.     <br>______________________________________________________________  <br> יש לך שאלות או משוב? אפשר ליצור קשר מתוך WhatsApp דרך &#39;הגדרות &gt; עזרה &gt; יצירת קשר&#39;.<br>  <br> תנאי השירות: https://www.whatsapp.com/legal/terms-of-service  <br> מידע נוסף על התכתבות פרטית: https://www.whatsapp.com/privacy  <br> מידע נוסף על בטיחות ב-WhatsApp:‏ ‏https://www.whatsapp.com/security",
+  "category_he": "תקשורת",
+  "screenshots_he": [
+    "apps/whatsapp/screenshots_he/screen_1.png",
+    "apps/whatsapp/screenshots_he/screen_2.png",
+    "apps/whatsapp/screenshots_he/screen_3.png",
+    "apps/whatsapp/screenshots_he/screen_4.png",
+    "apps/whatsapp/screenshots_he/screen_5.png"
+  ]
 }

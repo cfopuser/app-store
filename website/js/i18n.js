@@ -1,13 +1,15 @@
 export const i18n = {
     en: {
         title: "Store",
-        discover: "App Collection",
+        discover: "Home",
         subtitle: `Patched and "kosher" versions with automatic updates.`,
         searchPlaceholder: "Search...",
         get: "Download",
         featured: "Highlighted Release",
         allApps: "Repository",
         tryAdjusting: "Try adjusting your query parameters.",
+        heroTitle: "Curated Artifacts",
+        heroSubtitle: "Patched and maintained for the community. Crafted with precision.",
         downloadBtn: "Download",
         downloadBtnFull: "Download APK",
         released: "Released",
@@ -28,6 +30,10 @@ export const i18n = {
         viewAll: "See All",
         downloads: "Downloads",
         mostDownloads: "Most Downloads",
+        // --- Navigation ---
+        navHome: "Home",
+        navSearch: "Search",
+        navRequest: "Request",
         // --- App Request Form ---
         formTitle: "Request an App",
         formSubtitle: "Tell us about the app you want added to the store.\n\n* Please note: Only apps that are useful to the general public and require patching will be added.",
@@ -70,17 +76,30 @@ export const i18n = {
         formValidationPackage: "Must be a valid package name (e.g. com.example.app)",
         formValidationAck: "Please confirm before submitting",
         formPreviewTitle: "Issue Preview",
-        formPreviewNote: "This will open GitHub with the form pre-filled. You can review and submit there."
+        formPreviewNote: "This will open GitHub with the form pre-filled. You can review and submit there.",
+        // --- App Page ---
+        backToRepo: "Back to Repository",
+        clickToEnlarge: "Click to enlarge",
+        officialDescription: "Official Description",
+        readMore: "Read More",
+        technicalDetails: "Technical Details",
+        buildIssue: "Build Issue",
+        lastUpdate: "Last Update",
+        screenshots: "Screenshots",
+        aboutApp: "About this App",
+        sourceTitle: "Source"
     },
     he: {
         title: "חנות",
-        discover: "מאגר אפליקציות",
+        discover: "בית",
         subtitle: "גרסאות ערוכות וחסומות, מתעדכנות אוטומטית.",
         searchPlaceholder: "חיפוש...",
         get: "הורדה",
         featured: "שחרור בולט",
         allApps: "מאגר האפליקציות",
-        tryAdjusting: "נסה לשנות את פרמטרי החיפוש.",
+        tryAdjusting: "נסה לשנות את מילות החיפוש.",
+        heroTitle: "מאגר אפליקציות",
+        heroSubtitle: "גרסאות ערוכות ומתוחזקות עבור הקהילה. נוצר בדייקנות.",
         downloadBtn: "הורדה",
         downloadBtnFull: "הורד APK",
         released: "פורסם ב-",
@@ -101,6 +120,10 @@ export const i18n = {
         viewAll: "הצג הכל",
         downloads: "הורדות",
         mostDownloads: "הכי הרבה הורדות",
+        // --- Navigation ---
+        navHome: "בית",
+        navSearch: "חיפוש",
+        navRequest: "בקשה",
         // --- App Request Form ---
         formTitle: "בקשת אפליקציה",
         formSubtitle: "ספר לנו על האפליקציה שאתה רוצה להוסיף לחנות.\n\n* שימו לב: רק אפליקציות ששימושיות לכלל הציבור ומצריכות עריכה יוספו.",
@@ -143,7 +166,18 @@ export const i18n = {
         formValidationPackage: "חייב להיות שם חבילה תקין (למשל: com.example.app)",
         formValidationAck: "אנא אשר לפני השליחה",
         formPreviewTitle: "תצוגה מקדימה של הבקשה",
-        formPreviewNote: "זה יפתח את GitHub עם הטופס מלא מראש. תוכל לבדוק ולשלוח שם."
+        formPreviewNote: "זה יפתח את GitHub עם הטופס מלא מראש. תוכל לבדוק ולשלוח שם.",
+        // --- App Page ---
+        backToRepo: "חזרה למאגר",
+        clickToEnlarge: "לחץ להגדלה",
+        officialDescription: "תיאור רשמי",
+        readMore: "קרא עוד",
+        technicalDetails: "פרטים טכניים",
+        buildIssue: "שגיאת בנייה",
+        lastUpdate: "עדכון אחרון",
+        screenshots: "צילומי מסך",
+        aboutApp: "על האפליקציה",
+        sourceTitle: "מקור"
     }
 };
 

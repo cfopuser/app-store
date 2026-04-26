@@ -1,14 +1,35 @@
 {
   "id": "mizrahi",
-  "name": "Mizrahi Tefahot",
-  "name_he": "מזרחי טפחות",
+  "name": "מזרחי טפחות - ניהול חשבון",
+  "name_he": "מזרחי טפחות - ניהול חשבון",
   "package_name": "com.MizrahiTefahot.nh",
   "description": "banking app for Mizrahi Tefahot - patched for netfree.",
-  "description_he":"אפליקציית הבנקאות של מזרחי טפחות - ערוכה עבור נטפרי",
-  "icon_url": "https://cdn.aptoide.com/imgs/9/6/f/96fd01f961e10fa0cb503e53abed794c_icon.png",
+  "description_he": "אפליקציית הבנקאות של מזרחי טפחות - ערוכה עבור נטפרי",
+  "icon_url": "apps/mizrahi/icon.png",
   "source": "apkpure_mobile",
   "maintainer": "cfopuser",
   "inject_updater": true,
   "version_file": "apps/mizrahi/version.txt",
-  "status_file": "apps/mizrahi/status.json"
+  "status_file": "apps/mizrahi/status.json",
+  "name_play": "מזרחי טפחות - ניהול חשבון",
+  "full_description": "במזרחי-טפחות, הבנקאי האישי זמין לך בהתכתבות או בשיחת טלפון ישירות מהאפליקציה.<br>בנוסף לשירות האישי והאנושי שאנו מציעים, קיימים מידע ופעולות באפליקציה שכדאי להכיר.<br>ניהול חשבון<br>•\tפתיחת חשבון בקלות בלי להגיע לסניף<br>•\tהתכתבות עם הבנקאי האישי ועם יועץ השקעות, כולל אפשרות לשליחת קבצים<br>•\tקבלת התרעה על הודעה חדשה מהבנקאי<br>•\tחיבור מהיר וקל של כרטיס האשראי הבנקאי שלך ל-Apple Pay / Google Pay<br>•\tהפקדה לפיקדונות<br>•\tהפקדת צ&#39;קים בקלות<br>•\tממשק נוח לחתימה דיגיטלית על עסקאות<br>•\tכרטיסי אשראי - ביצוע פעולות וקבלת מידע: הפעלת כרטיס חדש, צפייה בחיובים, שחזור קוד סודי ועוד<br>•\tמסחר והשקעות - קנייה והמרת מט&quot;ח, מסחר בניירות ערך, פירוט יתרות ותנועות, ועוד<br>משכנתאות והלוואות<br>•\tהגשת בקשה לקבלת הלוואה ישירות לחשבון<br>•\tצפייה בפירוט ההלוואות<br>•\tמידע מפורט על המשכנתה וביצוע פעולות: מחשבון סילוק משכנתה, עדכון פרטים אישיים, שינוי חשבון לחיוב, שינוי מועד החיוב החודשי ועוד<br><br>אפליקציית מזרחי-טפחות לניהול החשבון בקלות ובנוחות, בכל זמן ומכל מקום.",
+  "screenshots": [
+    "apps/mizrahi/screenshots/screen_1.png",
+    "apps/mizrahi/screenshots/screen_2.png",
+    "apps/mizrahi/screenshots/screen_3.png",
+    "apps/mizrahi/screenshots/screen_4.png",
+    "apps/mizrahi/screenshots/screen_5.png",
+    "apps/mizrahi/screenshots/screen_6.png"
+  ],
+  "category": "Finance",
+  "full_description_he": "במזרחי-טפחות, הבנקאי האישי זמין לך בהתכתבות או בשיחת טלפון ישירות מהאפליקציה.<br>בנוסף לשירות האישי והאנושי שאנו מציעים, קיימים מידע ופעולות באפליקציה שכדאי להכיר.<br>ניהול חשבון<br>•\tפתיחת חשבון בקלות בלי להגיע לסניף<br>•\tהתכתבות עם הבנקאי האישי ועם יועץ השקעות, כולל אפשרות לשליחת קבצים<br>•\tקבלת התרעה על הודעה חדשה מהבנקאי<br>•\tחיבור מהיר וקל של כרטיס האשראי הבנקאי שלך ל-Apple Pay / Google Pay<br>•\tהפקדה לפיקדונות<br>•\tהפקדת צ&#39;קים בקלות<br>•\tממשק נוח לחתימה דיגיטלית על עסקאות<br>•\tכרטיסי אשראי - ביצוע פעולות וקבלת מידע: הפעלת כרטיס חדש, צפייה בחיובים, שחזור קוד סודי ועוד<br>•\tמסחר והשקעות - קנייה והמרת מט&quot;ח, מסחר בניירות ערך, פירוט יתרות ותנועות, ועוד<br>משכנתאות והלוואות<br>•\tהגשת בקשה לקבלת הלוואה ישירות לחשבון<br>•\tצפייה בפירוט ההלוואות<br>•\tמידע מפורט על המשכנתה וביצוע פעולות: מחשבון סילוק משכנתה, עדכון פרטים אישיים, שינוי חשבון לחיוב, שינוי מועד החיוב החודשי ועוד<br><br>אפליקציית מזרחי-טפחות לניהול החשבון בקלות ובנוחות, בכל זמן ומכל מקום.",
+  "category_he": "פיננסיים",
+  "screenshots_he": [
+    "apps/mizrahi/screenshots_he/screen_1.png",
+    "apps/mizrahi/screenshots_he/screen_2.png",
+    "apps/mizrahi/screenshots_he/screen_3.png",
+    "apps/mizrahi/screenshots_he/screen_4.png",
+    "apps/mizrahi/screenshots_he/screen_5.png",
+    "apps/mizrahi/screenshots_he/screen_6.png"
+  ]
 }

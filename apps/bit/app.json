@@ -1,13 +1,38 @@
 {
   "id": "bit",
-  "name": "Bit",
-  "name_he": "ביט",
+  "name": "bit ביט",
+  "name_he": "bit ביט",
   "package_name": "com.bnhp.payments.paymentsapp",
   "description": "Israeli P2P payment app — patched for sideloading.",
   "description_he": "אפליקציית תשלומים ישראלית — ערוכה להתקנה מקובץ.",
-  "icon_url": "https://www.apkmirror.com/wp-content/themes/APKMirror/ap_resize/ap_resize.php?src=https%3A%2F%2Fdownloadr2.apkmirror.com%2Fwp-content%2Fuploads%2F2024%2F11%2F18%2F673476da15869_com.bnhp.payments.paymentsapp.png",
+  "icon_url": "apps/bit/icon.png",
   "source": "apkmirror",
   "maintainer": "cfopuser",
   "version_file": "apps/bit/version.txt",
-  "status_file": "apps/bit/status.json"
+  "status_file": "apps/bit/status.json",
+  "name_play": "bit ביט",
+  "full_description": "bit – Israel’s leading payment app, making it easy and secure to send and receive money.<br>\t•\tManage your balance – Got paid by friends? Your money stays in the app, and you choose whether to keep it there or use it for transfers.<br>\t•\tShop online with ease – Pay on websites and apps using bit, no need to enter your credit card details.<br>\t•\tOrder foreign currency in advance – Use bit to pre-order currency and pick it up at the airport.<br>\t•\tGroup collections made simple – Planning a BBQ or buying a group gift? Create a group, invite friends, and we’ll remind them to send their share.<br>\t•\tSend payment requests – Someone forgot to pay you? No problem. Just send them a payment request through the app.<br>\t•\tReceive insurance and pension refunds – Skip the paperwork. Get your refunds straight to your bit account.<br>\t•\tPay your municipal taxes (Arnona) – Get notified and pay directly in the app with just a tap.<br>\t•\tCarrefour Club Credit Card – Apply for your card, enjoy exclusive benefits, and start earning +Carrefour coins to redeem in participating stores.",
+  "screenshots": [
+    "apps/bit/screenshots/screen_1.png",
+    "apps/bit/screenshots/screen_2.png",
+    "apps/bit/screenshots/screen_3.png",
+    "apps/bit/screenshots/screen_4.png",
+    "apps/bit/screenshots/screen_5.png",
+    "apps/bit/screenshots/screen_6.png",
+    "apps/bit/screenshots/screen_7.png",
+    "apps/bit/screenshots/screen_8.png"
+  ],
+  "category": "Finance",
+  "full_description_he": "bit אפליקציית התשלומים המובילה בישראל, המאפשרת להעביר ולקבל כסף בקלות ובצורה בטוחה.<br><br>ניהול יתרה כספית- מקבלים כסף מחברים? הכסף מצטבר באפליקציה ואתם יכולים להחליט אם לשמור אותו או לעשות בו שימוש להעברות<br>תשלום באתרי קניות ובאפליקציות – עושים שופינג אונליין ומשלמים ב-bit ללא צורך להקליד פרטי כרטיס אשראי.<br>הזמנת מט&quot;ח מהטרמינל – מזמינים מראש את המט״ח ב-bit ואוספים בשדה תעופה.<br>איסוף כסף מקבוצות – מתארגנים לעל האש? קונים מתנה ביחד? כל מה שצריך זה לפתוח קבוצה ולהזמין חברים להצטרף. אנחנו כבר נזכיר להם להעביר את הסכום שצריך.<br>שליחת בקשה לתשלום – מגיע לכם כסף ומישהו שכח מזה? תרגישו חופשי להזכיר לו על ידי שליחת בקשה לתשלום. <br>קבלת החזרים מחברות ביטוח ומקרנות פנסיה – כבר לא צריך להתעסק עם ניירת מיותרת, מקבלים את ההחזר ב-bit ישירות לחשבון.<br>תשלום ארנונה – מקבלים את בקשת התשלום ישירות לאפליקציה ומשלמים בלחיצת כפתור.  <br>כרטיס אשראי Carrefour Club – מזמינים כרטיס, מקבלים מגוון הטבות ומתחילים לצבור +Carrefour coins למימוש ברשתות המועדון.",
+  "category_he": "פיננסיים",
+  "screenshots_he": [
+    "apps/bit/screenshots_he/screen_1.png",
+    "apps/bit/screenshots_he/screen_2.png",
+    "apps/bit/screenshots_he/screen_3.png",
+    "apps/bit/screenshots_he/screen_4.png",
+    "apps/bit/screenshots_he/screen_5.png",
+    "apps/bit/screenshots_he/screen_6.png",
+    "apps/bit/screenshots_he/screen_7.png",
+    "apps/bit/screenshots_he/screen_8.png"
+  ]
 }

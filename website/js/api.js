@@ -48,11 +48,12 @@ export async function fetchAppData() {
         }
         setRegisteredApps(apps);
 
+        const t = Date.now();
         const [releases, ...configsResps] = await Promise.all([
             fetchReleases(),
-            ...REGISTERED_APPS.map(id => fetch(`${APPS_DIR}/${id}/app.json`).then(r => r.json().catch(() => null))),
-            ...REGISTERED_APPS.map(id => fetch(`${APPS_DIR}/${id}/status.json`).then(r => r.json().catch(() => ({ success: true })))),
-            fetch('download_stats.json').then(r => r.json().catch(() => ({})))
+            ...REGISTERED_APPS.map(id => fetch(`${APPS_DIR}/${id}/app.json?t=${t}`).then(r => r.json().catch(() => null))),
+            ...REGISTERED_APPS.map(id => fetch(`${APPS_DIR}/${id}/status.json?t=${t}`).then(r => r.json().catch(() => ({ success: true })))),
+            fetch(`download_stats.json?t=${t}`).then(r => r.json().catch(() => ({})))
         ]);
 
         allReleases = releases;

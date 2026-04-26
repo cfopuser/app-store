@@ -26,6 +26,7 @@ from core.utils import (
 from core.downloader import DownloadError, download_app
 from core.pre_patcher import run_pre_patch
 from core.patcher import run_patch
+from core.metadata_fetcher import fetch_metadata
 
 
 def process_app(app_id: str, step: str = "all", no_mitm: bool = False) -> bool:
@@ -206,6 +207,16 @@ Examples:
         action="store_true",
         help="Generate static releases.json index and exit",
     )
+    parser.add_argument(
+        "--update-metadata",
+        action="store_true",
+        help="Fetch Google Play metadata and download images locally",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force update even if files exist",
+    )
 
     args = parser.parse_args()
 
@@ -223,6 +234,10 @@ Examples:
 
     if args.update_releases:
         generate_releases_index()
+        return
+
+    if args.update_metadata:
+        fetch_metadata(args.app, args.force)
         return
 
     # Determine which apps to process

@@ -14,5 +14,16 @@
     "13.3.0": ".1"
   },
   "version_file": "apps/metrolist/version.txt",
-  "status_file": "apps/metrolist/status.json"
+  "status_file": "apps/metrolist/status.json",
+  "full_description": "",
+  "screenshots": [
+    "apps/metrolist/screenshots/screen_1.png",
+    "apps/metrolist/screenshots/screen_2.png",
+    "apps/metrolist/screenshots/screen_3.png",
+    "apps/metrolist/screenshots/screen_4.png",
+    "apps/metrolist/screenshots/screen_5.png",
+    "apps/metrolist/screenshots/screen_6.png"
+  ],
+  "category": "Music & Audio",
+  "category_he": "מוזיקה ושמע"
 }

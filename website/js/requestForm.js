@@ -16,8 +16,7 @@ function buildFormModal() {
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
             <div class="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4">
                 <div id="rfPanel"
-                    class="relative w-full sm:max-w-lg transform overflow-hidden rounded-t-[2rem] sm:rounded-3xl bg-white dark:bg-[#15151A] shadow-2xl transition-all duration-350 border-t sm:border border-zinc-200 dark:border-zinc-800 flex flex-col max-h-[92vh] sm:max-h-[88vh] translate-y-full opacity-0">
-
+                    class="relative w-full sm:max-w-lg transform overflow-hidden overflow-x-hidden rounded-t-[2rem] sm:rounded-3xl bg-white dark:bg-[#15151A] shadow-2xl transition-all duration-350 border-t sm:border border-zinc-200 dark:border-zinc-800 flex flex-col max-h-[92vh] sm:max-h-[88vh] translate-y-full opacity-0">
                     <!-- drag handle -->
                     <div class="w-full flex justify-center pt-3 pb-1 sm:hidden flex-shrink-0">
                         <div class="w-12 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700"></div>
@@ -261,7 +260,7 @@ function renderStep() {
             <div class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold transition-all duration-500 ${dotClasses}">
                 ${iconHTML}
             </div>
-            <span class="text-xs font-bold uppercase tracking-wider text-center w-32 transition-all duration-500 ${textClasses}">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-center w-20 transition-all duration-500 ${textClasses}">
                 <bdi>${label}</bdi>
             </span>
         </div>`;

@@ -22,3 +22,6 @@ logcat_*.txt
 *.diff
 desktop.html
 
+
+# Backup files
+backup

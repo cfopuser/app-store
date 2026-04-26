@@ -36,9 +36,244 @@
     </script>
     <link rel="stylesheet" href="website/style.css">
     <link rel="icon" type="image/png" href="website/images/favicon.png">
+    <style>
+        /* Bottom Navigation Bar Styles */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            background-color: rgba(249, 249, 250, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(228, 228, 231, 0.8);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+            padding-top: 0.75rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark .bottom-nav {
+            background-color: rgba(14, 14, 18, 0.85);
+            border-top-color: rgba(39, 39, 42, 0.8);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            color: #71717a;
+            text-decoration: none;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .nav-item i {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .nav-item span {
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            color: #f43f5e;
+        }
+
+        .dark .nav-item.active {
+            color: #fb7185;
+        }
+
+        /* Mobile Grid/List Layout Override */
+        @media (max-width: 639px) {
+            .app-card-mobile {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                padding: 1rem 0 !important;
+                background: transparent !important;
+                border-radius: 0 !important;
+                border: none !important;
+                border-bottom: 1px solid rgba(228, 228, 231, 0.4) !important;
+                box-shadow: none !important;
+                transform: none !important;
+                margin: 0 !important;
+            }
+
+            .dark .app-card-mobile {
+                border-bottom-color: rgba(39, 39, 42, 0.4) !important;
+            }
+
+            .app-card-mobile > div {
+                display: contents !important;
+            }
+
+            /* Target the inner container specifically */
+            .app-card-mobile > div:last-child {
+                background: transparent !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                width: 100% !important;
+            }
+
+            .app-card-mobile .icon-container {
+                margin-bottom: 0 !important;
+                margin-left: 0 !important;
+                margin-right: 0.85rem !important;
+                width: 4rem !important;
+                height: 4rem !important;
+                border-radius: 1rem !important;
+                flex-shrink: 0 !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+                border: 1px solid rgba(0,0,0,0.05) !important;
+            }
+
+            .dark .app-card-mobile .icon-container {
+                border-color: rgba(255,255,255,0.05) !important;
+            }
+
+            .app-card-mobile .info-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 2px !important;
+                overflow: hidden !important;
+                flex: 1 !important;
+            }
+
+            .app-card-mobile h3 {
+                font-size: 1rem !important;
+                font-weight: 700 !important;
+                color: #18181b !important;
+                margin: 0 !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                letter-spacing: -0.01em !important;
+            }
+
+            .dark .app-card-mobile h3 {
+                color: #f4f4f5 !important;
+            }
+
+            .app-card-mobile p {
+                font-size: 0.8rem !important;
+                line-height: 1.2 !important;
+                color: #71717a !important;
+                margin: 0 !important;
+                display: -webkit-box !important;
+                -webkit-line-clamp: 2 !important;
+                -webkit-box-orient: vertical !important;
+                overflow: hidden !important;
+            }
+
+            .app-card-mobile .action-container {
+                padding: 0 !important;
+                border: none !important;
+                margin-left: 0.75rem !important;
+                display: flex !important;
+                align-items: center !important;
+                margin-top: 0 !important;
+            }
+
+            .app-card-mobile .desktop-only, 
+            .app-card-mobile .package-name,
+            .app-card-mobile .maintainer-tag {
+                display: none !important;
+            }
+
+            .app-card-mobile button {
+                width: auto !important;
+                min-width: 4.5rem !important;
+                height: 1.85rem !important;
+                padding: 0 1rem !important;
+                border-radius: 9999px !important;
+                background-color: #f0f0f5 !important;
+                color: #007aff !important; /* iOS Blue */
+                font-size: 0.75rem !important;
+                font-weight: 800 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.02em !important;
+                border: none !important;
+                transition: background-color 0.2s !important;
+            }
+
+            .app-card-mobile button:active {
+                background-color: #e5e5ea !important;
+            }
+
+            .dark .app-card-mobile button {
+                background-color: #2c2c2e !important;
+                color: #0a84ff !important;
+            }
+
+            .dark .app-card-mobile button:active {
+                background-color: #3a3a3c !important;
+            }
+
+            /* Adjust main padding for full width list */
+            main {
+                padding-left: 1.25rem !important;
+                padding-right: 1.25rem !important;
+            }
+        }
+
+        @keyframes slide-up {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up {
+            animation: slide-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        /* Custom Scrollbar for Screenshots */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Screenshot Gallery */
+        .screenshot-item {
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+        .screenshot-item:hover {
+            transform: scale(1.02);
+        }
+
+        /* Lightbox */
+        #lightbox {
+            background-color: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .rtl {
+            direction: rtl;
+            text-align: right;
+        }
+
+        /* Desktop Gallery Buttons */
+        @media (min-width: 640px) {
+            #screenshotTrack::-webkit-scrollbar {
+                display: none;
+            }
+            #screenshotTrack {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+    </style>
 </head>
 
-<body class="bg-[#F9F9FA] text-zinc-900 dark:bg-[#0E0E12] dark:text-zinc-100 transition-colors duration-500 min-h-screen font-sans selection:bg-rose-500/30 overflow-x-hidden">
+<body class="bg-[#F9F9FA] text-zinc-900 dark:bg-[#0E0E12] dark:text-zinc-100 transition-colors duration-500 min-h-screen font-sans selection:bg-rose-500/30 overflow-x-hidden pb-24 sm:pb-0">
     
     <!-- Restrained Magic: Subtle iridescent top border on the screen -->
     <div class="fixed top-0 left-0 w-full h-[2px] bg-gradient-to-r from-rose-400 via-fuchsia-400 to-indigo-400 z-[100] opacity-80"></div>
@@ -126,10 +361,10 @@
     <!-- Main Content -->
     <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-12 sm:space-y-16">
         
-        <!-- Hero Section -->
-        <section class="space-y-4 max-w-2xl animate-fade-in">
-            <h1 class="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight" data-key="discover">Curated Artifacts</h1>
-            <p class="text-lg sm:text-xl leading-relaxed text-zinc-600 dark:text-zinc-400" data-key="subtitle">Patched and maintained for the community. Crafted with precision.</p>
+        <!-- Discovery Area (Hero) -->
+        <section id="featuredAppArea" class="pt-12 pb-16 sm:pt-20 sm:pb-24">
+            <h1 class="text-4xl sm:text-6xl font-bold tracking-tighter text-zinc-900 dark:text-zinc-100 mb-4" data-key="heroTitle">Curated Artifacts</h1>
+            <p class="text-lg sm:text-xl text-zinc-500 dark:text-zinc-500 font-light max-w-2xl leading-relaxed" data-key="heroSubtitle">Patched and maintained for the community. Crafted with precision.</p>
         </section>
 
         <!-- Loader -->
@@ -140,6 +375,11 @@
 
         <!-- Featured App Area -->
         <div id="featuredAppArea" class="hidden"></div>
+
+        <!-- Categories Section -->
+        <div id="categoryContainer" class="flex flex-wrap gap-2 sm:gap-3 py-4 border-b border-zinc-100 dark:border-zinc-800/50 hidden">
+            <!-- Categories injected here -->
+        </div>
 
         <!-- The Grid -->
         <section class="space-y-6 hidden" id="gridContainer">
@@ -168,6 +408,26 @@
             <p class="text-base mt-2 text-zinc-600 dark:text-zinc-400" data-key="tryAdjusting">Try adjusting your query parameters.</p>
         </div>
 
+        <!-- App Detail Page (Full Page) -->
+        <section id="appPage" class="hidden animate-slide-up pb-20"></section>
+
+        <!-- Lightbox for Screenshots -->
+        <div id="lightbox" class="fixed inset-0 z-[100] hidden flex flex-col items-center justify-center p-4 sm:p-10">
+            <button id="closeLightbox" class="absolute top-6 right-6 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all z-[110]">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </button>
+            <div class="relative w-full max-w-5xl h-full flex items-center justify-center">
+                <button id="prevScreenshot" class="absolute left-0 p-4 text-white/50 hover:text-white transition-all z-[110]">
+                    <i data-lucide="chevron-left" class="w-12 h-12"></i>
+                </button>
+                <img id="lightboxImage" src="" class="max-w-full max-h-full object-contain shadow-2xl rounded-lg animate-in fade-in zoom-in duration-300">
+                <button id="nextScreenshot" class="absolute right-0 p-4 text-white/50 hover:text-white transition-all z-[110]">
+                    <i data-lucide="chevron-right" class="w-12 h-12"></i>
+                </button>
+            </div>
+            <div id="lightboxCounter" class="mt-6 text-white/60 font-mono text-sm tracking-widest uppercase"></div>
+        </div>
+
     </main>
 
     <!-- Footer - Restrained & Clean -->
@@ -190,25 +450,20 @@ Use at your own risk.
         </div>
     </footer>
 
-    <!-- Modal -->
-    <div id="appModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-[#0E0E12]/80 backdrop-blur-sm transition-opacity opacity-0" id="modalBackdrop"></div>
-        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div class="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 text-center">
-                <div id="modalPanel"
-                    class="relative transform overflow-hidden rounded-t-[2rem] sm:rounded-3xl bg-white dark:bg-[#15151A] text-left shadow-2xl transition-all w-full sm:max-w-lg border-t sm:border border-zinc-200 dark:border-zinc-800 flex flex-col max-h-[90vh] sm:max-h-[85vh] translate-y-full sm:translate-y-0 opacity-0 sm:opacity-100">
-                    <div class="w-full flex justify-center pt-3 pb-1 sm:hidden">
-                        <div class="w-12 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800"></div>
-                    </div>
-                    <button id="modalClose"
-                        class="absolute top-3 right-4 sm:top-4 sm:right-4 z-20 p-2 rounded-full text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                    <div id="modalContent" class="p-5 sm:p-8 overflow-y-auto custom-scrollbar overscroll-contain text-zinc-900 dark:text-zinc-100">
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Bottom Navigation Bar (Mobile only) -->
+    <div class="bottom-nav sm:hidden">
+        <a href="javascript:void(0)" class="nav-item active" id="navHome">
+            <i data-lucide="layout-grid"></i>
+            <span data-key="navHome">Home</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="navSearch">
+            <i data-lucide="search"></i>
+            <span data-key="navSearch">Search</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" id="navRequest">
+            <i data-lucide="plus-circle"></i>
+            <span data-key="navRequest">Request</span>
+        </a>
     </div>
 
     <script type="module" src="website/js/main.js"></script>

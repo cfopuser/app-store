@@ -11,7 +11,7 @@ class AuroraSource:
         self,
         timeout: int = 30,
         locale: str = "en_US",
-        timezone: str = "UTC",
+        timezone: str = "Asia/Jerusalem",
         device_codename: str = "bacon",
         dispenser_url: str = "https://auroraoss.com/api/auth",
         dispenser_user_agent: str = "com.aurora.store-4.8.1-73",
