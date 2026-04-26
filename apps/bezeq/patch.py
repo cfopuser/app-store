@@ -150,7 +150,7 @@ def patch(target_dir: str) -> bool:
             [
                 (
                     r"(sget\s+([pv]\d+),\s*Landroid/os/Build\$VERSION;->SDK_INT:I\s+const/16\s+[pv]\d+,\s*0x1e[\s\S]{1,500}?getInstallerPackageName\(Ljava/lang/String;\)Ljava/lang/String;\s+move-result-object\s+([pv]\d+))",
-                    r"sget \2, Landroid/os/Build$VERSION;->SDK_INT:I\n\n    const-string \3, \"com.android.vending\""
+                    r'sget \2, Landroid/os/Build$VERSION;->SDK_INT:I\n\n    const-string \3, "com.android.vending"'
                 )
             ]
         )
