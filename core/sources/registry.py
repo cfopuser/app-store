@@ -7,6 +7,7 @@ from .aurora import AuroraSource
 from .apkpure import APKPureSource
 from .apkpure_mobile import APKPureMobileSource
 from .github import GitHubSource
+from .apkcombo import APKComboSource
 
 
 @dataclass(frozen=True)
@@ -18,6 +19,7 @@ class SourceDefinition:
 SOURCE_DEFINITIONS: dict[str, SourceDefinition] = {
     "apkmirror": SourceDefinition(factory=lambda _cfg: APKMirrorSource()),
     "aptoide": SourceDefinition(factory=lambda _cfg: AptoideSource()),
+    "apkcombo": SourceDefinition(factory=lambda _cfg: APKComboSource()),
     "aurora": SourceDefinition(
         factory=lambda cfg: AuroraSource(
             timeout=cfg.get("aurora_timeout", 30),

@@ -7,6 +7,7 @@ from core.sources.registry import create_source
 from core.sources.aurora import AuroraSource
 from core.sources.apkpure import APKPureSource
 from core.sources.github import GitHubSource
+from core.sources.apkcombo import APKComboSource
 
 
 def test_create_source_apkpure():
@@ -33,4 +34,13 @@ def test_create_source_aurora_uses_package_name():
 
     assert name == "aurora"
     assert isinstance(source, AuroraSource)
+    assert lookup == "com.example.app"
+
+
+def test_create_source_apkcombo():
+    app_config = {"package_name": "com.example.app"}
+    name, source, lookup = create_source("apkcombo", app_config)
+
+    assert name == "apkcombo"
+    assert isinstance(source, APKComboSource)
     assert lookup == "com.example.app"

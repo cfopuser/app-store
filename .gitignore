@@ -1,12 +1,17 @@
 repomix-output.md
 manual_aptoide.py
 manual_uptodown.py
+manual_apkcombo.py
 .tmp_aurora_store_2
 .tmp_gplayapi
 
 aurora_asset_list.txt
 .pytest_cache/
+scratch
 __pycache__/
 *.pyc
 *.diff
 *.apk
+*.xapk
+*.jar
+desktop.html
