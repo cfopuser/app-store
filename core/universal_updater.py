@@ -220,8 +220,37 @@ def _inject_updater_call(activity_file_path: str) -> bool:
     )
     match = method_pattern.search(content)
     if not match:
-        print("[-] Could not find onCreate() in the detected MainActivity.")
-        return False
+        print("[i] Could not find onCreate() in the detected MainActivity. Attempting to generate it...")
+        super_pattern = re.compile(r"\.super\s+(L[^;]+;)")
+        super_match = super_pattern.search(content)
+        if not super_match:
+            print("[-] Could not find .super class in MainActivity.")
+            return False
+        
+        super_class = super_match.group(1)
+        
+        injected_method = f"""
+.method protected onCreate(Landroid/os/Bundle;)V
+    .locals 0
+
+    invoke-super {{p0, p1}}, {super_class}->onCreate(Landroid/os/Bundle;)V
+
+    # --- START INJECTION (Universal Updater) ---
+    invoke-static/range {{p0 .. p0}}, Lstoreautoupdater/Updater;->check(Landroid/content/Context;)V
+    # --- END INJECTION ---
+
+    return-void
+.end method
+"""
+        new_content = content + "\n" + injected_method
+        try:
+            with open(activity_file_path, "w", encoding="utf-8") as activity_file:
+                activity_file.write(new_content)
+            print(f"[+] Updater call and onCreate injected successfully into {os.path.basename(activity_file_path)}")
+            return True
+        except Exception as exc:
+            print(f"[-] Failed to write activity file: {exc}")
+            return False
 
     method_body = match.group(2)
     last_return_idx = method_body.rfind("return-void")
