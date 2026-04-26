@@ -1,0 +1,13 @@
+{
+  "id": "bezeq",
+  "name": "Bezeq",
+  "name_he": "בזק",
+  "package_name": "il.co.bezeq.my",
+  "description": "Bezeq app – patched for sideloading.",
+  "description_he": "אפליקציית בזק - ערוכה להתקנה מקובץ.",
+  "icon_url": "https://image.winudf.com/v2/image1/Y29tLmVnZ2VkLmVnZ19pY29uXzE3NTk5NDkzNzNfMDU2/icon.webp?w=280&fakeurl=1&type=.webp",
+  "source": "apkcombo",
+  "maintainer": "cfopuser",
+  "version_file": "apps/bezeq/version.txt",
+  "status_file": "apps/bezeq/status.json"
+}
