@@ -1,1 +1,1 @@
-{"success": true, "failed_version": "", "error_message": "", "updated_at": "Wed Apr 15 09:41:40 UTC 2026"}
+{"success": false, "failed_version": "unknown", "error_message": "[\u05de\u05d6\u05e8\u05d7\u05d9 \u05d8\u05e4\u05d7\u05d5\u05ea - \u05e0\u05d9\u05d4\u05d5\u05dc \u05d7\u05e9\u05d1\u05d5\u05df] Error during download process: ('Connection broken: IncompleteRead(33554432 bytes read, 77188173 more expected)', IncompleteRead(33554432 bytes read, 77188173 more expected))", "updated_at": "Tue Apr 28 06:26:54 UTC 2026"}
