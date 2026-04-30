@@ -1,31 +1,41 @@
 {
-  "id": "termux",
-  "name": "Termux",
-  "name_he": "Termux",
-  "package_name": "com.termux",
-  "description": "Android terminal app — patched to be used in netfree. Note that this app can be used as a browser.",
-  "description_he": "טרמוקס היא אפליקציית טרמינל לאנדרואיד — ערוכה לשימוש בנטפרי. שימו לב שאפליקצייה זו יכולה לשמש כדפדפן.",
-  "icon_url": "apps/termux/icon.png",
-  "source": "github",
-  "repo": "termux/termux-app",
-  "github_asset_regex": ".*universal.*\\.apk",
-  "maintainer": "cfopuser",
-  "version_file": "apps/termux/version.txt",
-  "status_file": "apps/termux/status.json",
-  "category": "Tools",
-  "category_he": "כלים",
-  "full_description": "Termux combines powerful terminal emulation with an extensive Linux package collection.<br><br>• Enjoy the bash and zsh shells.<br>• Manage files with nnn and edit them with nano, vim or emacs.<br>• Access servers over ssh.<br>• Develop in C with clang, make and gdb.<br>• Use the python console as a pocket calculator.<br>• Check out projects with git.<br>• Run text-based games with frotz.<br><br>At first start a small base system is installed - desired packages can then be installed using the apt package manager. Access the built-in help by long-pressing anywhere on the terminal and selecting the Help menu option to learn more.<br><br>Want to read the wiki?<br>https://wiki.termux.com<br><br>Want to report bugs?<br>https://bugs.termux.com<br><br>Want to interact with a community of users?<br>https://www.reddit.com/r/termux/",
-  "full_description_he": "Termux combines powerful terminal emulation with an extensive Linux package collection.<br><br>• Enjoy the bash and zsh shells.<br>• Manage files with nnn and edit them with nano, vim or emacs.<br>• Access servers over ssh.<br>• Develop in C with clang, make and gdb.<br>• Use the python console as a pocket calculator.<br>• Check out projects with git.<br>• Run text-based games with frotz.<br><br>At first start a small base system is installed - desired packages can then be installed using the apt package manager. Access the built-in help by long-pressing anywhere on the terminal and selecting the Help menu option to learn more.<br><br>Want to read the wiki?<br>https://wiki.termux.com<br><br>Want to report bugs?<br>https://bugs.termux.com<br><br>Want to interact with a community of users?<br>https://www.reddit.com/r/termux/",
-  "screenshots": [
-    "apps/termux/screenshots/screen_1.png",
-    "apps/termux/screenshots/screen_2.png",
-    "apps/termux/screenshots/screen_3.png",
-    "apps/termux/screenshots/screen_4.png"
-  ],
-  "screenshots_he": [
-    "apps/termux/screenshots_he/screen_1.png",
-    "apps/termux/screenshots_he/screen_2.png",
-    "apps/termux/screenshots_he/screen_3.png",
-    "apps/termux/screenshots_he/screen_4.png"
-  ]
+  "metadata": {
+    "id": "termux",
+    "name": "Termux",
+    "name_he": "Termux",
+    "package_name": "com.termux",
+    "description": "Android terminal app — patched to be used in netfree. Note that this app can be used as a browser.",
+    "description_he": "טרמוקס היא אפליקציית טרמינל לאנדרואיד — ערוכה לשימוש בנטפרי. שימו לב שאפליקצייה זו יכולה לשמש כדפדפן.",
+    "full_description": "Termux combines powerful terminal emulation with an extensive Linux package collection.<br><br>• Enjoy the bash and zsh shells.<br>• Manage files with nnn and edit them with nano, vim or emacs.<br>• Access servers over ssh.<br>• Develop in C with clang, make and gdb.<br>• Use the python console as a pocket calculator.<br>• Check out projects with git.<br>• Run text-based games with frotz.<br><br>At first start a small base system is installed - desired packages can then be installed using the apt package manager. Access the built-in help by long-pressing anywhere on the terminal and selecting the Help menu option to learn more.<br><br>Want to read the wiki?<br>https://wiki.termux.com<br><br>Want to report bugs?<br>https://bugs.termux.com<br><br>Want to interact with a community of users?<br>https://www.reddit.com/r/termux/",
+    "full_description_he": "Termux combines powerful terminal emulation with an extensive Linux package collection.<br><br>• Enjoy the bash and zsh shells.<br>• Manage files with nnn and edit them with nano, vim or emacs.<br>• Access servers over ssh.<br>• Develop in C with clang, make and gdb.<br>• Use the python console as a pocket calculator.<br>• Check out projects with git.<br>• Run text-based games with frotz.<br><br>At first start a small base system is installed - desired packages can then be installed using the apt package manager. Access the built-in help by long-pressing anywhere on the terminal and selecting the Help menu option to learn more.<br><br>Want to read the wiki?<br>https://wiki.termux.com<br><br>Want to report bugs?<br>https://bugs.termux.com<br><br>Want to interact with a community of users?<br>https://www.reddit.com/r/termux/",
+    "category": "Tools",
+    "category_he": "כלים"
+  },
+  "assets": {
+    "icon_url": "apps/termux/icon.png",
+    "screenshots": [
+      "apps/termux/screenshots/screen_1.png",
+      "apps/termux/screenshots/screen_2.png",
+      "apps/termux/screenshots/screen_3.png",
+      "apps/termux/screenshots/screen_4.png"
+    ],
+    "screenshots_he": [
+      "apps/termux/screenshots_he/screen_1.png",
+      "apps/termux/screenshots_he/screen_2.png",
+      "apps/termux/screenshots_he/screen_3.png",
+      "apps/termux/screenshots_he/screen_4.png"
+    ]
+  },
+  "source": {
+    "source": "github",
+    "repo": "termux/termux-app",
+    "github_asset_regex": ".*universal.*\\.apk"
+  },
+  "paths": {
+    "version_file": "apps/termux/version.txt",
+    "status_file": "apps/termux/status.json"
+  },
+  "maintenance": {
+    "maintainer": "cfopuser"
+  }
 }

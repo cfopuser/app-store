@@ -1,29 +1,41 @@
 {
-  "id": "metrolist",
-  "name": "MetroList",
-  "name_he": "מטרוליסט",
-  "package_name": "com.metrolist.music",
-  "description": "Music player based on YouTube - patched version to block all images.",
-  "description_he": "נגן מוזיקה מבוסס יוטיוב - גרסה ערוכה לחסימת כלל התמונות.",
-  "icon_url": "https://raw.githubusercontent.com/MetrolistGroup/Metrolist/main/fastlane/metadata/android/en-US/images/icon.png",
-  "source": "github",
-  "repo": "MetrolistGroup/Metrolist",
-  "maintainer": "lilor159357",
-  "skip_mitm": true,
-  "hotfixes": {
-    "13.3.0": ".1"
+  "metadata": {
+    "id": "metrolist",
+    "name": "MetroList",
+    "name_he": "מטרוליסט",
+    "package_name": "com.metrolist.music",
+    "description": "Music player based on YouTube - patched version to block all images.",
+    "description_he": "נגן מוזיקה מבוסס יוטיוב - גרסה ערוכה לחסימת כלל התמונות.",
+    "full_description": "",
+    "category": "Music & Audio",
+    "category_he": "מוזיקה ושמע"
   },
-  "version_file": "apps/metrolist/version.txt",
-  "status_file": "apps/metrolist/status.json",
-  "full_description": "",
-  "screenshots": [
-    "apps/metrolist/screenshots/screen_1.png",
-    "apps/metrolist/screenshots/screen_2.png",
-    "apps/metrolist/screenshots/screen_3.png",
-    "apps/metrolist/screenshots/screen_4.png",
-    "apps/metrolist/screenshots/screen_5.png",
-    "apps/metrolist/screenshots/screen_6.png"
-  ],
-  "category": "Music & Audio",
-  "category_he": "מוזיקה ושמע"
+  "assets": {
+    "icon_url": "https://raw.githubusercontent.com/MetrolistGroup/Metrolist/main/fastlane/metadata/android/en-US/images/icon.png",
+    "screenshots": [
+      "apps/metrolist/screenshots/screen_1.png",
+      "apps/metrolist/screenshots/screen_2.png",
+      "apps/metrolist/screenshots/screen_3.png",
+      "apps/metrolist/screenshots/screen_4.png",
+      "apps/metrolist/screenshots/screen_5.png",
+      "apps/metrolist/screenshots/screen_6.png"
+    ]
+  },
+  "source": {
+    "source": "github",
+    "repo": "MetrolistGroup/Metrolist"
+  },
+  "patching": {
+    "skip_mitm": true,
+    "hotfixes": {
+      "13.3.0": ".1"
+    }
+  },
+  "paths": {
+    "version_file": "apps/metrolist/version.txt",
+    "status_file": "apps/metrolist/status.json"
+  },
+  "maintenance": {
+    "maintainer": "lilor159357"
+  }
 }

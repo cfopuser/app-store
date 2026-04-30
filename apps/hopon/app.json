@@ -1,34 +1,44 @@
 {
-  "id": "hopon",
-  "name": "Rav-Pass by HopOn הופאון רב-פס",
-  "name_he": "הופאון רב-פס: אוטובוסים ורכבות",
-  "package_name": "co.hopon.client",
-  "description": "App for bus ticketing - patched to be used in netfree",
-  "description_he": "אפליקצייה לתיקוף אוטובוסים - ערוכה לשימוש בנטפרי.",
-  "icon_url": "apps/hopon/icon.png",
-  "source": "aptoide",
-  "maintainer": "cfopuser",
-  "version_file": "apps/hopon/version.txt",
-  "status_file": "apps/hopon/status.json",
-  "name_play": "Rav-Pass by HopOn הופאון רב-פס",
-  "full_description": "Public transit rides in Israel has never been easier!<br><br>- Navigate public transit in Israel with our multi modal trip planner using Trains, Light rail, Buses and shared mobility, watch route maps and accurate real-time schedule updates.<br><br>- Pay directly from your phone! no cash and &quot;smart&quot; cards required, just take your phone to your next ride and scan the QR code on board.<br>With Rav-Pass you can pay for any train &amp; bus ride in Israel and enjoy daily and monthly discounts without upfront payments. You can use the service for your Israel Railways train rides, Haifa&#39;s Carmelit, Cable car &amp; Metronit, Tel Aviv and Jerusalem&#39;s light rail and bus rides across Israel with Dan, Dan South, Dan Beer-Sheva, Egged, Egged Taabura, Metropoline, Superbus, Elektra Afikim, Kavim, Tnufa, Extra, Dankal, Kfir, Nativ Express, Beit Shemesh Express UNBS, NTT, Galim &amp; Rama.<br><br>- Share your travel experience using the integrated Better Bus platform in cooperation with 15 Minutes organization<br><br>- Prefer using Rav Kav card? No problem! Top it up using your phone! Just tap &amp; hold your Rav-kav card on the back of your phone, select the ticket you want, pay using all major credit and debit cards. tap again to complete the topup and you&#39;re ready for your next journey!<br><br>You can choose between credit value which is acceptable by all public transit operators in Israel, or a Daily, Monthly passes according to the area of your travel.<br><br>Rav-Pass is an official public transportation payment app licensed by the Ministry of transportation in Israel. <br>Rav Kav top up required NFC support on your phone. <br><br>We&#39;d love to hear your feedback support@ravpass.co.il<br><br>Safe journeys, <br>HopOn Rav-Pass Team",
-  "screenshots": [
-    "apps/hopon/screenshots/screen_1.png",
-    "apps/hopon/screenshots/screen_2.png",
-    "apps/hopon/screenshots/screen_3.png",
-    "apps/hopon/screenshots/screen_4.png",
-    "apps/hopon/screenshots/screen_5.png",
-    "apps/hopon/screenshots/screen_6.png"
-  ],
-  "category": "Transportation",
-  "full_description_he": "הכירו את רב-פס: האפליקציה הרשמית לתשלומים בתחבורה הציבורית בישראל, אשר נותנת לך את החופש לבחור את אמצעי התשלום המתאים והמשתלם עבורך! <br><br><b>תכנון מסלול ולוחות זמנים</b><br>המסלולים הטובים ביותר כדי להגיע ליעד שלכם בתחבורה הציבורית. מסלולים קווי אוטובוס .ורכבות ולוחות זמנים מדוייקים המעודכנים בזמן <br><br><b>🤳 סורקים נוסעים</b><br>נפרדים מכרטיס הרב-קו ומשלמים על הנסיעה ישירות מהנייד וגם נהנים מהנחות יומיות וחודשיות ללא התחייבות ובלי לשלם מראש<br>איך זה עובד? עולים לאוטובוס ובאמצעות האפליקציה מתקפים את הנסיעה על ידי סריקת קוד ה-QR הנמצא בסמוך לדלתות הכניסה והיציאה. <br>השירות זמין עבורכם ברכבת ישראל, הרכבת הקלה בתל אביב ובירושלים, הכרמלית והרכבלית בחיפה ובקווי האוטובוסים של דן, דן בדרום, דן באר שבע, אגד, מטרופולין, סופרבוס, אלקטרה אפיקים, קווים, אגד תעבורה, תנופה, אקסטרה, דנקל, כפיר נתיב אקספרס, בית שמש אקספרס, נסיעות ותיירות נצרת, ש.א.מ, רמה, גלים.<br>עליתם לאוטובוס או לרכבת? תוכלו לדווח על חווית הנסיעה שלכם דרך האפליקציה באמצעות מערכת Better Bus של ארגון 15 דקות בשיתוף הופאון<br><br><b>הנחות לזכאים</b><br>במסגרת רפורמת צדק תחבורתי צעירים, נוער, חיילים משוחררים, סטודנטים, אזרחים ותיקים, תושבי איזורים זכאים ואנשים עם מוגבלויות יכולים להגיש בקשה לפרופיל הנחה דרך האפליקציה בלי להגיע לעמד שירות ובלי לעמוד בתור. לאחר אישור הזכאות, ההנחות ניתנות באופן אוטומטי למשלמים מהנייד. משלמים עם רב-קו? תוכלו לטעון את הפרופיל לכרטיס האישי ולהנות מההנחות בטעינה הבאה שלכם.<br><br><b>💳 טעינת רב-קו ובירור יתרה מהנייד</b><br>הסוף לתשלום במזומן - מצמידים את כרטיס הרב קו אל גב המכשיר וטוענים אותו בערך צבור, המכובד בכל האוטובוסים ורכבת ישראל,  או מנוי תקופתי - שנתי/סמיסטריאלי לסטודנטים, חופשי יומי, חופשי חודשי לפי אמצעי התחבורה וטווח הנסיעה שלכם.<br>*טעינת רב-קו בסלולר דורשת את תמיכת המכשיר ב-NFC. <br><br>שירות התשלומים בתחבורה הציבורית מופעל ע״י הופאון מוביליטי ישראל בע״מ - זכיינית רשמית של משרד התחבורה להפעלת אפליקציה לתיקוף ותשלום נסיעות בתחבורה הציבורית.<br><br>נסיעה טובה!",
-  "category_he": "תחבורה",
-  "screenshots_he": [
-    "apps/hopon/screenshots_he/screen_1.png",
-    "apps/hopon/screenshots_he/screen_2.png",
-    "apps/hopon/screenshots_he/screen_3.png",
-    "apps/hopon/screenshots_he/screen_4.png",
-    "apps/hopon/screenshots_he/screen_5.png",
-    "apps/hopon/screenshots_he/screen_6.png"
-  ]
+  "metadata": {
+    "id": "hopon",
+    "name": "Rav-Pass by HopOn הופאון רב-פס",
+    "name_he": "הופאון רב-פס: אוטובוסים ורכבות",
+    "package_name": "co.hopon.client",
+    "description": "App for bus ticketing - patched to be used in netfree",
+    "description_he": "אפליקצייה לתיקוף אוטובוסים - ערוכה לשימוש בנטפרי.",
+    "full_description": "Public transit rides in Israel has never been easier!<br><br>- Navigate public transit in Israel with our multi modal trip planner using Trains, Light rail, Buses and shared mobility, watch route maps and accurate real-time schedule updates.<br><br>- Pay directly from your phone! no cash and &quot;smart&quot; cards required, just take your phone to your next ride and scan the QR code on board.<br>With Rav-Pass you can pay for any train &amp; bus ride in Israel and enjoy daily and monthly discounts without upfront payments. You can use the service for your Israel Railways train rides, Haifa&#39;s Carmelit, Cable car &amp; Metronit, Tel Aviv and Jerusalem&#39;s light rail and bus rides across Israel with Dan, Dan South, Dan Beer-Sheva, Egged, Egged Taabura, Metropoline, Superbus, Elektra Afikim, Kavim, Tnufa, Extra, Dankal, Kfir, Nativ Express, Beit Shemesh Express UNBS, NTT, Galim &amp; Rama.<br><br>- Share your travel experience using the integrated Better Bus platform in cooperation with 15 Minutes organization<br><br>- Prefer using Rav Kav card? No problem! Top it up using your phone! Just tap &amp; hold your Rav-kav card on the back of your phone, select the ticket you want, pay using all major credit and debit cards. tap again to complete the topup and you&#39;re ready for your next journey!<br><br>You can choose between credit value which is acceptable by all public transit operators in Israel, or a Daily, Monthly passes according to the area of your travel.<br><br>Rav-Pass is an official public transportation payment app licensed by the Ministry of transportation in Israel. <br>Rav Kav top up required NFC support on your phone. <br><br>We&#39;d love to hear your feedback support@ravpass.co.il<br><br>Safe journeys, <br>HopOn Rav-Pass Team",
+    "full_description_he": "הכירו את רב-פס: האפליקציה הרשמית לתשלומים בתחבורה הציבורית בישראל, אשר נותנת לך את החופש לבחור את אמצעי התשלום המתאים והמשתלם עבורך! <br><br><b>תכנון מסלול ולוחות זמנים</b><br>המסלולים הטובים ביותר כדי להגיע ליעד שלכם בתחבורה הציבורית. מסלולים קווי אוטובוס .ורכבות ולוחות זמנים מדוייקים המעודכנים בזמן <br><br><b>🤳 סורקים נוסעים</b><br>נפרדים מכרטיס הרב-קו ומשלמים על הנסיעה ישירות מהנייד וגם נהנים מהנחות יומיות וחודשיות ללא התחייבות ובלי לשלם מראש<br>איך זה עובד? עולים לאוטובוס ובאמצעות האפליקציה מתקפים את הנסיעה על ידי סריקת קוד ה-QR הנמצא בסמוך לדלתות הכניסה והיציאה. <br>השירות זמין עבורכם ברכבת ישראל, הרכבת הקלה בתל אביב ובירושלים, הכרמלית והרכבלית בחיפה ובקווי האוטובוסים של דן, דן בדרום, דן באר שבע, אגד, מטרופולין, סופרבוס, אלקטרה אפיקים, קווים, אגד תעבורה, תנופה, אקסטרה, דנקל, כפיר נתיב אקספרס, בית שמש אקספרס, נסיעות ותיירות נצרת, ש.א.מ, רמה, גלים.<br>עליתם לאוטובוס או לרכבת? תוכלו לדווח על חווית הנסיעה שלכם דרך האפליקציה באמצעות מערכת Better Bus של ארגון 15 דקות בשיתוף הופאון<br><br><b>הנחות לזכאים</b><br>במסגרת רפורמת צדק תחבורתי צעירים, נוער, חיילים משוחררים, סטודנטים, אזרחים ותיקים, תושבי איזורים זכאים ואנשים עם מוגבלויות יכולים להגיש בקשה לפרופיל הנחה דרך האפליקציה בלי להגיע לעמד שירות ובלי לעמוד בתור. לאחר אישור הזכאות, ההנחות ניתנות באופן אוטומטי למשלמים מהנייד. משלמים עם רב-קו? תוכלו לטעון את הפרופיל לכרטיס האישי ולהנות מההנחות בטעינה הבאה שלכם.<br><br><b>💳 טעינת רב-קו ובירור יתרה מהנייד</b><br>הסוף לתשלום במזומן - מצמידים את כרטיס הרב קו אל גב המכשיר וטוענים אותו בערך צבור, המכובד בכל האוטובוסים ורכבת ישראל,  או מנוי תקופתי - שנתי/סמיסטריאלי לסטודנטים, חופשי יומי, חופשי חודשי לפי אמצעי התחבורה וטווח הנסיעה שלכם.<br>*טעינת רב-קו בסלולר דורשת את תמיכת המכשיר ב-NFC. <br><br>שירות התשלומים בתחבורה הציבורית מופעל ע״י הופאון מוביליטי ישראל בע״מ - זכיינית רשמית של משרד התחבורה להפעלת אפליקציה לתיקוף ותשלום נסיעות בתחבורה הציבורית.<br><br>נסיעה טובה!",
+    "category": "Transportation",
+    "category_he": "תחבורה"
+  },
+  "assets": {
+    "icon_url": "apps/hopon/icon.png",
+    "screenshots": [
+      "apps/hopon/screenshots/screen_1.png",
+      "apps/hopon/screenshots/screen_2.png",
+      "apps/hopon/screenshots/screen_3.png",
+      "apps/hopon/screenshots/screen_4.png",
+      "apps/hopon/screenshots/screen_5.png",
+      "apps/hopon/screenshots/screen_6.png"
+    ],
+    "screenshots_he": [
+      "apps/hopon/screenshots_he/screen_1.png",
+      "apps/hopon/screenshots_he/screen_2.png",
+      "apps/hopon/screenshots_he/screen_3.png",
+      "apps/hopon/screenshots_he/screen_4.png",
+      "apps/hopon/screenshots_he/screen_5.png",
+      "apps/hopon/screenshots_he/screen_6.png"
+    ]
+  },
+  "source": {
+    "source": "aptoide",
+    "name_play": "Rav-Pass by HopOn הופאון רב-פס"
+  },
+  "paths": {
+    "version_file": "apps/hopon/version.txt",
+    "status_file": "apps/hopon/status.json"
+  },
+  "maintenance": {
+    "maintainer": "cfopuser"
+  }
 }

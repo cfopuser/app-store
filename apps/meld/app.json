@@ -1,20 +1,32 @@
 {
-  "id": "meld",
-  "name": "Meld",
-  "name_he": "מלד",
-  "package_name": "com.meld.app",
-  "description": "A music client that fuses Spotify and YouTube Music - patched version to block all images.",
-  "description_he": "נגן מוזיקה המשלב את ספוטיפיי ויוטיוב מיוזיק - גרסה ערוכה לחסימת כלל התמונות.",
-  "icon_url": "https://raw.githubusercontent.com/FrancescoGrazioso/Meld/main/fastlane/metadata/android/en-US/images/icon.png",
-  "source": "github",
-  "repo": "FrancescoGrazioso/Meld",
-  "maintainer": "lilor159357",
-  "skip_mitm": true,
-  "hotfixes": {
-    "0.6.2": ".1"
+  "metadata": {
+    "id": "meld",
+    "name": "Meld",
+    "name_he": "מלד",
+    "package_name": "com.meld.app",
+    "description": "A music client that fuses Spotify and YouTube Music - patched version to block all images.",
+    "description_he": "נגן מוזיקה המשלב את ספוטיפיי ויוטיוב מיוזיק - גרסה ערוכה לחסימת כלל התמונות.",
+    "category": "Music & Audio",
+    "category_he": "מוזיקה ושמע"
   },
-  "version_file": "apps/meld/version.txt",
-  "status_file": "apps/meld/status.json",
-  "category": "Music & Audio",
-  "category_he": "מוזיקה ושמע"
+  "assets": {
+    "icon_url": "https://raw.githubusercontent.com/FrancescoGrazioso/Meld/main/fastlane/metadata/android/en-US/images/icon.png"
+  },
+  "source": {
+    "source": "github",
+    "repo": "FrancescoGrazioso/Meld"
+  },
+  "patching": {
+    "skip_mitm": true,
+    "hotfixes": {
+      "0.6.2": ".1"
+    }
+  },
+  "paths": {
+    "version_file": "apps/meld/version.txt",
+    "status_file": "apps/meld/status.json"
+  },
+  "maintenance": {
+    "maintainer": "lilor159357"
+  }
 }

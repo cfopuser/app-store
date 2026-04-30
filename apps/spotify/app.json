@@ -1,39 +1,51 @@
 {
-  "id": "spotify",
-  "name": "Spotify: Music and Podcasts",
-  "name_he": "Spotify Music",
-  "package_name": "com.spotify.music",
-  "description": "audio player - patched vers to remove all videos and images. (without premium)",
-  "description_he": "נגן מוזיקה - גרסה ערוכה לחסימת כלל תמונות וסרטונים (ללא פרימיום).",
-  "icon_url": "apps/spotify/icon.png",
-  "source": "aptoide",
-  "skip_mitm": true,
-  "inject_updater": false,
-  "maintainer": "lilor159357",
-  "version_file": "apps/spotify/version.txt",
-  "status_file": "apps/spotify/status.json",
-  "name_play": "Spotify: Music and Podcasts",
-  "full_description": "Explore an extensive library of free music and podcasts with Spotify. Curate your own music playlists and stream millions of free songs, albums, and podcasts on your phone or tablet. Subscribe to Spotify to download and listen to music offline, and unlock a catalog of audiobooks from around the world.<br><br>Why choose Spotify as your go-to music and podcast app? Here, you can:<br>• Listen to over 100 million songs and 6 million podcast titles<br>• Explore Spotify&#39;s selection of specially-crafted artist playlists<br>• Easily search for your favorite songs, albums, artists, and podcasts<br>• Discover personalized music recommendations tailored to your unique taste<br>• Subscribe to your favorite free podcasts so you never miss an episode, and even curate your own podcast library<br><br>Spotify Free is more than a music player - find the sounds you love and stream free music and podcasts online.  Enjoy personalized music playlists or curate and share your own, discover the hottest new releases, explore upcoming events from your favorite artists, and more.<br>• Stream millions of songs and podcasts for free<br>• Create playlists with your favorite music <br>• Share songs and playlists with friends and family (feature restrictions may apply in some regions)<br>• Discover personalized playlists, and collaborate on playlists with your friends<br>• Enjoy your personal Discover Weekly playlist to find your new favorite songs every week<br>• Stay in the know with the Release Radar and New Music Friday playlists<br>• Find nearby events and gigs by your favorite artists <br>• See your most played songs, genres, artists, podcasts, and more with yearly Spotify Wrapped  <br>• Stream music across your devices with Spotify<br>• Use Spotify Connect and enjoy listening on smart speakers, desktop, laptop, smart TV, Chromecast, PlayStation®, XBOX®, smartwatch, in your car, and more - limited number of device models apply <br><br>Spotify Premium - enjoy the benefits of an offline music player and stream music without WiFi. The music downloader option allows you to access your songs, podcasts, and playlists offline, wherever you are.<br>• Listen to music, podcasts, and audiobooks without ads <br>• Ad-free music listening: enjoy your music with no ad interruptions<br>• Enjoy full on-demand playback<br>• Audiobooks in Premium are currently available in the US, UK, Australia, Ireland, New Zealand, and Canada. Discover 250,000+ titles, 15 hours/month of available listening for Premium Individual subscribers and Duo &amp; Family plan managers.<br>• Enjoy high quality audio on supported devices<br>• Spotify&#39;s AI DJ: a personalized guide that knows your music taste so well it can choose what to play for you<br>• Enjoy on desktop, phone, tablet, computer, smartwatch, and in your car<br>• Listen and control the listening session together by hosting a Jam in real time with friends <br>• Download and listen to music, podcasts, and audiobooks offline, without an internet connection <br>• No contract required - cancel your Spotify Premium subscription whenever you want <br><br>Experience Spotify on your Wear OS device: <br>• Play music, podcasts, and audiobooks without having your phone around. <br>• Get instant access to the Spotify music player with our Tiles and Complications",
-  "screenshots": [
-    "apps/spotify/screenshots/screen_1.png",
-    "apps/spotify/screenshots/screen_2.png",
-    "apps/spotify/screenshots/screen_3.png",
-    "apps/spotify/screenshots/screen_4.png",
-    "apps/spotify/screenshots/screen_5.png",
-    "apps/spotify/screenshots/screen_6.png",
-    "apps/spotify/screenshots/screen_7.png",
-    "apps/spotify/screenshots/screen_8.png"
-  ],
-  "category": "Music & Audio",
-  "full_description_he": "האזינו ללהיטים ולאלבומים בחינם, חפשו שירים, גלו מוזיקה והורידו שירים ביישום הנגן החינמי של Spotify.<br><br>האזנה בחינם, חיפוש מוזיקה וספריית להיטים – כל אלה ועוד הרבה יותר מחכים לכם ב-Spotify.<br><br>האזינו לשירים, סנכרנו מוזיקה וגלו מוזיקה ואלבומים בחינם עם Spotify, יישום המוזיקה המושלם.<br><br>חפשו שירים ואלבומים בדיוק כמו בחנות מוזיקה, רק בחינם.<br><br>האזינו בחינם למוזיקה של אמנים חמים ואלבומים פופולריים, או הורידו שירים כדי ליצור פלייליסט שקולע בדיוק לטעם שלכם. ב-Spotify תוכלו למצוא את האלבום המושלם שלכם ולנגן אותו שוב ושוב... ושוב.<br><br>‏Spotify מאפשר לכם לחפש מוזיקה בקלות. גלו מוזיקה חדשה, חפשו שירים, האזינו ותיהנו.<br><br>האזינו לאלבומים של המוזיקאים והאמנים האהובים עליכם. גלו את האלבום הטוב ביותר של כל אחד מהאמנים האהובים עליכם, כולל Adele,‏ Rihanna ורבים אחרים. את כולם תוכלו למצוא ביישום הזה להורדת מוזיקה ולהאזנה בחינם.<br><br>מוזיקת פופ, ג&#39;אז, לטינית, קלאסית, גראז&#39;, Heavy Metal ועוד הרבה יותר – Spotify הוא כמו חנות תקליטים ענקית שהכול בה בחינם! בואו ליהנות מהאלבומים והמוזיקאים האהובים עליכם.<br><br>ב-Spotify מאזינים למוזיקה בחינם. נגנו מוזיקה, הורידו שירים, גלו מוזיקה חדשה וצרו פלייליסטים מוכנים להשמעה שמתאימים לכל מצב רוח. Spotify גם מציג לכם המלצות אישיות בחינם.<br><br>התכונות של Spotify:<br><br>האזנה בחינם בנייד או בטאבלט <br>• חפשו מוזיקה, נגנו שירים, האזינו לאלבומים וללהיטים של כל האמנים האהובים עליכם <br>• האזינו למוזיקה בחינם באמצעות נגן המוזיקה והכלי להורדת שירים, וצרו פלייליסט משלכם <br>• נגנו מוזיקה והפעילו מצב נגינה אקראית כדי ליהנות מהפתעות <br>• האזינו לתחנות רדיו ונגנו מוזיקה מרחבי העולם<br>• נגנו מוזיקה באמצעות הנגן של Spotify Connect במחשב השולחני או הנייד, בטלוויזיה חכמה, בסטרימר או ב-®PlayStation<br>• הורידו שירים ומוזיקה חמה ועכשווית – כל מה שצריך זה Spotify<br><br>גלו מוזיקה שלא הכרתם וצרו פלייליסטים<br>• כיף יותר להאזין למוזיקה בפלייליסט שאתם יצרתם<br>• גלו מוזיקה ונגנו שירים שהרגע יצאו<br>• חפשו מוזיקה ונגנו שירים ואלבומים מאחד מהפלייליסטים הבלעדיים של Spotify שהורכבו במיוחד, מכל ז&#39;אנר מוזיקלי או אמן פופולרי<br>• נגנו מוזיקה ואלבומים בחינם עם המלצות מוזיקה שהותאמו לכם אישית<br>• הורידו שירים ומוזיקה חדשה באמצעות הכלי להורדת שירים – קל להוריד שירים עם Spotify<br><br>הורידו שירים והאזינו במצב לא מקוון עם Spotify Premium<br>• הורידו שירים ואלבומים בחינם מהאמן והלהקה המועדפים עליכם<br>• האזינו לכל המוזיקאים האהובים עליכם ולמוזיקה הכי חמה באיכות שמע מדהימה<br>• האזינו לאלבום שאתם אוהבים, איפה שתרצו ומתי שתרצו<br>• הורידו מוזיקה חדשה ונגנו את השירים האהובים עליכם במצב לא מקוון בכל מכשיר – נייד, טאבלט או מחשב<br>• בלי פרסומות, רק מוזיקה ללא הפרעות<br>• ללא התחייבות – אפשר לבטל בכל עת<br>• השתמשו ב-Spotify Connect לניגון מוזיקה ואלבומים בחינם ברמקולים שמתחברים ל-Wi-Fi, למשל רמקולים של Bose,‏ Sonos,‏ Denon ואחרים. אפשר גם לנגן שירים מ-Spotify באמצעות פקודות קוליות במכשירי Amazon Echo ו-Dot<br><br>חפשו מוזיקה ונגנו שירים, אלבומים ולהיטים בכל הז&#39;אנרים:<br>• מוזיקת דאנס<br>• אינדי<br>• רוק קלאסי<br>• היפ הופ<br>• ראפ<br>• אינדי<br>• שירי פופ<br>• קאנטרי<br>• דיסקו<br>K-pop • <br>• ועוד!<br><br>האזנה למוזיקה בכל מקום. האזינו לשירים האהובים עליכם וגלו מוזיקה חדשה עם אפליקציית Spotify.<br><br>אוהבים את Spotify? <br>תנו לנו לייק בפייסבוק: http://www.facebook.com/spotify <br>עקבו אחרינו ב-Twitter:‏ http://twitter.com/spotify<br><br>שימו לב: האפליקציה עושה שימוש בתוכנה למדידת קהל של נילסן, שבאמצעותה תוכלו לתרום למחקרים שיווקיים, כמו &#39;מדידת מעורבות קהל המאזינים בשידורי אודיו&#39; של נילסן. אם אינכם רוצים להשתתף, אפשר לבטל הסכמה בהגדרות של האפליקציה. ניתן למצוא מידע נוסף על המוצרים שלנו למדידת קהל בשוק הדיגיטלי והבחירות העומדות בפניכם בהקשר אליהם בכתובת http://www.nielsen.com/digitalprivacy.",
-  "category_he": "מוזיקה ושמע",
-  "screenshots_he": [ 
-    "apps/spotify/screenshots_he/screen_1.png",
-    "apps/spotify/screenshots_he/screen_2.png",
-    "apps/spotify/screenshots_he/screen_3.png",
-    "apps/spotify/screenshots_he/screen_4.png",
-    "apps/spotify/screenshots_he/screen_5.png",
-    "apps/spotify/screenshots_he/screen_6.png",
-    "apps/spotify/screenshots_he/screen_7.png"
-  ]
+  "metadata": {
+    "id": "spotify",
+    "name": "Spotify: Music and Podcasts",
+    "name_he": "Spotify Music",
+    "package_name": "com.spotify.music",
+    "description": "audio player - patched vers to remove all videos and images. (without premium)",
+    "description_he": "נגן מוזיקה - גרסה ערוכה לחסימת כלל תמונות וסרטונים (ללא פרימיום).",
+    "full_description": "Explore an extensive library of free music and podcasts with Spotify. Curate your own music playlists and stream millions of free songs, albums, and podcasts on your phone or tablet. Subscribe to Spotify to download and listen to music offline, and unlock a catalog of audiobooks from around the world.<br><br>Why choose Spotify as your go-to music and podcast app? Here, you can:<br>• Listen to over 100 million songs and 6 million podcast titles<br>• Explore Spotify&#39;s selection of specially-crafted artist playlists<br>• Easily search for your favorite songs, albums, artists, and podcasts<br>• Discover personalized music recommendations tailored to your unique taste<br>• Subscribe to your favorite free podcasts so you never miss an episode, and even curate your own podcast library<br><br>Spotify Free is more than a music player - find the sounds you love and stream free music and podcasts online.  Enjoy personalized music playlists or curate and share your own, discover the hottest new releases, explore upcoming events from your favorite artists, and more.<br>• Stream millions of songs and podcasts for free<br>• Create playlists with your favorite music <br>• Share songs and playlists with friends and family (feature restrictions may apply in some regions)<br>• Discover personalized playlists, and collaborate on playlists with your friends<br>• Enjoy your personal Discover Weekly playlist to find your new favorite songs every week<br>• Stay in the know with the Release Radar and New Music Friday playlists<br>• Find nearby events and gigs by your favorite artists <br>• See your most played songs, genres, artists, podcasts, and more with yearly Spotify Wrapped  <br>• Stream music across your devices with Spotify<br>• Use Spotify Connect and enjoy listening on smart speakers, desktop, laptop, smart TV, Chromecast, PlayStation®, XBOX®, smartwatch, in your car, and more - limited number of device models apply <br><br>Spotify Premium - enjoy the benefits of an offline music player and stream music without WiFi. The music downloader option allows you to access your songs, podcasts, and playlists offline, wherever you are.<br>• Listen to music, podcasts, and audiobooks without ads <br>• Ad-free music listening: enjoy your music with no ad interruptions<br>• Enjoy full on-demand playback<br>• Audiobooks in Premium are currently available in the US, UK, Australia, Ireland, New Zealand, and Canada. Discover 250,000+ titles, 15 hours/month of available listening for Premium Individual subscribers and Duo &amp; Family plan managers.<br>• Enjoy high quality audio on supported devices<br>• Spotify&#39;s AI DJ: a personalized guide that knows your music taste so well it can choose what to play for you<br>• Enjoy on desktop, phone, tablet, computer, smartwatch, and in your car<br>• Listen and control the listening session together by hosting a Jam in real time with friends <br>• Download and listen to music, podcasts, and audiobooks offline, without an internet connection <br>• No contract required - cancel your Spotify Premium subscription whenever you want <br><br>Experience Spotify on your Wear OS device: <br>• Play music, podcasts, and audiobooks without having your phone around. <br>• Get instant access to the Spotify music player with our Tiles and Complications",
+    "full_description_he": "האזינו ללהיטים ולאלבומים בחינם, חפשו שירים, גלו מוזיקה והורידו שירים ביישום הנגן החינמי של Spotify.<br><br>האזנה בחינם, חיפוש מוזיקה וספריית להיטים – כל אלה ועוד הרבה יותר מחכים לכם ב-Spotify.<br><br>האזינו לשירים, סנכרנו מוזיקה וגלו מוזיקה ואלבומים בחינם עם Spotify, יישום המוזיקה המושלם.<br><br>חפשו שירים ואלבומים בדיוק כמו בחנות מוזיקה, רק בחינם.<br><br>האזינו בחינם למוזיקה של אמנים חמים ואלבומים פופולריים, או הורידו שירים כדי ליצור פלייליסט שקולע בדיוק לטעם שלכם. ב-Spotify תוכלו למצוא את האלבום המושלם שלכם ולנגן אותו שוב ושוב... ושוב.<br><br>‏Spotify מאפשר לכם לחפש מוזיקה בקלות. גלו מוזיקה חדשה, חפשו שירים, האזינו ותיהנו.<br><br>האזינו לאלבומים של המוזיקאים והאמנים האהובים עליכם. גלו את האלבום הטוב ביותר של כל אחד מהאמנים האהובים עליכם, כולל Adele,‏ Rihanna ורבים אחרים. את כולם תוכלו למצוא ביישום הזה להורדת מוזיקה ולהאזנה בחינם.<br><br>מוזיקת פופ, ג&#39;אז, לטינית, קלאסית, גראז&#39;, Heavy Metal ועוד הרבה יותר – Spotify הוא כמו חנות תקליטים ענקית שהכול בה בחינם! בואו ליהנות מהאלבומים והמוזיקאים האהובים עליכם.<br><br>ב-Spotify מאזינים למוזיקה בחינם. נגנו מוזיקה, הורידו שירים, גלו מוזיקה חדשה וצרו פלייליסטים מוכנים להשמעה שמתאימים לכל מצב רוח. Spotify גם מציג לכם המלצות אישיות בחינם.<br><br>התכונות של Spotify:<br><br>האזנה בחינם בנייד או בטאבלט <br>• חפשו מוזיקה, נגנו שירים, האזינו לאלבומים וללהיטים של כל האמנים האהובים עליכם <br>• האזינו למוזיקה בחינם באמצעות נגן המוזיקה והכלי להורדת שירים, וצרו פלייליסט משלכם <br>• נגנו מוזיקה והפעילו מצב נגינה אקראית כדי ליהנות מהפתעות <br>• האזינו לתחנות רדיו ונגנו מוזיקה מרחבי העולם<br>• נגנו מוזיקה באמצעות הנגן של Spotify Connect במחשב השולחני או הנייד, בטלוויזיה חכמה, בסטרימר או ב-®PlayStation<br>• הורידו שירים ומוזיקה חמה ועכשווית – כל מה שצריך זה Spotify<br><br>גלו מוזיקה שלא הכרתם וצרו פלייליסטים<br>• כיף יותר להאזין למוזיקה בפלייליסט שאתם יצרתם<br>• גלו מוזיקה ונגנו שירים שהרגע יצאו<br>• חפשו מוזיקה ונגנו שירים ואלבומים מאחד מהפלייליסטים הבלעדיים של Spotify שהורכבו במיוחד, מכל ז&#39;אנר מוזיקלי או אמן פופולרי<br>• נגנו מוזיקה ואלבומים בחינם עם המלצות מוזיקה שהותאמו לכם אישית<br>• הורידו שירים ומוזיקה חדשה באמצעות הכלי להורדת שירים – קל להוריד שירים עם Spotify<br><br>הורידו שירים והאזינו במצב לא מקוון עם Spotify Premium<br>• הורידו שירים ואלבומים בחינם מהאמן והלהקה המועדפים עליכם<br>• האזינו לכל המוזיקאים האהובים עליכם ולמוזיקה הכי חמה באיכות שמע מדהימה<br>• האזינו לאלבום שאתם אוהבים, איפה שתרצו ומתי שתרצו<br>• הורידו מוזיקה חדשה ונגנו את השירים האהובים עליכם במצב לא מקוון בכל מכשיר – נייד, טאבלט או מחשב<br>• בלי פרסומות, רק מוזיקה ללא הפרעות<br>• ללא התחייבות – אפשר לבטל בכל עת<br>• השתמשו ב-Spotify Connect לניגון מוזיקה ואלבומים בחינם ברמקולים שמתחברים ל-Wi-Fi, למשל רמקולים של Bose,‏ Sonos,‏ Denon ואחרים. אפשר גם לנגן שירים מ-Spotify באמצעות פקודות קוליות במכשירי Amazon Echo ו-Dot<br><br>חפשו מוזיקה ונגנו שירים, אלבומים ולהיטים בכל הז&#39;אנרים:<br>• מוזיקת דאנס<br>• אינדי<br>• רוק קלאסי<br>• היפ הופ<br>• ראפ<br>• אינדי<br>• שירי פופ<br>• קאנטרי<br>• דיסקו<br>K-pop • <br>• ועוד!<br><br>האזנה למוזיקה בכל מקום. האזינו לשירים האהובים עליכם וגלו מוזיקה חדשה עם אפליקציית Spotify.<br><br>אוהבים את Spotify? <br>תנו לנו לייק בפייסבוק: http://www.facebook.com/spotify <br>עקבו אחרינו ב-Twitter:‏ http://twitter.com/spotify<br><br>שימו לב: האפליקציה עושה שימוש בתוכנה למדידת קהל של נילסן, שבאמצעותה תוכלו לתרום למחקרים שיווקיים, כמו &#39;מדידת מעורבות קהל המאזינים בשידורי אודיו&#39; של נילסן. אם אינכם רוצים להשתתף, אפשר לבטל הסכמה בהגדרות של האפליקציה. ניתן למצוא מידע נוסף על המוצרים שלנו למדידת קהל בשוק הדיגיטלי והבחירות העומדות בפניכם בהקשר אליהם בכתובת http://www.nielsen.com/digitalprivacy.",
+    "category": "Music & Audio",
+    "category_he": "מוזיקה ושמע"
+  },
+  "assets": {
+    "icon_url": "apps/spotify/icon.png",
+    "screenshots": [
+      "apps/spotify/screenshots/screen_1.png",
+      "apps/spotify/screenshots/screen_2.png",
+      "apps/spotify/screenshots/screen_3.png",
+      "apps/spotify/screenshots/screen_4.png",
+      "apps/spotify/screenshots/screen_5.png",
+      "apps/spotify/screenshots/screen_6.png",
+      "apps/spotify/screenshots/screen_7.png",
+      "apps/spotify/screenshots/screen_8.png"
+    ],
+    "screenshots_he": [
+      "apps/spotify/screenshots_he/screen_1.png",
+      "apps/spotify/screenshots_he/screen_2.png",
+      "apps/spotify/screenshots_he/screen_3.png",
+      "apps/spotify/screenshots_he/screen_4.png",
+      "apps/spotify/screenshots_he/screen_5.png",
+      "apps/spotify/screenshots_he/screen_6.png",
+      "apps/spotify/screenshots_he/screen_7.png"
+    ]
+  },
+  "source": {
+    "source": "aptoide",
+    "name_play": "Spotify: Music and Podcasts"
+  },
+  "patching": {
+    "skip_mitm": true,
+    "inject_updater": false
+  },
+  "paths": {
+    "version_file": "apps/spotify/version.txt",
+    "status_file": "apps/spotify/status.json"
+  },
+  "maintenance": {
+    "maintainer": "lilor159357"
+  }
 }

@@ -1,33 +1,45 @@
 {
-  "id": "egg",
-  "name": "egg - Bus & Train in Israel",
-  "name_he": "Egg: תחבורה ציבורית בזמן אמת",
-  "package_name": "com.egged.egg",
-  "description": "Public transportation app – patched for sideloading.",
-  "description_he": "אפליקציית תחבורה ציבורית  - ערוכה להתקנה מקובץ.",
-  "icon_url": "apps/egg/icon.png",
-  "source": "apkpure_mobile",
-  "maintainer": "lilor159357",
-  "inject_updater": true,
-  "version_file": "apps/egg/version.txt",
-  "status_file": "apps/egg/status.json",
-  "name_play": "egg - Bus & Train in Israel",
-  "full_description": "<b>egg – Israel&#39;s all-in-one public transport app!</b><br><br><b>Your smart companion for buses, trains, and intercity travel – always easy, secure, and ad-free.</b><br><br><b>🗺️ Smart route planning &amp; live navigation</b><br><br>Plan the best way across Israel with real-time bus arrivals, train schedules, and updated routes.<br><br><b>💳 Simple, secure digital payments</b><br><br>Pay for bus or train rides directly from your phone– no Rav-Kav needed. Quick, safe, no prepayment. Just scan a QR code and get an instant digital ticket.<br><br><b>🚫 Always ad-free</b><br><br>A clean, focused experience built around your ride.<br><br><b>🎫 Discounts for eligible riders</b><br><br>Special fares for students, soldiers, seniors, and more – tailored to your profile.<br><br><b>💳 Rav-Kav top-up</b><br><br>Easily scan and recharge stored value or passes.<br><br>Device must support NFC.<br><br><b>🎟️ Tickets booking for Egged intercity buses (including Eilat)</b><br><br>Reserve tickets ahead of time, store them in the app, and abroad with confidence.<br><br><b>📁 All tickets in one place</b><br><br>Access your saved tickets anytime – ready for your trip.<br><br><b>🧏‍♂️ Full support &amp; service</b><br><br>Reach customer care directly and get fast, professional help.<br><br>Download egg now and enjoy a smarter, easier, and safer ride – with every service you need in one app.<br><br>Availability notice:<br>The egg app provides public transportation services in Israel only.<br>Availability in selected countries is intended to help travelers and residents who are currently in Israel but use non-Israeli Google Play Store accounts.",
-  "screenshots": [
-    "apps/egg/screenshots/screen_1.png",
-    "apps/egg/screenshots/screen_2.png",
-    "apps/egg/screenshots/screen_3.png",
-    "apps/egg/screenshots/screen_4.png",
-    "apps/egg/screenshots/screen_5.png"
-  ],
-  "category": "Transportation",
-  "full_description_he": "🚌 <b>Egg - אוטובוס קרוב ותחבורה ציבורית בזמן אמת!</b><br>מחפשים אוטובוס קרוב? רוצים תכנון מסלול נסיעה מהיר? Egg היא האפליקציה לנסיעות בתחבורה ציבורית בישראל - חכמה, נוחה וללא פרסומות!<br><br>🗺️ <b>תכנון מסלול נסיעה וניווט בזמן אמת</b><br>מצאו אוטובוס קרוב ואת הדרך המהירה ביותר באוטובוס וברכבת עם עדכונים בזמן אמת וזמני הגעה מדויקים. תחבורה ציבורית זמנים ישראל - תמיד מעודכנים!<br><br>💳 <b>תשלום באוטובוס בנייד - דיגיטלי, קל ונוח</b><br>תשלום באוטובוס ותשלום ברכבת ישירות מהנייד - בלי רב-קו! תשלום תחבורה ציבורית מהיר ומאובטח, חיסכון בזמן ובמאמץ - ללא התחייבות ובלי לשלם מראש. פשוט סורקים את קוד ה-QR ומקבלים כרטיס דיגיטלי זמין בנייד.<br><br>🚫 <b>ללא פרסומות - תמיד!</b><br>חוויית שימוש שקטה, נעימה וממוקדת בכם ובנסיעה. נסיעות בתחבורה ציבורית ללא הסחות דעת - רק אתם והדרך.<br><br>🎫 <b>הנחות מותאמות לזכאים</b><br>הנחות לתלמידים, חיילים, אזרחים ותיקים ועוד - לפי פרופיל אישי.<br><br>💳 <b>הטענת רב-קו</b><br>הטענת רב-קו בתהליך קצר ופשוט - סריקה והטענת ערך צבור/מנוי.<br>*נדרשת תמיכת המכשיר ב-NFC.<br><br>🎟️ <b>הזמנת כרטיסים לנסיעות ארוכות באגד (כולל אילת)</b><br>בחרו תאריך, שמרו את הכרטיס באפליקציה והגיעו מוכנים.<br><br>📁 <b>כרטיסים שמורים ונגישים עד לנסיעה</b><br>כל הכרטיסים שלכם זמינים בכל עת באפליקציה - מוכנים ליום הנסיעה.<br><br>🧏‍♂️ <b>שירות ותמיכה מלאה</b><br>צרו קשר עם שירות הלקוחות, ותיהנו מתמיכה מקצועית ומהירה.<br><br>הורידו עכשיו את Egg - אוטובוס קרוב, תכנון נסיעה ותשלום תחבורה ציבורית בזמן אמת. הכל ללא פרסומות!",
-  "category_he": "תחבורה",
-  "screenshots_he": [
-    "apps/egg/screenshots_he/screen_1.png",
-    "apps/egg/screenshots_he/screen_2.png",
-    "apps/egg/screenshots_he/screen_3.png",
-    "apps/egg/screenshots_he/screen_4.png",
-    "apps/egg/screenshots_he/screen_5.png"
-  ]
+  "metadata": {
+    "id": "egg",
+    "name": "egg - Bus & Train in Israel",
+    "name_he": "Egg: תחבורה ציבורית בזמן אמת",
+    "package_name": "com.egged.egg",
+    "description": "Public transportation app – patched for sideloading.",
+    "description_he": "אפליקציית תחבורה ציבורית  - ערוכה להתקנה מקובץ.",
+    "full_description": "<b>egg – Israel&#39;s all-in-one public transport app!</b><br><br><b>Your smart companion for buses, trains, and intercity travel – always easy, secure, and ad-free.</b><br><br><b>🗺️ Smart route planning &amp; live navigation</b><br><br>Plan the best way across Israel with real-time bus arrivals, train schedules, and updated routes.<br><br><b>💳 Simple, secure digital payments</b><br><br>Pay for bus or train rides directly from your phone– no Rav-Kav needed. Quick, safe, no prepayment. Just scan a QR code and get an instant digital ticket.<br><br><b>🚫 Always ad-free</b><br><br>A clean, focused experience built around your ride.<br><br><b>🎫 Discounts for eligible riders</b><br><br>Special fares for students, soldiers, seniors, and more – tailored to your profile.<br><br><b>💳 Rav-Kav top-up</b><br><br>Easily scan and recharge stored value or passes.<br><br>Device must support NFC.<br><br><b>🎟️ Tickets booking for Egged intercity buses (including Eilat)</b><br><br>Reserve tickets ahead of time, store them in the app, and abroad with confidence.<br><br><b>📁 All tickets in one place</b><br><br>Access your saved tickets anytime – ready for your trip.<br><br><b>🧏‍♂️ Full support &amp; service</b><br><br>Reach customer care directly and get fast, professional help.<br><br>Download egg now and enjoy a smarter, easier, and safer ride – with every service you need in one app.<br><br>Availability notice:<br>The egg app provides public transportation services in Israel only.<br>Availability in selected countries is intended to help travelers and residents who are currently in Israel but use non-Israeli Google Play Store accounts.",
+    "full_description_he": "🚌 <b>Egg - אוטובוס קרוב ותחבורה ציבורית בזמן אמת!</b><br>מחפשים אוטובוס קרוב? רוצים תכנון מסלול נסיעה מהיר? Egg היא האפליקציה לנסיעות בתחבורה ציבורית בישראל - חכמה, נוחה וללא פרסומות!<br><br>🗺️ <b>תכנון מסלול נסיעה וניווט בזמן אמת</b><br>מצאו אוטובוס קרוב ואת הדרך המהירה ביותר באוטובוס וברכבת עם עדכונים בזמן אמת וזמני הגעה מדויקים. תחבורה ציבורית זמנים ישראל - תמיד מעודכנים!<br><br>💳 <b>תשלום באוטובוס בנייד - דיגיטלי, קל ונוח</b><br>תשלום באוטובוס ותשלום ברכבת ישירות מהנייד - בלי רב-קו! תשלום תחבורה ציבורית מהיר ומאובטח, חיסכון בזמן ובמאמץ - ללא התחייבות ובלי לשלם מראש. פשוט סורקים את קוד ה-QR ומקבלים כרטיס דיגיטלי זמין בנייד.<br><br>🚫 <b>ללא פרסומות - תמיד!</b><br>חוויית שימוש שקטה, נעימה וממוקדת בכם ובנסיעה. נסיעות בתחבורה ציבורית ללא הסחות דעת - רק אתם והדרך.<br><br>🎫 <b>הנחות מותאמות לזכאים</b><br>הנחות לתלמידים, חיילים, אזרחים ותיקים ועוד - לפי פרופיל אישי.<br><br>💳 <b>הטענת רב-קו</b><br>הטענת רב-קו בתהליך קצר ופשוט - סריקה והטענת ערך צבור/מנוי.<br>*נדרשת תמיכת המכשיר ב-NFC.<br><br>🎟️ <b>הזמנת כרטיסים לנסיעות ארוכות באגד (כולל אילת)</b><br>בחרו תאריך, שמרו את הכרטיס באפליקציה והגיעו מוכנים.<br><br>📁 <b>כרטיסים שמורים ונגישים עד לנסיעה</b><br>כל הכרטיסים שלכם זמינים בכל עת באפליקציה - מוכנים ליום הנסיעה.<br><br>🧏‍♂️ <b>שירות ותמיכה מלאה</b><br>צרו קשר עם שירות הלקוחות, ותיהנו מתמיכה מקצועית ומהירה.<br><br>הורידו עכשיו את Egg - אוטובוס קרוב, תכנון נסיעה ותשלום תחבורה ציבורית בזמן אמת. הכל ללא פרסומות!",
+    "category": "Transportation",
+    "category_he": "תחבורה"
+  },
+  "assets": {
+    "icon_url": "apps/egg/icon.png",
+    "screenshots": [
+      "apps/egg/screenshots/screen_1.png",
+      "apps/egg/screenshots/screen_2.png",
+      "apps/egg/screenshots/screen_3.png",
+      "apps/egg/screenshots/screen_4.png",
+      "apps/egg/screenshots/screen_5.png"
+    ],
+    "screenshots_he": [
+      "apps/egg/screenshots_he/screen_1.png",
+      "apps/egg/screenshots_he/screen_2.png",
+      "apps/egg/screenshots_he/screen_3.png",
+      "apps/egg/screenshots_he/screen_4.png",
+      "apps/egg/screenshots_he/screen_5.png"
+    ]
+  },
+  "source": {
+    "source": "apkpure_mobile",
+    "name_play": "egg - Bus & Train in Israel"
+  },
+  "patching": {
+    "inject_updater": true
+  },
+  "paths": {
+    "version_file": "apps/egg/version.txt",
+    "status_file": "apps/egg/status.json"
+  },
+  "maintenance": {
+    "maintainer": "lilor159357"
+  }
 }

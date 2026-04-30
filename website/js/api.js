@@ -63,7 +63,25 @@ export async function fetchAppData() {
 
         REGISTERED_APPS.forEach((id, i) => {
             if (configs[i]) {
-                appConfigs[id] = configs[i];
+                // Flatten the config if it's nested
+                const config = configs[i];
+                const categories = ["metadata", "assets", "source", "patching", "paths", "maintenance"];
+                const isNested = categories.some(cat => config[cat] && typeof config[cat] === 'object');
+                
+                if (isNested) {
+                    const flattened = {};
+                    Object.keys(config).forEach(key => {
+                        if (categories.includes(key) && typeof config[key] === 'object') {
+                            Object.assign(flattened, config[key]);
+                        } else {
+                            flattened[key] = config[key];
+                        }
+                    });
+                    appConfigs[id] = flattened;
+                } else {
+                    appConfigs[id] = config;
+                }
+                
                 appStatuses[id] = statuses[i];
             }
         });

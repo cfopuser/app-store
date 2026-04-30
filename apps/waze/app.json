@@ -1,39 +1,51 @@
 {
-  "id": "waze",
-  "name": "Waze Navigation & Live Traffic",
-  "name_he": "Waze: ניווט ועדכוני תנועה",
-  "package_name": "com.waze",
-  "description": "Navigation app - patched version to block internal webviews.",
-  "description_he": "אפליקציית ניווט - גרסה ערוכה לחסימת דפדפנים פנימיים.",
-  "icon_url": "apps/waze/icon.png",
-  "source": "aptoide",
-  "maintainer": "cfopuser",
-  "skip_mitm": true,
-  "version_file": "apps/waze/version.txt",
-  "status_file": "apps/waze/status.json",
-  "name_play": "Waze Navigation & Live Traffic",
-  "full_description": "Know what&#39;s ahead on the road with the help from other drivers. Waze is a live map that harnesses the local knowledge of tens of millions of drivers around the world. Drivers safely and confidently reach their everyday destinations thanks to Waze map’s GPS navigation, live traffic updates, real-time safety alerts (including roadworks, accidents, crashes, police, potholes and more), and accurate ETAs.<br><br>Make your next drive more predictable and stress-free:<br>• Get there faster with real-time directions, accurate ETAs and automatic rerouting based on live traffic, incidents and road closures<br>• Even if you know the way, avoid surprises on the road ahead with safety alerts for accidents, crashes, roadworks, objects on the road, potholes, speed bumps, sharp curves, bad weather, emergency vehicles, railway crossings and more<br>• Steer clear of tickets by knowing where police and red light and speed cameras are located<br>• Share what’s happening on the road with other drivers by reporting live incidents and hazards<br>• Stay informed of upcoming speed limit changes, and keep your speedometer in check <br>• Know which lane to be in with multi-lane guidance <br>• See toll pricing and choose to avoid tolls along your routes<br>• Add road passes and vignettes for HOV lanes and restricted traffic zones<br>• Find petrol/fuel stations and prices and EV charging stations along your route<br>• Locate and compare parking lots and their prices near your destination<br>• Use voice-guided turn-by-turn navigation from a variety of languages, local accents and your favourite celebrities<br>• Plan your next drive by checking ETAs by future departure or arrival times<br>• Use your favourite audio apps (for podcasts, music, news, audiobooks) directly within Waze <br>• Sync Waze to your car’s built-in display through Android Auto<br><br>* Some features are not available in all countries<br><br>* Waze navigation is not intended for emergency or oversized vehicles<br><br>You can manage your in-app Waze privacy settings at any time. Learn more about the Waze privacy policy here, www.waze.com/legal/privacy.",
-  "screenshots": [
-    "apps/waze/screenshots/screen_1.png",
-    "apps/waze/screenshots/screen_2.png",
-    "apps/waze/screenshots/screen_3.png",
-    "apps/waze/screenshots/screen_4.png",
-    "apps/waze/screenshots/screen_5.png",
-    "apps/waze/screenshots/screen_6.png",
-    "apps/waze/screenshots/screen_7.png",
-    "apps/waze/screenshots/screen_8.png"
-  ],
-  "category": "Transportation",
-  "full_description_he": "Waze היא אפליקציית ניווט מבוססת-קהילה, שעוזרת למיליוני משתמשים להגיע ליעדם בעזרת התראות מהדרך בזמן אמת ומפה עדכנית לאותו רגע. בזכות רשת הנהגים שלנו, אפליקציית Waze חוסכת לכם זמן באמצעות התראות מיידיות על עומסי תנועה, עבודות בדרך, תאונות, משטרה ועוד. משינויי מסלול ועדכוני בטיחות בזמן אמת ועד התראות על מחיר דלק נמוך, Waze היא קהילה של נהגים שעוזרים לנהגים אחרים. <br><br>עם Waze אתם יכולים…<br>להגיע מהר יותר ליעד: המלולים הטובים ביותר עם הכי פחות תנועה <br>להימנע מדוחות: האפליקציה מתריעה על המיקום של ניידות משטרה, מצלמות מהירות ומצלמות רמזור<br>לקבל זמני הגעה משוערים מדויקים יותר: על סמך נתונים בזמן אמת על עומסי תנועה, עבודות בדרך, תנאי מזג אוויר ועוד<br>לקבל ניווט מבוסס-קהילה: עדכונים בזמן אמת מנהגים אחרים<br>לחסוך כסף: מאתרים את תחנת הדלק הזולה ביותר לאורך המסלול<br>להימנע מאגרות: אפשר לראות את מחירי האגרות כשבוחרים מסלול<br>להשתמש ב-Android Auto: מסנכרנים את Waze עם המסך המובנה ברכב<br>להיעזר במד מהירות בזמן אמת: מקבלים התראות כשעוברים את המהירות המותרת ונמענים מדוחות יקרים<br>להתאים אישית את הנסיעה: מקבלים הנחיות נסיעה מהדמויות והידוענים האהובים עליכם<br>להימנע ממעברים בין אפליקציות: משתמשים באפליקציות האודיו המועדפות עליכם ישירות מ-Waze<br><br>כשנוהגים עם Waze, אין הפתעות בדרך!<br>אפשר לנהל את הגדרות הפרטיות באפליקציית Waze בכל שלב. מידע נוסף על מדיניות הפרטיות של Waze זמין כאן: www.waze.com/legal/privacy.<br>המסלולים ב-Waze לא מיועדים לכלי רכב גדולים או לרכבי חירום.",
-  "category_he": "תחבורה",
-  "screenshots_he": [
-    "apps/waze/screenshots_he/screen_1.png",
-    "apps/waze/screenshots_he/screen_2.png",
-    "apps/waze/screenshots_he/screen_3.png",
-    "apps/waze/screenshots_he/screen_4.png",
-    "apps/waze/screenshots_he/screen_5.png",
-    "apps/waze/screenshots_he/screen_6.png",
-    "apps/waze/screenshots_he/screen_7.png",
-    "apps/waze/screenshots_he/screen_8.png"
-  ]
+  "metadata": {
+    "id": "waze",
+    "name": "Waze Navigation & Live Traffic",
+    "name_he": "Waze: ניווט ועדכוני תנועה",
+    "package_name": "com.waze",
+    "description": "Navigation app - patched version to block internal webviews.",
+    "description_he": "אפליקציית ניווט - גרסה ערוכה לחסימת דפדפנים פנימיים.",
+    "full_description": "Know what&#39;s ahead on the road with the help from other drivers. Waze is a live map that harnesses the local knowledge of tens of millions of drivers around the world. Drivers safely and confidently reach their everyday destinations thanks to Waze map’s GPS navigation, live traffic updates, real-time safety alerts (including roadworks, accidents, crashes, police, potholes and more), and accurate ETAs.<br><br>Make your next drive more predictable and stress-free:<br>• Get there faster with real-time directions, accurate ETAs and automatic rerouting based on live traffic, incidents and road closures<br>• Even if you know the way, avoid surprises on the road ahead with safety alerts for accidents, crashes, roadworks, objects on the road, potholes, speed bumps, sharp curves, bad weather, emergency vehicles, railway crossings and more<br>• Steer clear of tickets by knowing where police and red light and speed cameras are located<br>• Share what’s happening on the road with other drivers by reporting live incidents and hazards<br>• Stay informed of upcoming speed limit changes, and keep your speedometer in check <br>• Know which lane to be in with multi-lane guidance <br>• See toll pricing and choose to avoid tolls along your routes<br>• Add road passes and vignettes for HOV lanes and restricted traffic zones<br>• Find petrol/fuel stations and prices and EV charging stations along your route<br>• Locate and compare parking lots and their prices near your destination<br>• Use voice-guided turn-by-turn navigation from a variety of languages, local accents and your favourite celebrities<br>• Plan your next drive by checking ETAs by future departure or arrival times<br>• Use your favourite audio apps (for podcasts, music, news, audiobooks) directly within Waze <br>• Sync Waze to your car’s built-in display through Android Auto<br><br>* Some features are not available in all countries<br><br>* Waze navigation is not intended for emergency or oversized vehicles<br><br>You can manage your in-app Waze privacy settings at any time. Learn more about the Waze privacy policy here, www.waze.com/legal/privacy.",
+    "full_description_he": "Waze היא אפליקציית ניווט מבוססת-קהילה, שעוזרת למיליוני משתמשים להגיע ליעדם בעזרת התראות מהדרך בזמן אמת ומפה עדכנית לאותו רגע. בזכות רשת הנהגים שלנו, אפליקציית Waze חוסכת לכם זמן באמצעות התראות מיידיות על עומסי תנועה, עבודות בדרך, תאונות, משטרה ועוד. משינויי מסלול ועדכוני בטיחות בזמן אמת ועד התראות על מחיר דלק נמוך, Waze היא קהילה של נהגים שעוזרים לנהגים אחרים. <br><br>עם Waze אתם יכולים…<br>להגיע מהר יותר ליעד: המלולים הטובים ביותר עם הכי פחות תנועה <br>להימנע מדוחות: האפליקציה מתריעה על המיקום של ניידות משטרה, מצלמות מהירות ומצלמות רמזור<br>לקבל זמני הגעה משוערים מדויקים יותר: על סמך נתונים בזמן אמת על עומסי תנועה, עבודות בדרך, תנאי מזג אוויר ועוד<br>לקבל ניווט מבוסס-קהילה: עדכונים בזמן אמת מנהגים אחרים<br>לחסוך כסף: מאתרים את תחנת הדלק הזולה ביותר לאורך המסלול<br>להימנע מאגרות: אפשר לראות את מחירי האגרות כשבוחרים מסלול<br>להשתמש ב-Android Auto: מסנכרנים את Waze עם המסך המובנה ברכב<br>להיעזר במד מהירות בזמן אמת: מקבלים התראות כשעוברים את המהירות המותרת ונמענים מדוחות יקרים<br>להתאים אישית את הנסיעה: מקבלים הנחיות נסיעה מהדמויות והידוענים האהובים עליכם<br>להימנע ממעברים בין אפליקציות: משתמשים באפליקציות האודיו המועדפות עליכם ישירות מ-Waze<br><br>כשנוהגים עם Waze, אין הפתעות בדרך!<br>אפשר לנהל את הגדרות הפרטיות באפליקציית Waze בכל שלב. מידע נוסף על מדיניות הפרטיות של Waze זמין כאן: www.waze.com/legal/privacy.<br>המסלולים ב-Waze לא מיועדים לכלי רכב גדולים או לרכבי חירום.",
+    "category": "Transportation",
+    "category_he": "תחבורה"
+  },
+  "assets": {
+    "icon_url": "apps/waze/icon.png",
+    "screenshots": [
+      "apps/waze/screenshots/screen_1.png",
+      "apps/waze/screenshots/screen_2.png",
+      "apps/waze/screenshots/screen_3.png",
+      "apps/waze/screenshots/screen_4.png",
+      "apps/waze/screenshots/screen_5.png",
+      "apps/waze/screenshots/screen_6.png",
+      "apps/waze/screenshots/screen_7.png",
+      "apps/waze/screenshots/screen_8.png"
+    ],
+    "screenshots_he": [
+      "apps/waze/screenshots_he/screen_1.png",
+      "apps/waze/screenshots_he/screen_2.png",
+      "apps/waze/screenshots_he/screen_3.png",
+      "apps/waze/screenshots_he/screen_4.png",
+      "apps/waze/screenshots_he/screen_5.png",
+      "apps/waze/screenshots_he/screen_6.png",
+      "apps/waze/screenshots_he/screen_7.png",
+      "apps/waze/screenshots_he/screen_8.png"
+    ]
+  },
+  "source": {
+    "source": "aptoide",
+    "name_play": "Waze Navigation & Live Traffic"
+  },
+  "patching": {
+    "skip_mitm": true
+  },
+  "paths": {
+    "version_file": "apps/waze/version.txt",
+    "status_file": "apps/waze/status.json"
+  },
+  "maintenance": {
+    "maintainer": "cfopuser"
+  }
 }

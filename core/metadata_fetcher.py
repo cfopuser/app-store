@@ -126,9 +126,8 @@ def fetch_metadata(app_id_filter=None, force=False):
                     config["screenshots_he"] = local_screenshots_he
 
             # Save updated config
-            config_path = os.path.join("apps", app_id, "app.json")
-            with open(config_path, "w", encoding="utf-8") as f:
-                json.dump(config, f, indent=2, ensure_ascii=False)
+            from core.utils import save_app_config
+            save_app_config(app_id, config)
             
             print(f"  [+] Updated {app_id} metadata.")
 

@@ -44,12 +44,61 @@ def update_status(status_file: str, success: bool, failed_version: str = "",
 
 
 def load_app_config(app_id: str) -> dict:
-    """Load and return the app.json config for a given app ID."""
+    """Load and return the app.json config for a given app ID, flattening categories."""
     config_path = os.path.join("apps", app_id, "app.json")
     if not os.path.exists(config_path):
         raise FileNotFoundError(f"App config not found: {config_path}")
     with open(config_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        config = json.load(f)
+    
+    # If it's the new nested structure, flatten it for backward compatibility
+    # We check for common category keys
+    categories = ["metadata", "assets", "source", "patching", "paths", "maintenance"]
+    if any(k in config and isinstance(config[k], dict) for k in categories):
+        flattened = {}
+        for key, value in config.items():
+            if key in categories and isinstance(value, dict):
+                flattened.update(value)
+            else:
+                flattened[key] = value
+        return flattened
+    return config
+
+
+def save_app_config(app_id: str, config: dict):
+    """Save the app config in a categorized structure."""
+    config_path = os.path.join("apps", app_id, "app.json")
+    
+    # Define mapping of fields to categories
+    mapping = {
+        "metadata": ["id", "name", "name_he", "package_name", "description", "description_he", 
+                     "full_description", "full_description_he", "category", "category_he"],
+        "assets": ["icon_url", "screenshots", "screenshots_he"],
+        "source": ["source", "repo", "github_asset_regex", "name_play"],
+        "patching": ["skip_mitm", "inject_updater", "updater_target_smali", "hotfixes", "clone_config"],
+        "paths": ["version_file", "status_file"],
+        "maintenance": ["maintainer"]
+    }
+    
+    categorized = {}
+    remaining_keys = set(config.keys())
+    
+    for category, fields in mapping.items():
+        cat_data = {}
+        for field in fields:
+            if field in config:
+                cat_data[field] = config[field]
+                remaining_keys.discard(field)
+        if cat_data:
+            categorized[category] = cat_data
+            
+    # Add any leftover keys to the root
+    for key in remaining_keys:
+        categorized[key] = config[key]
+        
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(categorized, f, indent=2, ensure_ascii=False)
 
 
 def discover_apps() -> list[str]:
