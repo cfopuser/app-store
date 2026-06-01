@@ -25,3 +25,6 @@ desktop.html
 
 # Backup files
 backup
+
+# Metadata
+metadata_fetcher.py
