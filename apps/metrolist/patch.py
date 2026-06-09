@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 
 # --- הגדרות ---
 # קוד ה-JS הגולמי להזרקה ב-WebView
@@ -9,6 +10,33 @@ JS_PAYLOAD = r'''javascript:(function(){function cleanPage(){const footer=docume
 ESCAPED_JS = JS_PAYLOAD.replace('"', r'\"')
 
 
+def _free_up_main_dex(decompiled_dir: str):
+    """
+    מעביר ספריות כבדות מה-DEX הראשי ל-DEX משני כדי לעקוף את מגבלת ה-64K.
+    """
+    heavy_libraries = [
+        os.path.join("kotlin"),
+        os.path.join("okhttp3")
+    ]
+    
+    main_smali = os.path.join(decompiled_dir, "smali")
+    dest_dex = os.path.join(decompiled_dir, "smali_classes2")
+    
+    if not os.path.exists(main_smali):
+        return
+
+    os.makedirs(dest_dex, exist_ok=True)
+    
+    for lib in heavy_libraries:
+        src_path = os.path.join(main_smali, lib)
+        dst_path = os.path.join(dest_dex, lib)
+        
+        # אם הספרייה קיימת בראשי ועוד לא קיימת ביעד, מעבירים אותה
+        if os.path.exists(src_path) and not os.path.exists(dst_path):
+            os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+            shutil.move(src_path, dst_path)
+            print(f"[+] Optimization: Moved '{lib}' to smali_classes2 to free up 64K limit.")
+
 def patch(decompiled_dir: str) -> bool:
     """
     Apply the 'MetroList Kosher' patch.
@@ -17,6 +45,9 @@ def patch(decompiled_dir: str) -> bool:
     - Disables image loading in the WebView.
     """
     print("[*] Starting MetroList 'Kosher' patch...")
+    
+    # 0. פינוי מקום ב-DEX הראשי למניעת שגיאת קריסת אריזה (64K limit)
+    _free_up_main_dex(decompiled_dir)
     
     # 1. חסימת תמונות קטנות (Thumbnails) ברמת האפליקציה
     thumbnail_patched = _patch_thumbnail(decompiled_dir)
