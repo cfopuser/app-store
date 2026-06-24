@@ -146,11 +146,17 @@ def _patch_home_tabs(root_dir):
             with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content) 
             return True 
         else: 
-            print("    [-] Home Tabs: Target method found, but regex failed.") 
+            print("    [-] Home Tabs: Target method found, but regex failed. DUMPING METHOD BODY:") 
+            print("="*60)
+            for method_match in method_pattern.finditer(content): 
+                method_body = method_match.group(1) 
+                if "0x12c" in method_body and "AbstractCollection;->add" in method_body: 
+                    print(method_body)
+            print("="*60)
             return False 
     except Exception as e: 
         print(f"    [-] Error: {e}") 
-        return False 
+        return False
  
 # --------------------------------------------------------- 
 # 4. תיקון SecurePendingIntent 
@@ -469,17 +475,14 @@ def _patch_eula_registration_intent(decompiled_dir: str) -> bool:
                 with open(path, 'r', encoding='utf-8') as f:
                     content = f.read()
 
-                # הסינון הכפול שלנו: מבטיח שנטפל אך ורק בקובץ של כפתור ההסכמה
                 if anchor_eula not in content or anchor_class not in content:
                     continue
 
-                # הרג'קס המשופר והחסין: 
-                # (?:[\s\n]*\.line \d+[\s\n]*)* מתעלם לחלוטין מכמה שורות .line או רווחים יש באמצע
                 pattern = re.compile(
                     r"(invoke-virtual \{([vp]\d+)\}, Landroid/content/Context;->getPackageName\(\)Ljava/lang/String;)"
-                    r"([\s\n]*(?:\.line \d+[\s\n]*)*)"  # מרווח גמיש 1
+                    r"([\s\n]*(?:\.line \d+[\s\n]*)*)"
                     r"(const-string ([vp]\d+), \"com\.whatsapp\.registration\.app\.phonenumberentry\.RegisterPhone\")"
-                    r"([\s\n]*(?:\.line \d+[\s\n]*)*)"  # מרווח גמיש 2
+                    r"([\s\n]*(?:\.line \d+[\s\n]*)*)"
                     r"(invoke-static \{([vp]\d+), \5\}, L[^;]+;->[^\(]+\(Landroid/content/Intent;Ljava/lang/String;\)Landroid/content/Intent;)"
                 )
 
@@ -492,10 +495,6 @@ def _patch_eula_registration_intent(decompiled_dir: str) -> bool:
                     gap2 = match.group(6)
                     intent_reg = match.group(8)
 
-                    # מרכיבים את התיקון:
-                    # 1. מוחקים את הקריאה ל-getPackageName המיותרת
-                    # 2. מחזירים את שורות הרווח המקוריות
-                    # 3. מציבים את הפקודה התקנית
                     replacement = (
                         f"{gap1}"
                         f"{const_string_cmd}"
@@ -519,7 +518,27 @@ def _patch_eula_registration_intent(decompiled_dir: str) -> bool:
             break
 
     if not patched:
-        print("    [-] Sniper missed. Could not find the exact smali pattern.")
+        print("    [-] Sniper missed. Could not find the exact smali pattern. DUMPING CODE:")
+        print("="*60)
+        for root, dirs, files in os.walk(decompiled_dir):
+            for file in files:
+                if not file.endswith(".smali"): continue
+                path = os.path.join(root, file)
+                try:
+                    with open(path, 'r', encoding='utf-8') as f:
+                        c = f.read()
+                    if anchor_eula in c and anchor_class in c:
+                        lines = c.splitlines()
+                        for i, line in enumerate(lines):
+                            if anchor_class in line:
+                                print(f"--- File: {file} ---")
+                                start = max(0, i - 15)
+                                end = min(len(lines), i + 15)
+                                print("\n".join(lines[start:end]))
+                                break
+                except:
+                    pass
+        print("="*60)
     
     return True
 # --------------------------------------------------------- 
