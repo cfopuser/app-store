@@ -22,14 +22,16 @@ def patch(decompiled_dir: str) -> bool:
     status_nuke = _patch_nuke_status_activity(decompiled_dir) 
     status_redirect = _patch_redirect_status_intents(decompiled_dir) 
      
-    # 4. חסימת טאב הגיפים - אלגוריתם חכם חדש 
+    # 4. חסימת טאב הגיפים
     gifs_tab = _patch_gifs_tab(decompiled_dir) 
     mime_crash = _patch_mime_type_crash(decompiled_dir) 
     sig_bypass = _patch_signature_bypass(decompiled_dir)
     kotlin_fix = _patch_kotlin_null_check(decompiled_dir)
-    reg_crash_fix = _patch_eula_registration_intent(decompiled_dir)
     
-    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, reg_crash_fix] 
+    # 5. שינוי מסך הבית ל-Companion Mode במקום EULA
+    companion_redirect = _patch_companion_mode_redirect(decompiled_dir)
+    
+    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
@@ -436,11 +438,41 @@ def _patch_gifs_tab(root_dir):
         return False
 
 # ---------------------------------------------------------
-# 10. EULA & Registration Intents (DISABLED FOR TESTING)
+# 10. Companion Mode Redirect (Bypass EULA)
 # ---------------------------------------------------------
-def _patch_eula_registration_intent(decompiled_dir: str) -> bool:
-    print("\n[*] Skipping EULA & Registration Intent Patch (User requested original crash behavior)...")
-    return True
+def _patch_companion_mode_redirect(decompiled_dir: str) -> bool:
+    print("\n[*] Injecting Companion Mode Redirect (Bypassing EULA)...")
+    
+    anchor = '"com.whatsapp.registration.app.EULA"'
+    target = '"com.whatsapp.companionmode.registration.ui.RegisterAsCompanionActivity"'
+    patched_count = 0
+
+    for root, dirs, files in os.walk(decompiled_dir):
+        for file in files:
+            if not file.endswith(".smali"): continue
+            path = os.path.join(root, file)
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+
+                if anchor in content:
+                    new_content = content.replace(anchor, target)
+                    with open(path, 'w', encoding='utf-8') as f:
+                        f.write(new_content)
+                    
+                    # סופרים כמה החלפות בוצעו בקובץ הנוכחי
+                    occurrences = content.count(anchor)
+                    patched_count += occurrences
+                    print(f"    [+] Redirected {occurrences} EULA calls to Companion Mode in: {file}")
+            except Exception as e:
+                print(f"    [-] Error processing {file}: {e}")
+
+    if patched_count > 0:
+        print(f"    [+] Total EULA redirects applied: {patched_count}")
+        return True
+    else:
+        print("    [-] Could not find EULA strings to replace.")
+        return False
 
 # --------------------------------------------------------- 
 # 9. מעקף חכם לקריסת MimeType של מערכת ההפעלה 
@@ -457,9 +489,6 @@ def _patch_mime_type_crash(root_dir):
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
  
-        # Regex חכם וכללי יותר: 
-        # תופס קריאות static ו-virtual.
-        # תופס כל אחת מהפונקציות המוכרות שגורמות לקריסות במכשירי נטפרי.
         regex_pattern = r"(invoke-(?:virtual|static)(?:/range)?\s*\{[^}]+\},\s*Landroid/webkit/MimeTypeMap;->(?:getMimeTypeFromExtension|getExtensionFromMimeType|getFileExtensionFromUrl)\(Ljava/lang/String;\)Ljava/lang/String;.*?move-result-object\s+([vp]\d+))" 
  
         if re.search(regex_pattern, content, re.DOTALL): 
@@ -491,7 +520,6 @@ def extract_original_signature(apk_path: str) -> str:
 # --- מודולי הפאצ' ---
 
 def _patch_kotlin_null_check(decompiled_dir: str) -> bool:
-    """מוצא ומנטרל אך ורק את הפונקציה שמכילה את 'INVOKE_RETURN' (מבלי לדרוס פונקציות אחרות)."""
     print("\n[*] Applying Kotlin Null-Check Bypass (INVOKE_RETURN only)...")
     anchor_string = '"INVOKE_RETURN"'
     
@@ -505,14 +533,11 @@ def _patch_kotlin_null_check(decompiled_dir: str) -> bool:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
 
-                # מזהה את הקובץ
                 if anchor_string not in content:
                     continue
                     
                 print(f"    [+] Found Kotlin Intrinsics class: {os.path.relpath(file_path, decompiled_dir)}")
                 
-                # מוצאים את כל המתודות בקובץ שמקבלות Object ומחזירות V בצורה מבודדת
-                # ה- (.*?) מבטיח שכל התאמה תעצור בדיוק ב-.end method הראשון שהיא פוגשת
                 method_pattern = re.compile(
                     r"(\.method public static \w+\(Ljava/lang/Object;\)V)(.*?)(\.end method)", 
                     re.DOTALL
@@ -521,7 +546,6 @@ def _patch_kotlin_null_check(decompiled_dir: str) -> bool:
                 new_content = content
                 patched = False
                 
-                # עוברים פונקציה-פונקציה ובודקים למי מהן יש את "INVOKE_RETURN"
                 for match in method_pattern.finditer(content):
                     full_method = match.group(0)
                     signature = match.group(1)
@@ -529,21 +553,18 @@ def _patch_kotlin_null_check(decompiled_dir: str) -> bool:
                     end_method = match.group(3)
                     
                     if anchor_string in body:
-                        # מצאנו את הפונקציה המדויקת (למשל A06)! נחלץ ממנה את שורת ה-registers
-                        registers_line = "    .registers 1" # גיבוי
+                        registers_line = "    .registers 1"
                         for line in body.splitlines():
                             clean = line.strip()
                             if clean.startswith(".registers") or clean.startswith(".locals"):
                                 registers_line = "    " + clean
                                 break
                         
-                        # בניית הפונקציה הריקה (חוזרת מיד במקום לזרוק שגיאה)
                         new_method = f"{signature}\n{registers_line}\n    # Neutralized INVOKE_RETURN crash\n    return-void\n{end_method}"
                         
-                        # החלפה בטוחה של הפונקציה הזו בלבד בתוך תוכן הקובץ המלא
                         new_content = new_content.replace(full_method, new_method)
                         patched = True
-                        break # סיימנו! אין טעם להמשיך לסרוק שאר פונקציות
+                        break
                 
                 if patched:
                     with open(file_path, 'w', encoding='utf-8') as f:
@@ -563,7 +584,6 @@ def _patch_kotlin_null_check(decompiled_dir: str) -> bool:
 def _patch_signature_bypass(decompiled_dir: str) -> bool:
     print("\n[*] Injecting Advanced Static Signature Bypass...")
     
-    # 1. חילוץ שם החבילה הנוכחי מהמניפסט
     manifest_path = os.path.join(decompiled_dir, "AndroidManifest.xml")
     try:
         tree = ET.parse(manifest_path)
@@ -573,7 +593,6 @@ def _patch_signature_bypass(decompiled_dir: str) -> bool:
         print(f"    [-] Could not read manifest: {e}")
         return False
 
-    # 2. חילוץ החתימה מה-APK המקורי
     original_apk = "latest.apk"
     if not os.path.exists(original_apk):
         print(f"    [-] {original_apk} not found. Cannot extract signature.")
@@ -586,14 +605,13 @@ def _patch_signature_bypass(decompiled_dir: str) -> bool:
         print(f"    [-] Failed to extract signature: {e}")
         return False
 
-    # 3. סריקה והחלפת כל הקריאות
     print("    [*] Redirecting getPackageInfo calls to SigBypass...")
     pattern = re.compile(r"invoke-virtual (\{[^}]+\}), Landroid/content/pm/PackageManager;->getPackageInfo\(Ljava/lang/String;I\)Landroid/content/pm/PackageInfo;")
     patched_count = 0
     
     for root_path, _, files in os.walk(decompiled_dir):
         for file in files:
-            if file.endswith("SigBypass.smali"): continue # חשוב: מדלגים על הקובץ של עצמנו
+            if file.endswith("SigBypass.smali"): continue 
             if file.endswith(".smali"):
                 full_path = os.path.join(root_path, file)
                 try:
@@ -613,7 +631,6 @@ def _patch_signature_bypass(decompiled_dir: str) -> bool:
                     
     print(f"    [+] Successfully redirected {patched_count} calls.")
 
-    # 4. יצירת מחלקת ה-Smali שלנו
     smali_dir = os.path.join(decompiled_dir, "smali_classes2", "com", "whatsapp", "kosher")
     os.makedirs(smali_dir, exist_ok=True)
     bypass_smali_path = os.path.join(smali_dir, "SigBypass.smali")
