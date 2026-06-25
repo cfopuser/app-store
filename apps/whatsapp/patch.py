@@ -29,7 +29,7 @@ def patch(decompiled_dir: str) -> bool:
     kotlin_fix = _patch_kotlin_null_check(decompiled_dir)
     reg_crash_fix = _patch_eula_registration_intent(decompiled_dir)
     
-    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix] 
+    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, reg_crash_fix] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
@@ -436,53 +436,10 @@ def _patch_gifs_tab(root_dir):
         return False
 
 # ---------------------------------------------------------
-# 10. Sniper Patch: EULA & Registration Intents (Bulletproof)
+# 10. EULA & Registration Intents (DISABLED FOR TESTING)
 # ---------------------------------------------------------
 def _patch_eula_registration_intent(decompiled_dir: str) -> bool:
-    print("\n[*] Sniper Patch: EULA & Registration Intents...")
-    patched = False
-
-    # This regex looks for getPackageName(), followed by a const-string for any registration class,
-    # followed by the intent setClassName invocation.
-    pattern = re.compile(
-        r"(invoke-virtual \{([vp]\d+)\}, Landroid/content/Context;->getPackageName\(\)Ljava/lang/String;.*?"
-        r"move-result-object ([vp]\d+).*?"
-        r"const-string ([vp]\d+), \"(com\.whatsapp\.[^\"]+)\".*?)"
-        r"(invoke-virtual \{([vp]\d+), \3, \4\}, Landroid/content/Intent;->setClassName\(Ljava/lang/String;Ljava/lang/String;\)Landroid/content/Intent;)",
-        re.DOTALL
-    )
-
-    for root, dirs, files in os.walk(decompiled_dir):
-        for file in files:
-            if not file.endswith(".smali"): continue
-            path = os.path.join(root, file)
-            try:
-                with open(path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-
-                if "setClassName(Ljava/lang/String;Ljava/lang/String;)" not in content:
-                    continue
-
-                # We replace the setClassName(String, String) invocation with setClassName(Context, String)
-                # \1 matches everything up to the string assignment.
-                # \7 is the Intent register, \2 is the Context register, \4 is the Class Name register.
-                new_content, count = pattern.subn(
-                    r"\1invoke-virtual {\7, \2, \4}, Landroid/content/Intent;->setClassName(Landroid/content/Context;Ljava/lang/String;)Landroid/content/Intent;",
-                    content
-                )
-                
-                if count > 0:
-                    with open(path, 'w', encoding='utf-8') as f_out:
-                        f_out.write(new_content)
-                    print(f"    [+] Sniper hit! Patched {count} intents safely in: {file}")
-                    patched = True
-            except Exception as e:
-                print(f"    [-] Error processing {file}: {e}")
-
-    if not patched:
-        print("    [-] Sniper missed. Could not find any intents to patch.")
-        # We return True anyway, because it's highly likely WhatsApp refactored this and it might not crash anymore.
-    
+    print("\n[*] Skipping EULA & Registration Intent Patch (User requested original crash behavior)...")
     return True
 
 # --------------------------------------------------------- 
