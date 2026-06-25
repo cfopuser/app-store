@@ -29,7 +29,7 @@ def patch(decompiled_dir: str) -> bool:
     kotlin_fix = _patch_kotlin_null_check(decompiled_dir)
     reg_crash_fix = _patch_eula_registration_intent(decompiled_dir)
     
-    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, reg_crash_fix] 
+    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
