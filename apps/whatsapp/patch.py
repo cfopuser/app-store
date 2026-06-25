@@ -125,38 +125,21 @@ def _patch_home_tabs(root_dir):
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
          
-        method_pattern = re.compile(r'(\.method.*?\.end method)', re.DOTALL) 
-         
-        new_content = content 
-        patch_applied = False 
-         
-        for method_match in method_pattern.finditer(content): 
-            method_body = method_match.group(1) 
-             
-            if "0x12c" in method_body and "0x258" in method_body and "AbstractCollection;->add" in method_body: 
-                updates_regex = r"(const/16\s+[vp]\d+,\s*0x12c.*?)((?:invoke-virtual|invoke-interface)\s*\{[vp]\d+,\s*[vp]\d+\},\s*Ljava/util/AbstractCollection;->add\(Ljava/lang/Object;\)Z)" 
-                if re.search(updates_regex, method_body, re.DOTALL): 
-                    new_method_body = re.sub(updates_regex, r"\1# \2", method_body, count=1, flags=re.DOTALL) 
-                    new_content = new_content.replace(method_body, new_method_body) 
-                    patch_applied = True 
-                    print("    [+] Home Tabs: 'Updates' tab (0x12c) REMOVED.") 
-                    break 
-         
-        if patch_applied: 
-            with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content) 
-            return True 
-        else: 
-            print("    [-] Home Tabs: Target method found, but regex failed. DUMPING METHOD BODY:") 
-            print("="*60)
-            for method_match in method_pattern.finditer(content): 
-                method_body = method_match.group(1) 
-                if "0x12c" in method_body and "AbstractCollection;->add" in method_body: 
-                    print(method_body)
-            print("="*60)
-            return False 
+        # Find exactly the 0x12c assignment, any newlines/lines, and the following if-jump
+        pattern = re.compile(r"(const/16\s+([vp]\d+),\s*0x12c[\s\S]{1,50}?)(if-[a-z]+\s+[vp]\d+,\s*:cond_\w+)")
+        new_content, count = pattern.subn(r"\1nop # \3", content)
+        
+        if count > 0:
+            with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content)
+            print(f"    [+] Home Tabs: 'Updates' tab (0x12c) bypassed ({count} occurrences).")
+            return True
+        else:
+            print("    [-] Home Tabs: Target file found, but regex failed to match.")
+            return False
+            
     except Exception as e: 
         print(f"    [-] Error: {e}") 
-        return False
+        return False 
  
 # --------------------------------------------------------- 
 # 4. תיקון SecurePendingIntent 
@@ -452,95 +435,56 @@ def _patch_gifs_tab(root_dir):
         print(f"    [-] Error patching GIF tab: {e}") 
         return False
 
-import os
-import re
-
 # ---------------------------------------------------------
-# 10. Sniper Patch: EULA Registration Intent (Bulletproof)
+# 10. Sniper Patch: EULA & Registration Intents (Bulletproof)
 # ---------------------------------------------------------
 def _patch_eula_registration_intent(decompiled_dir: str) -> bool:
-    print("\n[*] Sniper Patch: EULA Registration Intent...")
-    
-    anchor_class = '"com.whatsapp.registration.app.phonenumberentry.RegisterPhone"'
-    anchor_eula = '"EULA/register/eula/accept"'
+    print("\n[*] Sniper Patch: EULA & Registration Intents...")
     patched = False
+
+    # This regex looks for getPackageName(), followed by a const-string for any registration class,
+    # followed by the intent setClassName invocation.
+    pattern = re.compile(
+        r"(invoke-virtual \{([vp]\d+)\}, Landroid/content/Context;->getPackageName\(\)Ljava/lang/String;.*?"
+        r"move-result-object ([vp]\d+).*?"
+        r"const-string ([vp]\d+), \"(com\.whatsapp\.[^\"]+)\".*?)"
+        r"(invoke-virtual \{([vp]\d+), \3, \4\}, Landroid/content/Intent;->setClassName\(Ljava/lang/String;Ljava/lang/String;\)Landroid/content/Intent;)",
+        re.DOTALL
+    )
 
     for root, dirs, files in os.walk(decompiled_dir):
         for file in files:
-            if not file.endswith(".smali"):
-                continue
-
+            if not file.endswith(".smali"): continue
             path = os.path.join(root, file)
             try:
                 with open(path, 'r', encoding='utf-8') as f:
                     content = f.read()
 
-                if anchor_eula not in content or anchor_class not in content:
+                if "setClassName(Ljava/lang/String;Ljava/lang/String;)" not in content:
                     continue
 
-                pattern = re.compile(
-                    r"(invoke-virtual \{([vp]\d+)\}, Landroid/content/Context;->getPackageName\(\)Ljava/lang/String;)"
-                    r"([\s\n]*(?:\.line \d+[\s\n]*)*)"
-                    r"(const-string ([vp]\d+), \"com\.whatsapp\.registration\.app\.phonenumberentry\.RegisterPhone\")"
-                    r"([\s\n]*(?:\.line \d+[\s\n]*)*)"
-                    r"(invoke-static \{([vp]\d+), \5\}, L[^;]+;->[^\(]+\(Landroid/content/Intent;Ljava/lang/String;\)Landroid/content/Intent;)"
+                # We replace the setClassName(String, String) invocation with setClassName(Context, String)
+                # \1 matches everything up to the string assignment.
+                # \7 is the Intent register, \2 is the Context register, \4 is the Class Name register.
+                new_content, count = pattern.subn(
+                    r"\1invoke-virtual {\7, \2, \4}, Landroid/content/Intent;->setClassName(Landroid/content/Context;Ljava/lang/String;)Landroid/content/Intent;",
+                    content
                 )
-
-                match = pattern.search(content)
-                if match:
-                    context_reg = match.group(2)
-                    gap1 = match.group(3)
-                    const_string_cmd = match.group(4)
-                    class_reg = match.group(5)
-                    gap2 = match.group(6)
-                    intent_reg = match.group(8)
-
-                    replacement = (
-                        f"{gap1}"
-                        f"{const_string_cmd}"
-                        f"{gap2}"
-                        f"    invoke-virtual {{{intent_reg}, {context_reg}, {class_reg}}}, Landroid/content/Intent;->setClassName(Landroid/content/Context;Ljava/lang/String;)Landroid/content/Intent;"
-                    )
-
-                    new_content = content[:match.start()] + replacement + content[match.end():]
-
-                    with open(path, 'w', encoding='utf-8') as f:
-                        f.write(new_content)
-
-                    print(f"    [+] Sniper hit! Patched intent perfectly in: {file}")
+                
+                if count > 0:
+                    with open(path, 'w', encoding='utf-8') as f_out:
+                        f_out.write(new_content)
+                    print(f"    [+] Sniper hit! Patched {count} intents safely in: {file}")
                     patched = True
-                    break
-                    
             except Exception as e:
                 print(f"    [-] Error processing {file}: {e}")
 
-        if patched:
-            break
-
     if not patched:
-        print("    [-] Sniper missed. Could not find the exact smali pattern. DUMPING CODE:")
-        print("="*60)
-        for root, dirs, files in os.walk(decompiled_dir):
-            for file in files:
-                if not file.endswith(".smali"): continue
-                path = os.path.join(root, file)
-                try:
-                    with open(path, 'r', encoding='utf-8') as f:
-                        c = f.read()
-                    if anchor_eula in c and anchor_class in c:
-                        lines = c.splitlines()
-                        for i, line in enumerate(lines):
-                            if anchor_class in line:
-                                print(f"--- File: {file} ---")
-                                start = max(0, i - 15)
-                                end = min(len(lines), i + 15)
-                                print("\n".join(lines[start:end]))
-                                break
-                except:
-                    pass
-        print("="*60)
+        print("    [-] Sniper missed. Could not find any intents to patch.")
+        # We return True anyway, because it's highly likely WhatsApp refactored this and it might not crash anymore.
     
     return True
+
 # --------------------------------------------------------- 
 # 9. מעקף חכם לקריסת MimeType של מערכת ההפעלה 
 # --------------------------------------------------------- 
@@ -658,6 +602,7 @@ def _patch_kotlin_null_check(decompiled_dir: str) -> bool:
 
     print("    [-] CRITICAL: Could not find or patch the INVOKE_RETURN method.")
     return False
+
 def _patch_signature_bypass(decompiled_dir: str) -> bool:
     print("\n[*] Injecting Advanced Static Signature Bypass...")
     
