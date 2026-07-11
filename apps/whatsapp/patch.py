@@ -113,7 +113,7 @@ def _patch_newsletter_launcher(root_dir):
         return False 
  
 # --------------------------------------------------------- 
-# 3. הסרת טאב העדכונים (UI + Badges) - FIXED FAST REGEX
+# 3. הסרת טאב העדכונים (UI + Badges) - FIXED PYTHON REGEX
 # --------------------------------------------------------- 
 def _patch_home_tabs(root_dir): 
     import re
@@ -129,21 +129,21 @@ def _patch_home_tabs(root_dir):
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
          
         # 1. מחיקת הטאב מה-UI 
-        # משתמשים ב-[\s\S] כדי למנוע Catastrophic Backtracking ולקנפג חיפוש מהיר
         pattern_ui = re.compile(
             r"(const(?:/\w+)?\s+([vp]\d+),\s*0x12c[\s\S]{1,150}?"
             r"invoke-static\s+\{\2\},\s*Ljava/lang/Integer;->valueOf\(I\)Ljava/lang/Integer;[\s\S]{1,150}?"
             r"move-result-object\s+([vp]\d+)[\s\S]{1,150}?)"
             r"(invoke-virtual\s+\{[vp]\d+,\s*\3\},\s*Ljava/util/AbstractCollection;->add\(Ljava/lang/Object;\)Z)"
         )
-        new_content, count_ui = pattern_ui.subn(r"\1nop # \4", content)
+        # שימוש ב-\g<1> מונע בלבול בין מספר הקבוצה לטקסט שאחריה
+        new_content, count_ui = pattern_ui.subn(r"\g<1>nop # \g<4>", content)
         
-        # 2. נטרול הקריסה במידה ויש קריאה לתג מוסתר (משנה False ל-True באסרציה)
+        # 2. נטרול הקריסה
         pattern_crash = re.compile(
             r"(const-string\s+[vp]\d+,\s*\"Tried to set badge for invalid tab id[\s\S]{1,200}?"
             r"const/4\s+([vp]\d+),\s*)0x0([\s\S]{1,100}?invoke-static\s+\{\2,\s*[vp]\d+\},\s*L[^;]+;->[a-zA-Z0-9_]+\(ZLjava/lang/String;\)V)"
         )
-        new_content, count_crash = pattern_crash.subn(r"\10x1\3", new_content)
+        new_content, count_crash = pattern_crash.subn(r"\g<1>0x1\g<3>", new_content)
         
         if count_ui > 0 or count_crash > 0:
             with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content)
