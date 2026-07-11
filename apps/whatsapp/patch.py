@@ -13,6 +13,7 @@ def patch(decompiled_dir: str) -> bool:
     photos = _patch_profile_photos(decompiled_dir) 
     newsletter = _patch_newsletter_launcher(decompiled_dir) 
     tabs = _patch_home_tabs(decompiled_dir) 
+    links_nuke = _patch_channel_links(decompiled_dir)
      
     # 2. חסימות ליבה 
     spi = _patch_secure_pending_intent(decompiled_dir) 
@@ -31,7 +32,7 @@ def patch(decompiled_dir: str) -> bool:
     # 5. שינוי מסך הבית ל-Companion Mode במקום EULA
     companion_redirect = _patch_companion_mode_redirect(decompiled_dir)
     
-    results = [photos, newsletter, tabs, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect] 
+    results = [photos, newsletter, tabs, links_nuke, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
@@ -729,6 +730,58 @@ def _patch_signature_bypass(decompiled_dir: str) -> bool:
     print("    [+] Injected Advanced SigBypass.smali")
 
     return patched_count > 0
+
+# --------------------------------------------------------- 
+# 11. חסימת ערוצים דרך קישורים (Deep Links)
+# --------------------------------------------------------- 
+def _patch_channel_links(root_dir):
+    print(f"\n[10] Nuking Channel Deep Links & Routing...")
+    
+    # 1. חסימה ברמת מערכת ההפעלה (Manifest) - עודכן לפי קוד המקור שסופק!
+    manifest_path = os.path.join(root_dir, "AndroidManifest.xml")
+    if os.path.exists(manifest_path):
+        with open(manifest_path, 'r', encoding='utf-8') as f:
+            manifest = f.read()
+            
+        # משבש את הניתובים הרגילים
+        manifest = manifest.replace('pathPrefix="/channel"', 'pathPrefix="/block_c"')
+        manifest = manifest.replace('pathPrefix="/channel/"', 'pathPrefix="/block_c/"')
+        manifest = manifest.replace('pathPrefix="/channel_status"', 'pathPrefix="/block_c_status"')
+        
+        # משבש את הניתובים הפנימיים
+        manifest = manifest.replace('host="channel"', 'host="block_c"')
+        
+        with open(manifest_path, 'w', encoding='utf-8') as f:
+            f.write(manifest)
+        print("    [+] AndroidManifest.xml channel intents disabled.")
+
+    # 2. חסימה ברמת הקוד הפנימי (Smali Strings)
+    patched_files = 0
+    for root, dirs, files in os.walk(root_dir):
+        for file in files:
+            if file.endswith('.smali'):
+                path = os.path.join(root, file)
+                try:
+                    with open(path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    
+                    if '"whatsapp.com/channel' in content or '"wa.me/channel' in content or '"whatsapp://channel' in content:
+                        new_content = content.replace('"whatsapp.com/channel"', '"whatsapp.com/block_c"')
+                        new_content = new_content.replace('"whatsapp.com/channel/"', '"whatsapp.com/block_c/"')
+                        new_content = new_content.replace('"wa.me/channel"', '"wa.me/block_c"')
+                        new_content = new_content.replace('"wa.me/channel/"', '"wa.me/block_c/"')
+                        new_content = new_content.replace('"whatsapp://channel"', '"whatsapp://block_c"')
+                        new_content = new_content.replace('"whatsapp://channel/"', '"whatsapp://block_c/"')
+                        
+                        if new_content != content:
+                            with open(path, 'w', encoding='utf-8') as f:
+                                f.write(new_content)
+                            patched_files += 1
+                except Exception:
+                    pass
+                    
+    print(f"    [+] Channel deep links neutralized in {patched_files} Smali files.")
+    return True
 
 # --------------------------------------------------------- 
 # פונקציות עזר 
