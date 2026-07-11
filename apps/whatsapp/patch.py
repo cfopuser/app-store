@@ -31,8 +31,8 @@ def patch(decompiled_dir: str) -> bool:
     
     # 5. שינוי מסך הבית ל-Companion Mode במקום EULA
     companion_redirect = _patch_companion_mode_redirect(decompiled_dir)
-    nuke_conv = _patch_nuke_newsletter_conversation(decompiled_dir)
-    results = [photos, newsletter, tabs, links_nuke, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv] 
+
+    results = [photos, newsletter, tabs, links_nuke, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
@@ -737,122 +737,56 @@ def _patch_signature_bypass(decompiled_dir: str) -> bool:
 def _patch_channel_links(root_dir):
     print(f"\n[10] Nuking Channel Deep Links & Routing...")
     
-    # 1. חסימה ברמת מערכת ההפעלה (Manifest) - עודכן לפי קוד המקור שסופק!
+    # 1. חסימה ברמת מערכת ההפעלה (Manifest)
     manifest_path = os.path.join(root_dir, "AndroidManifest.xml")
     if os.path.exists(manifest_path):
         with open(manifest_path, 'r', encoding='utf-8') as f:
             manifest = f.read()
             
-        # משבש את הניתובים הרגילים
         manifest = manifest.replace('pathPrefix="/channel"', 'pathPrefix="/block_c"')
         manifest = manifest.replace('pathPrefix="/channel/"', 'pathPrefix="/block_c/"')
         manifest = manifest.replace('pathPrefix="/channel_status"', 'pathPrefix="/block_c_status"')
-        
-        # משבש את הניתובים הפנימיים
         manifest = manifest.replace('host="channel"', 'host="block_c"')
         
         with open(manifest_path, 'w', encoding='utf-8') as f:
             f.write(manifest)
         print("    [+] AndroidManifest.xml channel intents disabled.")
 
-    # 2. חסימה ברמת הקוד הפנימי (Smali Strings)
+    # 2. לעוור את מנתחי הקישורים (כמו LX/6WK ואחרים)
     patched_files = 0
-    for root, dirs, files in os.walk(root_dir):
+    
+    # רשימת המחרוזות שאנחנו מחפשים, והתחליף שלהן
+    # אנחנו לא שמים מרכאות בהתחלה כי לפעמים ב-Smali זה נראה אחרת
+    replacements = {
+        "whatsapp.com/channel": "whatsapp.com/block_c",
+        "wa.me/channel": "wa.me/block_c",
+        "whatsapp://channel": "whatsapp://block_c"
+    }
+
+    for root_path, dirs, files in os.walk(root_dir):
         for file in files:
             if file.endswith('.smali'):
-                path = os.path.join(root, file)
+                path = os.path.join(root_path, file)
                 try:
                     with open(path, 'r', encoding='utf-8') as f:
                         content = f.read()
                     
-                    if '"whatsapp.com/channel' in content or '"wa.me/channel' in content or '"whatsapp://channel' in content:
-                        new_content = content.replace('"whatsapp.com/channel"', '"whatsapp.com/block_c"')
-                        new_content = new_content.replace('"whatsapp.com/channel/"', '"whatsapp.com/block_c/"')
-                        new_content = new_content.replace('"wa.me/channel"', '"wa.me/block_c"')
-                        new_content = new_content.replace('"wa.me/channel/"', '"wa.me/block_c/"')
-                        new_content = new_content.replace('"whatsapp://channel"', '"whatsapp://block_c"')
-                        new_content = new_content.replace('"whatsapp://channel/"', '"whatsapp://block_c/"')
-                        
-                        if new_content != content:
+                    # בדיקה מהירה כדי לא לעשות replace על כל קובץ
+                    if "channel" in content:
+                        original_content = content
+                        for old_str, new_str in replacements.items():
+                            content = content.replace(old_str, new_str)
+                            
+                        if original_content != content:
                             with open(path, 'w', encoding='utf-8') as f:
-                                f.write(new_content)
+                                f.write(content)
                             patched_files += 1
                 except Exception:
                     pass
                     
     print(f"    [+] Channel deep links neutralized in {patched_files} Smali files.")
     return True
-# --------------------------------------------------------- 
-# 12. הריגת הערוץ בתוך מסך השיחה והשחתת מזהי JID
-# --------------------------------------------------------- 
-def _patch_nuke_newsletter_conversation(root_dir):
-    print(f"\n[11] Nuking Newsletter inside Conversation Activity...")
-    target_file = _find_file_recursive(root_dir, "Conversation.smali")
-    if not target_file:
-        print("    [-] Conversation.smali not found.")
-        return False
 
-    try:
-        # 1. הזרקת חוסם בכניסה למסך הצ'אטים
-        with open(target_file, 'r', encoding='utf-8') as f:
-            content = f.read()
-
-        # אנחנו תופסים את תחילת פונקציית היצירה של המסך, מיד אחרי הגדרת המשתנים
-        pattern = re.compile(r"(\.method public onCreate\(Landroid/os/Bundle;\)V.*?\.locals \d+\s+)", re.DOTALL)
-        
-        injection = """
-    # --- KOSHER NEWSLETTER KILLER ---
-    invoke-virtual {p0}, Landroid/app/Activity;->getIntent()Landroid/content/Intent;
-    move-result-object v0
-    if-eqz v0, :cond_k_safe
-    const-string v1, "jid"
-    invoke-virtual {v0, v1}, Landroid/content/Intent;->getStringExtra(Ljava/lang/String;)Ljava/lang/String;
-    move-result-object v1
-    if-eqz v1, :cond_k_safe
-    const-string v2, "newsletter"
-    invoke-virtual {v1, v2}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-    move-result v1
-    if-eqz v1, :cond_k_safe
-    const/4 v0, 0x1
-    const-string v1, "\\u05e2\\u05e8\\u05d5\\u05e6\\u05d9\\u05dd \\u05d7\\u05e1\\u05d5\\u05de\\u05d9\\u05dd" # כותב: "ערוצים חסומים"
-    invoke-static {p0, v1, v0}, Landroid/widget/Toast;->makeText(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;
-    move-result-object v0
-    invoke-virtual {v0}, Landroid/widget/Toast;->show()V
-    invoke-virtual {p0}, Landroid/app/Activity;->finish()V
-    return-void
-    :cond_k_safe
-    # --- END KOSHER KILLER ---
-"""
-        if "KOSHER NEWSLETTER KILLER" not in content:
-            new_content = pattern.sub(r"\1" + injection, content, count=1)
-            with open(target_file, 'w', encoding='utf-8') as f:
-                f.write(new_content)
-            print("    [+] Conversation activity patched to reject newsletters.")
-        else:
-            print("    [-] Conversation already patched.")
-            
-        # 2. השחתת מנוע זיהוי הערוצים של וואטסאפ בכל שאר הקבצים
-        patched_jids = 0
-        for root_path, _, files in os.walk(root_dir):
-            for file in files:
-                if file.endswith('.smali'):
-                    path = os.path.join(root_path, file)
-                    try:
-                        with open(path, 'r', encoding='utf-8') as f2:
-                            smali_code = f2.read()
-                        if '"@newsletter"' in smali_code:
-                            new_smali = smali_code.replace('"@newsletter"', '"@block_nlr"')
-                            with open(path, 'w', encoding='utf-8') as f2:
-                                f2.write(new_smali)
-                            patched_jids += 1
-                    except: 
-                        pass
-        print(f"    [+] Corrupted @newsletter JID suffix in {patched_jids} files.")
-        return True
-
-    except Exception as e:
-        print(f"    [-] Error: {e}")
-        return False
 # --------------------------------------------------------- 
 # פונקציות עזר 
 # --------------------------------------------------------- 
