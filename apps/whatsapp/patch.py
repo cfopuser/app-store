@@ -113,7 +113,7 @@ def _patch_newsletter_launcher(root_dir):
         return False 
  
 # --------------------------------------------------------- 
-# 3. הסרת טאב העדכונים 
+# 3. הסרת טאב העדכונים (Debug Mode)
 # --------------------------------------------------------- 
 def _patch_home_tabs(root_dir): 
     anchor = "Tried to set badge for invalid tab id" 
@@ -127,7 +127,6 @@ def _patch_home_tabs(root_dir):
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
          
-        # Find exactly the 0x12c assignment, any newlines/lines, and the following if-jump
         pattern = re.compile(r"(const/16\s+([vp]\d+),\s*0x12c[\s\S]{1,50}?)(if-[a-z]+\s+[vp]\d+,\s*:cond_\w+)")
         new_content, count = pattern.subn(r"\1nop # \3", content)
         
@@ -137,12 +136,26 @@ def _patch_home_tabs(root_dir):
             return True
         else:
             print("    [-] Home Tabs: Target file found, but regex failed to match.")
+            print("    [*] --- START SMALI DUMP ---")
+            
+            # הדפסת אזור הקוד שקשור ל-0x12c
+            lines = content.splitlines()
+            for i, line in enumerate(lines):
+                if "0x12c" in line or anchor in line:
+                    start_idx = max(0, i - 15)
+                    end_idx = min(len(lines), i + 15)
+                    print(f"    [i] Context around line {i}:")
+                    for j in range(start_idx, end_idx):
+                        prefix = ">>>" if j == i else "   "
+                        print(f"{prefix} {lines[j]}")
+                    print("    " + "-"*40)
+                    
+            print("    [*] --- END SMALI DUMP ---")
             return False
             
     except Exception as e: 
         print(f"    [-] Error: {e}") 
-        return False 
- 
+        return False
 # --------------------------------------------------------- 
 # 4. תיקון SecurePendingIntent 
 # --------------------------------------------------------- 
