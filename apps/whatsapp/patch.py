@@ -113,7 +113,7 @@ def _patch_newsletter_launcher(root_dir):
         return False 
  
 # --------------------------------------------------------- 
-# 3. הסרת טאב העדכונים 
+# 3. הסרת טאב העדכונים (UI + Badges)
 # --------------------------------------------------------- 
 def _patch_home_tabs(root_dir): 
     import re
@@ -128,18 +128,31 @@ def _patch_home_tabs(root_dir):
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
          
-        # התבנית החדשה והמדויקת לפי הלוג: 
-        # 1. תומכת בשני רגיסטרים בתנאי (למשל if-eq p1, v0).
-        # 2. מוודאת שבין ה-const ל-if יש רק שורות .line או רווחים, כדי לא להרוס קוד אחר.
-        pattern = re.compile(r"(const(?:/\w+)?\s+([vp]\d+),\s*0x12c(?:[\s]+|\.line\s+\d+)+)(if-[a-z]+\s+[vp]\d+(?:,\s*[vp]\d+)?,\s*:cond_\w+)")
-        new_content, count = pattern.subn(r"\1nop # \3", content)
+        # 1. מחיקת הטאב מה-UI (מניעת הוספתו ל-Collection)
+        # זה מעלים אותו פיזית משורת הטאבים בתחתית
+        pattern_ui = re.compile(
+            r"(const(?:/\w+)?\s+([vp]\d+),\s*0x12c(?:[\s]+|\.line\s+\d+)+"
+            r"invoke-static\s+\{\2\},\s*Ljava/lang/Integer;->valueOf\(I\)Ljava/lang/Integer;(?:[\s]+|\.line\s+\d+)+"
+            r"move-result-object\s+([vp]\d+)(?:[\s]+|\.line\s+\d+)+)"
+            r"(invoke-virtual\s+\{[vp]\d+,\s*\3\},\s*Ljava/util/AbstractCollection;->add\(Ljava/lang/Object;\)Z)"
+        )
+        new_content, count_ui = pattern_ui.subn(r"\1nop # \4", content)
         
-        if count > 0:
+        # 2. נטרול הקריסה במידה ויש בקשה מהשרת לעדכן את תג ההתראה לטאב שאינו קיים
+        # אנחנו משנים את False (0x0) ל-True (0x1) בפקודת האסרציה של הלוג
+        pattern_crash = re.compile(
+            r"(const-string\s+[vp]\d+,\s*\"Tried to set badge for invalid tab id[\s\S]{1,300}?)"
+            r"const/4\s+([vp]\d+),\s*0x0"
+            r"((?:[\s]+|\.line\s+\d+)+invoke-static\s+\{\2,\s*[vp]\d+\},\s*L[^;]+;->[a-zA-Z0-9_]+\(ZLjava/lang/String;\)V)"
+        )
+        new_content, count_crash = pattern_crash.subn(r"\1const/4 \2, 0x1\3", new_content)
+        
+        if count_ui > 0 or count_crash > 0:
             with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content)
-            print(f"    [+] Home Tabs: 'Updates' tab (0x12c) bypassed ({count} occurrences).")
+            print(f"    [+] Home Tabs: 'Updates' tab bypassed (UI removed: {count_ui}, Crash averted: {count_crash}).")
             return True
         else:
-            print("    [-] Home Tabs: Target file found, but regex failed to match.")
+            print("    [-] Home Tabs: Target file found, but regex failed to match UI or Crash instructions.")
             return False
             
     except Exception as e: 
