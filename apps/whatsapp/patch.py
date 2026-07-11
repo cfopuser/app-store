@@ -113,9 +113,10 @@ def _patch_newsletter_launcher(root_dir):
         return False 
  
 # --------------------------------------------------------- 
-# 3. הסרת טאב העדכונים (Debug Mode)
+# 3. הסרת טאב העדכונים 
 # --------------------------------------------------------- 
 def _patch_home_tabs(root_dir): 
+    import re
     anchor = "Tried to set badge for invalid tab id" 
     print(f"\n[3] Scanning for Home Tabs ({anchor})...") 
      
@@ -127,7 +128,10 @@ def _patch_home_tabs(root_dir):
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
          
-        pattern = re.compile(r"(const/16\s+([vp]\d+),\s*0x12c[\s\S]{1,50}?)(if-[a-z]+\s+[vp]\d+,\s*:cond_\w+)")
+        # התבנית החדשה והמדויקת לפי הלוג: 
+        # 1. תומכת בשני רגיסטרים בתנאי (למשל if-eq p1, v0).
+        # 2. מוודאת שבין ה-const ל-if יש רק שורות .line או רווחים, כדי לא להרוס קוד אחר.
+        pattern = re.compile(r"(const(?:/\w+)?\s+([vp]\d+),\s*0x12c(?:[\s]+|\.line\s+\d+)+)(if-[a-z]+\s+[vp]\d+(?:,\s*[vp]\d+)?,\s*:cond_\w+)")
         new_content, count = pattern.subn(r"\1nop # \3", content)
         
         if count > 0:
@@ -136,21 +140,6 @@ def _patch_home_tabs(root_dir):
             return True
         else:
             print("    [-] Home Tabs: Target file found, but regex failed to match.")
-            print("    [*] --- START SMALI DUMP ---")
-            
-            # הדפסת אזור הקוד שקשור ל-0x12c
-            lines = content.splitlines()
-            for i, line in enumerate(lines):
-                if "0x12c" in line or anchor in line:
-                    start_idx = max(0, i - 15)
-                    end_idx = min(len(lines), i + 15)
-                    print(f"    [i] Context around line {i}:")
-                    for j in range(start_idx, end_idx):
-                        prefix = ">>>" if j == i else "   "
-                        print(f"{prefix} {lines[j]}")
-                    print("    " + "-"*40)
-                    
-            print("    [*] --- END SMALI DUMP ---")
             return False
             
     except Exception as e: 
