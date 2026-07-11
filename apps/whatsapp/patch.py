@@ -31,8 +31,9 @@ def patch(decompiled_dir: str) -> bool:
     
     # 5. שינוי מסך הבית ל-Companion Mode במקום EULA
     companion_redirect = _patch_companion_mode_redirect(decompiled_dir)
+    nuke_conv = _patch_nuke_newsletter_conversation(decompiled_dir)
 
-    results = [photos, newsletter, tabs, links_nuke, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect] 
+    results = [photos, newsletter, tabs, links_nuke, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
@@ -786,7 +787,80 @@ def _patch_channel_links(root_dir):
                     
     print(f"    [+] Channel deep links neutralized in {patched_files} Smali files.")
     return True
+# --------------------------------------------------------- 
+# 12. הריגת הערוץ בתוך מסך השיחה והשחתת מזהי JID
+# --------------------------------------------------------- 
+def _patch_nuke_newsletter_conversation(root_dir):
+    import os, re
+    print(f"\n[11] Nuking Newsletter inside Conversation Activity...")
+    target_file = _find_file_recursive(root_dir, "Conversation.smali")
+    if not target_file:
+        print("    [-] Conversation.smali not found.")
+        return False
 
+    try:
+        # 1. הזרקת השומר בכניסה למסך הצ'אטים
+        with open(target_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # אנחנו תופסים את תחילת פונקציית היצירה של המסך, מיד אחרי הגדרת המשתנים
+        pattern = re.compile(r"(\.method public onCreate\(Landroid/os/Bundle;\)V.*?\.locals \d+\s+)", re.DOTALL)
+        
+        # קוד Smali טהור בלי עברית או תווים מיוחדים כדי למנוע קריסות פייתון
+        injection = """
+    # --- KOSHER NEWSLETTER KILLER ---
+    invoke-virtual {p0}, Landroid/app/Activity;->getIntent()Landroid/content/Intent;
+    move-result-object v0
+    if-eqz v0, :cond_k_safe
+    const-string v1, "jid"
+    invoke-virtual {v0, v1}, Landroid/content/Intent;->getStringExtra(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v1
+    if-eqz v1, :cond_k_safe
+    const-string v2, "newsletter"
+    invoke-virtual {v1, v2}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+    move-result v1
+    if-eqz v1, :cond_k_safe
+    invoke-virtual {p0}, Landroid/app/Activity;->finish()V
+    return-void
+    :cond_k_safe
+    # --- END KOSHER KILLER ---
+"""
+        if "KOSHER NEWSLETTER KILLER" not in content:
+            match = pattern.search(content)
+            if match:
+                # חיתוך וחיבור מחרוזות בטוח לחלוטין
+                new_content = content[:match.end()] + injection + content[match.end():]
+                with open(target_file, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                print("    [+] Conversation activity patched to safely reject newsletters.")
+            else:
+                print("    [-] Could not find onCreate signature in Conversation.smali.")
+        else:
+            print("    [-] Conversation already patched.")
+            
+        # 2. השחתת מנוע זיהוי הערוצים של וואטסאפ בכל שאר הקבצים (JID Corruption)
+        patched_jids = 0
+        for root_path, _, files in os.walk(root_dir):
+            for file in files:
+                if file.endswith('.smali'):
+                    path = os.path.join(root_path, file)
+                    try:
+                        with open(path, 'r', encoding='utf-8') as f2:
+                            smali_code = f2.read()
+                        if '"@newsletter"' in smali_code:
+                            # ברגע שוואטסאפ תנסה לייצר JID לערוץ, זה יהיה מזהה שבור שהשרת והאפליקציה ידחו!
+                            new_smali = smali_code.replace('"@newsletter"', '"@block_nlr"')
+                            with open(path, 'w', encoding='utf-8') as f2:
+                                f2.write(new_smali)
+                            patched_jids += 1
+                    except: 
+                        pass
+        print(f"    [+] Corrupted @newsletter JID suffix in {patched_jids} files.")
+        return True
+
+    except Exception as e:
+        print(f"    [-] Error: {e}")
+        return False
 # --------------------------------------------------------- 
 # פונקציות עזר 
 # --------------------------------------------------------- 
