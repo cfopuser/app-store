@@ -113,7 +113,7 @@ def _patch_newsletter_launcher(root_dir):
         return False 
  
 # --------------------------------------------------------- 
-# 3. הסרת טאב העדכונים (UI + Badges)
+# 3. הסרת טאב העדכונים (UI + Badges) - FIXED FAST REGEX
 # --------------------------------------------------------- 
 def _patch_home_tabs(root_dir): 
     import re
@@ -128,24 +128,22 @@ def _patch_home_tabs(root_dir):
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
          
-        # 1. מחיקת הטאב מה-UI (מניעת הוספתו ל-Collection)
-        # זה מעלים אותו פיזית משורת הטאבים בתחתית
+        # 1. מחיקת הטאב מה-UI 
+        # משתמשים ב-[\s\S] כדי למנוע Catastrophic Backtracking ולקנפג חיפוש מהיר
         pattern_ui = re.compile(
-            r"(const(?:/\w+)?\s+([vp]\d+),\s*0x12c(?:[\s]+|\.line\s+\d+)+"
-            r"invoke-static\s+\{\2\},\s*Ljava/lang/Integer;->valueOf\(I\)Ljava/lang/Integer;(?:[\s]+|\.line\s+\d+)+"
-            r"move-result-object\s+([vp]\d+)(?:[\s]+|\.line\s+\d+)+)"
+            r"(const(?:/\w+)?\s+([vp]\d+),\s*0x12c[\s\S]{1,150}?"
+            r"invoke-static\s+\{\2\},\s*Ljava/lang/Integer;->valueOf\(I\)Ljava/lang/Integer;[\s\S]{1,150}?"
+            r"move-result-object\s+([vp]\d+)[\s\S]{1,150}?)"
             r"(invoke-virtual\s+\{[vp]\d+,\s*\3\},\s*Ljava/util/AbstractCollection;->add\(Ljava/lang/Object;\)Z)"
         )
         new_content, count_ui = pattern_ui.subn(r"\1nop # \4", content)
         
-        # 2. נטרול הקריסה במידה ויש בקשה מהשרת לעדכן את תג ההתראה לטאב שאינו קיים
-        # אנחנו משנים את False (0x0) ל-True (0x1) בפקודת האסרציה של הלוג
+        # 2. נטרול הקריסה במידה ויש קריאה לתג מוסתר (משנה False ל-True באסרציה)
         pattern_crash = re.compile(
-            r"(const-string\s+[vp]\d+,\s*\"Tried to set badge for invalid tab id[\s\S]{1,300}?)"
-            r"const/4\s+([vp]\d+),\s*0x0"
-            r"((?:[\s]+|\.line\s+\d+)+invoke-static\s+\{\2,\s*[vp]\d+\},\s*L[^;]+;->[a-zA-Z0-9_]+\(ZLjava/lang/String;\)V)"
+            r"(const-string\s+[vp]\d+,\s*\"Tried to set badge for invalid tab id[\s\S]{1,200}?"
+            r"const/4\s+([vp]\d+),\s*)0x0([\s\S]{1,100}?invoke-static\s+\{\2,\s*[vp]\d+\},\s*L[^;]+;->[a-zA-Z0-9_]+\(ZLjava/lang/String;\)V)"
         )
-        new_content, count_crash = pattern_crash.subn(r"\1const/4 \2, 0x1\3", new_content)
+        new_content, count_crash = pattern_crash.subn(r"\10x1\3", new_content)
         
         if count_ui > 0 or count_crash > 0:
             with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content)
