@@ -1,4 +1,5 @@
 import re
+import gzip
 import cloudscraper
 from bs4 import BeautifulSoup
 
@@ -17,16 +18,25 @@ class WhatsAppOfficialSource:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Encoding': 'gzip, deflate',  # הורדנו את br
             'DNT': '1',
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Sec-Fetch-User': '?1',
-            'Cache-Control': 'max-age=0',
         })
+
+    def _decode_response(self, response):
+        """מפענח את התוכן אם הוא דחוס."""
+        content_encoding = response.headers.get('Content-Encoding', '').lower()
+        raw_content = response.content
+        
+        if 'gzip' in content_encoding:
+            try:
+                return gzip.decompress(raw_content).decode('utf-8')
+            except Exception as e:
+                print(f"[!] [WhatsApp Official] Failed to decode gzip: {e}")
+                return raw_content.decode('utf-8', errors='ignore')
+        else:
+            return raw_content.decode('utf-8', errors='ignore')
 
     def get_latest_version(self, package_name: str):
         print(f"[*] [WhatsApp Official] Fetching latest APK from {self.base_url}")
@@ -34,106 +44,85 @@ class WhatsAppOfficialSource:
         try:
             response = self.scraper.get(self.base_url, timeout=self.timeout)
             response.raise_for_status()
-            html = response.text
             
-            # --- LOG: Save HTML to file for debugging ---
+            # פענוח ידני
+            html = self._decode_response(response)
+            
+            # שמירה לקובץ לבדיקה
             with open("whatsapp_page.html", "w", encoding="utf-8") as f:
                 f.write(html)
-            print("[*] [WhatsApp Official] Saved HTML to whatsapp_page.html")
+            print("[*] [WhatsApp Official] Saved decoded HTML to whatsapp_page.html")
             
-            # --- LOG: Print first 500 characters of HTML ---
+            # תצוגה מקדימה
             print("[*] [WhatsApp Official] HTML preview (first 500 chars):")
             print(html[:500])
             
             soup = BeautifulSoup(html, 'html.parser')
 
-            # --- 1. Find the direct APK download link ---
+            # --- 1. חיפוש קישור ---
             apk_link = None
             
-            # Method 1: Search all <a> tags
+            # חיפוש בכל הקישורים
             all_links = soup.find_all('a', href=True)
             print(f"[*] [WhatsApp Official] Found {len(all_links)} links")
-            for i, link in enumerate(all_links):
+            
+            for link in all_links:
                 href = link.get('href', '')
-                if 'scontent.whatsapp.net' in href and href.endswith('.apk'):
+                if 'scontent.whatsapp.net' in href and '.apk' in href:
                     apk_link = href
-                    print(f"[+] [WhatsApp Official] Found APK link in <a> tag #{i}: {href[:100]}...")
+                    print(f"[+] [WhatsApp Official] Found APK link: {href[:100]}...")
                     break
 
-            # Method 2: Search in raw HTML (fallback)
+            # חיפוש גולמי ב-HTML
             if not apk_link:
-                print("[*] [WhatsApp Official] No link in <a> tags, searching raw HTML...")
-                pattern = r'https://scontent\.whatsapp\.net/[^\s"\'<>]+\.apk[^\s"\'<>]*'
-                matches = re.findall(pattern, html)
-                print(f"[*] [WhatsApp Official] Found {len(matches)} raw matches")
-                for i, match in enumerate(matches):
-                    print(f"    Match #{i}: {match[:100]}...")
-                if matches:
-                    apk_link = matches[0]
-                    print(f"[+] [WhatsApp Official] Using first raw match: {apk_link[:100]}...")
-
-            # Method 3: Search for any .apk link (not just scontent)
-            if not apk_link:
-                print("[*] [WhatsApp Official] No scontent link found, searching for any .apk link...")
+                print("[*] [WhatsApp Official] Searching raw HTML for APK links...")
                 pattern = r'https?://[^\s"\'<>]+\.apk[^\s"\'<>]*'
                 matches = re.findall(pattern, html)
-                print(f"[*] [WhatsApp Official] Found {len(matches)} .apk links")
-                for i, match in enumerate(matches):
-                    print(f"    Match #{i}: {match[:100]}...")
+                print(f"[*] [WhatsApp Official] Found {len(matches)} raw matches")
                 if matches:
                     apk_link = matches[0]
-                    print(f"[+] [WhatsApp Official] Using first .apk match: {apk_link[:100]}...")
+                    print(f"[+] [WhatsApp Official] Using raw match: {apk_link[:100]}...")
 
             if not apk_link:
                 print("[-] [WhatsApp Official] Could not find APK download link.")
                 return None, None, None
 
-            print(f"[+] [WhatsApp Official] Final APK link: {apk_link[:100]}...")
-
-            # --- 2. Extract version number ---
+            # --- 2. חילוץ גרסה ---
             version = None
-
-            version_patterns = [
+            patterns = [
                 r'גרסה\s+([\d.]+)',
                 r'Version\s+([\d.]+)',
                 r'version["\']?\s*[:=]\s*["\']?([\d.]+)',
                 r'v([\d.]+)',
             ]
-            for pattern in version_patterns:
-                match = re.search(pattern, html, re.IGNORECASE)
+            for pat in patterns:
+                match = re.search(pat, html, re.IGNORECASE)
                 if match:
                     version = match.group(1)
-                    print(f"[*] [WhatsApp Official] Found version via pattern '{pattern}': {version}")
+                    print(f"[*] [WhatsApp Official] Found version via '{pat}': {version}")
                     break
 
             if not version:
-                print("[*] [WhatsApp Official] No version in HTML, trying URL...")
+                # נסיון מחלץ משם הקובץ
                 filename_match = re.search(r'/([^/]+)\.apk', apk_link)
                 if filename_match:
                     filename = filename_match.group(1)
-                    print(f"[*] [WhatsApp Official] Filename: {filename}")
-                    ver_match = re.search(r'(\d+\.\d+\.\d+\.\d+)', filename)
+                    ver_match = re.search(r'(\d+\.\d+\.\d+\.\d+)', filename) or re.search(r'(\d+\.\d+\.\d+)', filename)
                     if ver_match:
                         version = ver_match.group(1)
                         print(f"[*] [WhatsApp Official] Found version in filename: {version}")
-                    else:
-                        ver_match = re.search(r'(\d+\.\d+\.\d+)', filename)
-                        if ver_match:
-                            version = ver_match.group(1)
-                            print(f"[*] [WhatsApp Official] Found version in filename: {version}")
 
             if not version:
                 from datetime import datetime
                 version = datetime.utcnow().strftime("%Y.%m.%d")
-                print(f"[!] [WhatsApp Official] Could not determine version, using date: {version}")
+                print(f"[!] [WhatsApp Official] Using date as version: {version}")
 
             title = "WhatsApp Messenger"
-            print(f"[+] [WhatsApp Official] Version: {version}")
-
+            print(f"[+] [WhatsApp Official] Final version: {version}")
             return version, apk_link, title
 
         except Exception as e:
-            print(f"[-] [WhatsApp Official] Error fetching metadata: {e}")
+            print(f"[-] [WhatsApp Official] Error: {e}")
             return None, None, None
 
     def get_download_url(self, initial_url: str):
