@@ -29,7 +29,7 @@
     ]
   },
   "source": {
-    "source": "whatsapp_official",
+    "source": "custom_fallback",
     "name_play": "WhatsApp Messenger"
   },
   "patching": {
