@@ -9,19 +9,26 @@ import requests
 from bs4 import BeautifulSoup
 import cloudscraper
 
-DEFAULT_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.82 Mobile Safari/537.36",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-}
-
 class CustomFallbackSource:
     def __init__(self, uptodown_subdomain=None, timeout=30, retries=3):
         self.uptodown_subdomain = uptodown_subdomain
         self.timeout = timeout
         self.retries = retries
-        self.scraper = cloudscraper.create_scraper()
-        self.scraper.headers.update(DEFAULT_HEADERS)
+        
+        # אתחול עם פרופיל דפדפן תואם לעקיפת Cloudflare
+        self.scraper = cloudscraper.create_scraper(
+            browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'desktop': True
+            }
+        )
+        
+        # אנו לא דורסים את ה-User-Agent כדי שהחתימה הדיגיטלית תישאר תואמת
+        self.scraper.headers.update({
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        })
 
     def _get_page(self, url):
         """GET request with 429 Rate Limit handling and backoff"""
