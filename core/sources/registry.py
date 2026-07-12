@@ -7,7 +7,7 @@ from .apkpure import APKPureSource
 from .apkpure_mobile import APKPureMobileSource
 from .github import GitHubSource
 from .apkcombo import APKComboSource
-
+from .whatsapp_official import WhatsAppOfficialSource
 
 @dataclass(frozen=True)
 class SourceDefinition:
@@ -16,6 +16,7 @@ class SourceDefinition:
 
 
 SOURCE_DEFINITIONS: dict[str, SourceDefinition] = {
+    "whatsapp_official": SourceDefinition(factory=lambda _cfg: WhatsAppOfficialSource()),
     "apkmirror": SourceDefinition(factory=lambda _cfg: APKMirrorSource()),
     "aptoide": SourceDefinition(factory=lambda _cfg: AptoideSource()),
     "apkcombo": SourceDefinition(factory=lambda _cfg: APKComboSource()),
