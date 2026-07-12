@@ -36,7 +36,7 @@
     "inject_updater": true,
     "hotfixes": {
       "10.1.62": ".1"
-    },
+    }
   },
   "paths": {
     "version_file": "apps/egg/version.txt",
