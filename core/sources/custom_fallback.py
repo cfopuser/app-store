@@ -3,6 +3,7 @@
 import os
 import re
 import time
+import base64
 from bs4 import BeautifulSoup
 import cloudscraper
 
@@ -11,7 +12,6 @@ class CustomFallbackSource:
         self.uptodown_subdomain = uptodown_subdomain
         self.timeout = timeout
         
-        # אתחול סקרייפר שעוקף Cloudflare
         self.scraper = cloudscraper.create_scraper(
             browser={
                 'browser': 'chrome',
@@ -24,22 +24,14 @@ class CustomFallbackSource:
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         })
 
-    def _extract_version(self, text):
-        if not text:
-            return None
-        match = re.search(r"(\d+(?:\.\d+){1,})", text)
-        return match.group(1) if match else None
-
     def _get_best_apkpure_variant(self, package_name):
-        """
-        פונה ל-API הפנימי של APKPure, קורא את כל הוריאציות של ה-APK (32bit ו-64bit),
-        בודק את המשקל שלהן בשרת ובוחר אקטיבית את הגרסה הכבדה ביותר (128MB - arm64).
-        """
         api_url = "https://api.pureapk.com/m/v3/cms/app_version"
         headers = {
             'x-sv': '29',
             'x-abis': 'arm64-v8a,armeabi-v7a,armeabi',
             'x-gp': '1',
+            # כותרת אנדרואיד קריטית כדי שה-API יחשוף את גרסאות ה-XAPK הגדולות
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36'
         }
         params = {
             'hl': 'en-US',
@@ -50,7 +42,6 @@ class CustomFallbackSource:
             r = self.scraper.get(api_url, params=params, headers=headers, timeout=self.timeout)
             r.raise_for_status()
             
-            # חילוץ כל הקישורים הבינאריים מתשובת ה-API
             strings = re.findall(rb'[ -~]{8,}', r.content)
             valid_urls = []
             for s in strings:
@@ -63,48 +54,59 @@ class CustomFallbackSource:
             
             if not valid_urls:
                 print("[-] No valid URLs found in API response.")
-                return None
+                return None, None
                 
-            print(f"[*] Found {len(valid_urls)} variant(s). Checking file sizes to find the largest (arm64)...")
+            print(f"[*] Found {len(valid_urls)} variant(s). Checking file sizes via Stream Headers...")
             
             best_url = valid_urls[0]
             max_size = 0
+            best_version = None
             
-            # בודקים את הגודל של כל גרסה (עד 4 וריאציות) ובוחרים את הגדולה ביותר
-            for url in valid_urls[:4]:
+            # בדיקה של 5 הוריאציות הראשונות
+            for url in valid_urls[:5]:
                 try:
-                    # בדיקת HEAD מהירה כדי לקבל משקל ללא הורדת הקובץ
-                    head_res = self.scraper.head(url, allow_redirects=True, timeout=5)
-                    size = int(head_res.headers.get("Content-Length", 0))
-                    mb_size = size // 1024 // 1024
-                    print(f"    - Found variant: {mb_size} MB | URL: {url[:55]}...")
-                    if size > max_size:
-                        max_size = size
-                        best_url = url
+                    # 1. פענוח Base64 מהקישור כדי לחלץ את מספר הגרסה האמיתי
+                    url_b64 = url.split('/')[-1].split('?')[0]
+                    padded = url_b64 + '=' * (-len(url_b64) % 4)
+                    decoded_info = base64.b64decode(padded).decode('utf-8', errors='ignore')
+                    
+                    ver_match = re.search(r"(\d+(?:\.\d+){1,})", decoded_info)
+                    extracted_ver = ver_match.group(1) if ver_match else "Unknown"
+                    
+                    # 2. קריאת גודל הקובץ בעזרת GET + stream=True במקום HEAD שעושה בעיות
+                    with self.scraper.get(url, stream=True, allow_redirects=True, timeout=5) as res:
+                        size = int(res.headers.get("Content-Length", 0))
+                        mb_size = size // 1024 // 1024
+                        print(f"    - Found variant: {mb_size} MB | Version: {extracted_ver}")
+                        
+                        if size > max_size:
+                            max_size = size
+                            best_url = url
+                            best_version = extracted_ver if extracted_ver != "Unknown" else None
+
                 except Exception as e:
                     pass
                     
-            print(f"[+] Selected the largest variant: {max_size // 1024 // 1024} MB (arm64-v8a)")
-            return best_url
+            print(f"[+] Selected largest variant: {max_size // 1024 // 1024} MB (Version: {best_version})")
+            return best_url, best_version
         except Exception as e:
             print(f"[-] APKPure API check failed: {e}")
-            return None
+            return None, None
 
     def get_latest_version(self, package_name):
         print(f"[*] [Custom Fallback] Checking latest version for {package_name}...")
         
-        # 1. עדיפות א' - חיפוש ב-APKPure ולקיחת הגרסה הכבדה
+        # 1. APKPure
         try:
-            best_url = self._get_best_apkpure_variant(package_name)
+            best_url, version = self._get_best_apkpure_variant(package_name)
             if best_url:
-                version = self._extract_version(best_url)
                 if not version:
                     version = "latest"
                 return version, f"apkpure_mobile:{best_url}", package_name
         except Exception as e:
             print(f"[-] APKPure variant check failed: {e}")
 
-        # 2. גיבוי - Aptoide
+        # 2. Aptoide
         try:
             from core.sources.aptoide import AptoideSource
             aptoide = AptoideSource(timeout=self.timeout)
@@ -114,7 +116,7 @@ class CustomFallbackSource:
         except Exception as e:
             pass
 
-        # 3. גיבוי - Uptodown
+        # 3. Uptodown
         if self.uptodown_subdomain:
             try:
                 version, download_url, title = self._scrape_uptodown_meta(self.uptodown_subdomain)
@@ -133,9 +135,8 @@ class CustomFallbackSource:
         if initial_url.startswith("uptodown:"):
             return initial_url.split("uptodown:", 1)[1]
 
-        # גיבוי אחרון בהחלט
         package_name = initial_url.split("fallback:", 1)[1] if "fallback:" in initial_url else initial_url
-        best_url = self._get_best_apkpure_variant(package_name)
+        best_url, _ = self._get_best_apkpure_variant(package_name)
         if best_url: return best_url
         
         return None
