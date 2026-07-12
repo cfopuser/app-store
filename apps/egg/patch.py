@@ -57,57 +57,91 @@ def patch(decompiled_dir: str) -> bool:
         print(f"[-] Target file {target_filename} not found in decompiled directory.")
         return False
 
-    # ---------- Patch 2: Application.smali (remove PAIR checkLicense) ----------
-    target_app = "com/pairip/application/Application.smali"
+    # ---------- Patch 2: Find and patch Application.smali (remove PAIR checkLicense) ----------
+    # Search for any file that contains "pairip/application/Application" in its path
+    # or any file that contains the checkLicense call
     app_found = False
-
-    print(f"[*] Searching for {target_app}...")
+    print(f"[*] Searching for PAIR Application class...")
 
     for root, dirs, files in os.walk(decompiled_dir):
-        if target_app in files:
-            file_path = os.path.join(root, target_app)
-            print(f"[+] Found target file: {file_path}")
-
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-
-                # We want to replace the whole attachBaseContext method
-                # with one that only calls super (removing checkLicense).
-                # Pattern matches the method block.
-                method_pattern = r"(\.method protected attachBaseContext\(Landroid/content/Context;\)V)([\s\S]*?)(\.end method)"
+        for file in files:
+            if not file.endswith('.smali'):
+                continue
                 
-                # Replacement: only the super call, no checkLicense.
-                replacement_method = r"""\1
+            file_path = os.path.join(root, file)
+            relative_path = os.path.relpath(file_path, decompiled_dir)
+            
+            # Check if this is likely the PAIR Application class
+            # Look for either the expected path OR the checkLicense call
+            is_pair_app = False
+            
+            # Method 1: Check by path
+            if 'pairip/application/Application.smali' in relative_path.replace('\\', '/'):
+                is_pair_app = True
+                print(f"[+] Found PAIR Application by path: {file_path}")
+            
+            # Method 2: If not found by path, search content for checkLicense
+            if not is_pair_app:
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    
+                    # Look for the characteristic checkLicense call
+                    if ('.super' in content and 
+                        'Lcom/pairip/licensecheck/LicenseClient;' in content and
+                        'checkLicense' in content and
+                        'attachBaseContext' in content):
+                        
+                        is_pair_app = True
+                        print(f"[+] Found PAIR Application by content: {file_path}")
+                        
+                except Exception:
+                    continue
+            
+            if is_pair_app:
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+
+                    # We want to replace the whole attachBaseContext method
+                    # with one that only calls super (removing checkLicense).
+                    method_pattern = r"(\.method (?:protected |public )?attachBaseContext\(Landroid/content/Context;\)V)([\s\S]*?)(\.end method)"
+                    
+                    # Replacement: only the super call, no checkLicense.
+                    replacement_method = r"""\1
     .registers 2
     invoke-super {p0, p1}, Lcom/pairip/application/Application;->attachBaseContext(Landroid/content/Context;)V
     return-void
 \3"""
 
-                if not re.search(method_pattern, content, re.DOTALL):
-                    print(f"[-] Could not find attachBaseContext method in {target_app}. Structure might have changed.")
+                    if not re.search(method_pattern, content, re.DOTALL):
+                        print(f"[-] Could not find attachBaseContext method in {file}. Structure might have changed.")
+                        continue
+
+                    new_content = re.sub(method_pattern, replacement_method, content, flags=re.DOTALL)
+
+                    if new_content == content:
+                        print("[-] Patch attempted but content remained unchanged.")
+                        continue
+
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        f.write(new_content)
+
+                    print(f"[+] Application.smali patched successfully! PAIR checkLicense removed from {file}")
+                    app_found = True
+                    break
+
+                except Exception as e:
+                    print(f"[-] Error patching Application.smali: {e}")
                     return False
-
-                new_content = re.sub(method_pattern, replacement_method, content, flags=re.DOTALL)
-
-                if new_content == content:
-                    print("[-] Patch attempted but content remained unchanged.")
-                    return False
-
-                with open(file_path, 'w', encoding='utf-8') as f:
-                    f.write(new_content)
-
-                print("[+] Application.smali patched successfully! PAIR checkLicense removed.")
-                app_found = True
-                break
-
-            except Exception as e:
-                print(f"[-] Error patching Application.smali: {e}")
-                return False
 
     if not app_found:
-        print(f"[-] Target file {target_app} not found in decompiled directory.")
-        return False
+        print("[!] PAIR Application class not found. This might mean:")
+        print("    1. The app doesn't use PAIR protection (unlikely)")
+        print("    2. The PAIR class was heavily obfuscated")
+        print("    3. The decompilation didn't include it")
+        print("[*] Continuing anyway - the main LicenseContentProvider patch is applied.")
+        # Don't fail, just continue
 
-    print("[+] All patches applied successfully!")
+    print("[+] All available patches applied successfully!")
     return True
