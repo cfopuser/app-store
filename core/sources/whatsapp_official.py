@@ -29,47 +29,70 @@ class WhatsAppOfficialSource:
         })
 
     def get_latest_version(self, package_name: str):
-        """
-        Fetch the latest WhatsApp APK directly from whatsapp.com/android.
-        
-        Returns:
-            (version, download_link, title)
-        """
         print(f"[*] [WhatsApp Official] Fetching latest APK from {self.base_url}")
 
         try:
             response = self.scraper.get(self.base_url, timeout=self.timeout)
             response.raise_for_status()
             html = response.text
+            
+            # --- LOG: Save HTML to file for debugging ---
+            with open("whatsapp_page.html", "w", encoding="utf-8") as f:
+                f.write(html)
+            print("[*] [WhatsApp Official] Saved HTML to whatsapp_page.html")
+            
+            # --- LOG: Print first 500 characters of HTML ---
+            print("[*] [WhatsApp Official] HTML preview (first 500 chars):")
+            print(html[:500])
+            
             soup = BeautifulSoup(html, 'html.parser')
 
             # --- 1. Find the direct APK download link ---
-            # Look for <a> tags with href containing "scontent.whatsapp.net" and ending with ".apk"
             apk_link = None
+            
+            # Method 1: Search all <a> tags
             all_links = soup.find_all('a', href=True)
-            for link in all_links:
+            print(f"[*] [WhatsApp Official] Found {len(all_links)} links")
+            for i, link in enumerate(all_links):
                 href = link.get('href', '')
                 if 'scontent.whatsapp.net' in href and href.endswith('.apk'):
                     apk_link = href
+                    print(f"[+] [WhatsApp Official] Found APK link in <a> tag #{i}: {href[:100]}...")
                     break
 
-            # Fallback: search in raw HTML (in case it's inside a meta or script)
+            # Method 2: Search in raw HTML (fallback)
             if not apk_link:
+                print("[*] [WhatsApp Official] No link in <a> tags, searching raw HTML...")
                 pattern = r'https://scontent\.whatsapp\.net/[^\s"\'<>]+\.apk[^\s"\'<>]*'
-                match = re.search(pattern, html)
-                if match:
-                    apk_link = match.group(0)
+                matches = re.findall(pattern, html)
+                print(f"[*] [WhatsApp Official] Found {len(matches)} raw matches")
+                for i, match in enumerate(matches):
+                    print(f"    Match #{i}: {match[:100]}...")
+                if matches:
+                    apk_link = matches[0]
+                    print(f"[+] [WhatsApp Official] Using first raw match: {apk_link[:100]}...")
+
+            # Method 3: Search for any .apk link (not just scontent)
+            if not apk_link:
+                print("[*] [WhatsApp Official] No scontent link found, searching for any .apk link...")
+                pattern = r'https?://[^\s"\'<>]+\.apk[^\s"\'<>]*'
+                matches = re.findall(pattern, html)
+                print(f"[*] [WhatsApp Official] Found {len(matches)} .apk links")
+                for i, match in enumerate(matches):
+                    print(f"    Match #{i}: {match[:100]}...")
+                if matches:
+                    apk_link = matches[0]
+                    print(f"[+] [WhatsApp Official] Using first .apk match: {apk_link[:100]}...")
 
             if not apk_link:
                 print("[-] [WhatsApp Official] Could not find APK download link.")
                 return None, None, None
 
-            print(f"[+] [WhatsApp Official] Found APK link: {apk_link[:100]}...")
+            print(f"[+] [WhatsApp Official] Final APK link: {apk_link[:100]}...")
 
-            # --- 2. Extract version number from the page ---
+            # --- 2. Extract version number ---
             version = None
 
-            # Look for version in text (e.g., "גרסה 2.23.12.75" or "Version X.Y.Z")
             version_patterns = [
                 r'גרסה\s+([\d.]+)',
                 r'Version\s+([\d.]+)',
@@ -80,26 +103,25 @@ class WhatsAppOfficialSource:
                 match = re.search(pattern, html, re.IGNORECASE)
                 if match:
                     version = match.group(1)
+                    print(f"[*] [WhatsApp Official] Found version via pattern '{pattern}': {version}")
                     break
 
-            # If still no version, try to extract from the APK filename or URL
             if not version:
-                # Example: .../10000000_2445548149293237_4579588530844501720_n.apk
-                # Sometimes the version is in the filename
+                print("[*] [WhatsApp Official] No version in HTML, trying URL...")
                 filename_match = re.search(r'/([^/]+)\.apk', apk_link)
                 if filename_match:
                     filename = filename_match.group(1)
-                    # Look for version-like pattern in filename
+                    print(f"[*] [WhatsApp Official] Filename: {filename}")
                     ver_match = re.search(r'(\d+\.\d+\.\d+\.\d+)', filename)
                     if ver_match:
                         version = ver_match.group(1)
+                        print(f"[*] [WhatsApp Official] Found version in filename: {version}")
                     else:
-                        # Try to find a simpler version pattern (e.g., 2.26.27)
                         ver_match = re.search(r'(\d+\.\d+\.\d+)', filename)
                         if ver_match:
                             version = ver_match.group(1)
+                            print(f"[*] [WhatsApp Official] Found version in filename: {version}")
 
-            # Final fallback: use current date as version (not ideal, but better than nothing)
             if not version:
                 from datetime import datetime
                 version = datetime.utcnow().strftime("%Y.%m.%d")
@@ -115,5 +137,4 @@ class WhatsAppOfficialSource:
             return None, None, None
 
     def get_download_url(self, initial_url: str):
-        """The initial URL is already the direct download link."""
         return initial_url
