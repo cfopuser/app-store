@@ -3,7 +3,6 @@
 import os
 import re
 import time
-import base64
 from bs4 import BeautifulSoup
 import cloudscraper
 
@@ -25,12 +24,14 @@ class CustomFallbackSource:
         })
 
     def _get_best_apkpure_variant(self, package_name):
+        """
+        פונקציה זו רק מחפשת את הקישור הכבד והאיכותי ביותר (128MB).
+        """
         api_url = "https://api.pureapk.com/m/v3/cms/app_version"
         headers = {
             'x-sv': '29',
             'x-abis': 'arm64-v8a,armeabi-v7a,armeabi',
             'x-gp': '1',
-            # כותרת אנדרואיד קריטית כדי שה-API יחשוף את גרסאות ה-XAPK הגדולות
             'User-Agent': 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36'
         }
         params = {
@@ -38,7 +39,7 @@ class CustomFallbackSource:
             'package_name': package_name
         }
         try:
-            print(f"[*] [Custom Fallback] Querying APKPure API for {package_name} variants...")
+            print(f"[*] [Custom Fallback] Querying APKPure API for largest {package_name} variant...")
             r = self.scraper.get(api_url, params=params, headers=headers, timeout=self.timeout)
             r.raise_for_status()
             
@@ -53,79 +54,76 @@ class CustomFallbackSource:
                             valid_urls.append(url)
             
             if not valid_urls:
-                print("[-] No valid URLs found in API response.")
-                return None, None
+                return None
                 
-            print(f"[*] Found {len(valid_urls)} variant(s). Checking file sizes via Stream Headers...")
-            
             best_url = valid_urls[0]
             max_size = 0
-            best_version = None
             
-            # בדיקה של 5 הוריאציות הראשונות
+            # בדיקה מהירה של המשקלים ובחירת ה-128MB
             for url in valid_urls[:5]:
                 try:
-                    # 1. פענוח Base64 מהקישור כדי לחלץ את מספר הגרסה האמיתי
-                    url_b64 = url.split('/')[-1].split('?')[0]
-                    padded = url_b64 + '=' * (-len(url_b64) % 4)
-                    decoded_info = base64.b64decode(padded).decode('utf-8', errors='ignore')
-                    
-                    ver_match = re.search(r"(\d+(?:\.\d+){1,})", decoded_info)
-                    extracted_ver = ver_match.group(1) if ver_match else "Unknown"
-                    
-                    # 2. קריאת גודל הקובץ בעזרת GET + stream=True במקום HEAD שעושה בעיות
                     with self.scraper.get(url, stream=True, allow_redirects=True, timeout=5) as res:
                         size = int(res.headers.get("Content-Length", 0))
                         mb_size = size // 1024 // 1024
-                        print(f"    - Found variant: {mb_size} MB | Version: {extracted_ver}")
-                        
                         if size > max_size:
                             max_size = size
                             best_url = url
-                            best_version = extracted_ver if extracted_ver != "Unknown" else None
-
                 except Exception as e:
                     pass
                     
-            print(f"[+] Selected largest variant: {max_size // 1024 // 1024} MB (Version: {best_version})")
-            return best_url, best_version
+            print(f"[+] Selected largest variant URL: {max_size // 1024 // 1024} MB")
+            return best_url
         except Exception as e:
             print(f"[-] APKPure API check failed: {e}")
-            return None, None
+            return None
 
     def get_latest_version(self, package_name):
-        print(f"[*] [Custom Fallback] Checking latest version for {package_name}...")
+        print(f"[*] [Custom Fallback] Resolving accurate version and largest download link for {package_name}...")
         
-        # 1. APKPure
+        real_version = "latest"
+        
+        # 1. משיכת השם המדויק של הגרסה (למשל 2.26.26.73) דרך המקור הקיים שלכם
         try:
-            best_url, version = self._get_best_apkpure_variant(package_name)
-            if best_url:
-                if not version:
-                    version = "latest"
-                return version, f"apkpure_mobile:{best_url}", package_name
-        except Exception as e:
-            print(f"[-] APKPure variant check failed: {e}")
-
-        # 2. Aptoide
-        try:
-            from core.sources.aptoide import AptoideSource
-            aptoide = AptoideSource(timeout=self.timeout)
-            version, download_url, title = aptoide.get_latest_version(package_name)
-            if version:
-                return version, f"aptoide:{download_url}", title
+            from core.sources.apkpure_mobile import APKPureMobileSource
+            pure = APKPureMobileSource(timeout=self.timeout)
+            v, _, _ = pure.get_latest_version(package_name)
+            if v and v != "latest":
+                real_version = v
+                print(f"[+] Successfully resolved version name: {real_version}")
         except Exception as e:
             pass
-
-        # 3. Uptodown
-        if self.uptodown_subdomain:
+            
+        # גיבוי למשיכת שם הגרסה מ-Aptoide
+        if real_version == "latest":
             try:
-                version, download_url, title = self._scrape_uptodown_meta(self.uptodown_subdomain)
-                if version:
-                    return version, f"uptodown:{download_url}", title
+                from core.sources.aptoide import AptoideSource
+                aptoide = AptoideSource(timeout=self.timeout)
+                v, _, _ = aptoide.get_latest_version(package_name)
+                if v and v != "latest":
+                    real_version = v
+                    print(f"[+] Successfully resolved version name from Aptoide: {real_version}")
             except Exception as e:
                 pass
 
-        return "latest", f"fallback:{package_name}", package_name
+        # 2. משיכת קישור ההורדה הכבד ביותר
+        try:
+            best_url = self._get_best_apkpure_variant(package_name)
+            if best_url:
+                return real_version, f"apkpure_mobile:{best_url}", package_name
+        except Exception as e:
+            pass
+
+        # 3. גיבויים במקרה ש-APKPure נפל לגמרי
+        try:
+            from core.sources.aptoide import AptoideSource
+            aptoide = AptoideSource(timeout=self.timeout)
+            v, download_url, title = aptoide.get_latest_version(package_name)
+            if download_url:
+                return real_version, f"aptoide:{download_url}", title
+        except Exception as e:
+            pass
+
+        return real_version, f"fallback:{package_name}", package_name
 
     def get_download_url(self, initial_url):
         if initial_url.startswith("apkpure_mobile:"):
@@ -136,7 +134,7 @@ class CustomFallbackSource:
             return initial_url.split("uptodown:", 1)[1]
 
         package_name = initial_url.split("fallback:", 1)[1] if "fallback:" in initial_url else initial_url
-        best_url, _ = self._get_best_apkpure_variant(package_name)
+        best_url = self._get_best_apkpure_variant(package_name)
         if best_url: return best_url
         
         return None
