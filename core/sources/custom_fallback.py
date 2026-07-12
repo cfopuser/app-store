@@ -11,27 +11,63 @@ class CustomFallbackSource:
     def __init__(self, uptodown_subdomain=None, timeout=30):
         self.uptodown_subdomain = uptodown_subdomain
         self.timeout = timeout
-        self.scraper = cloudscraper.create_scraper()
+        
+        # אתחול סקרייפר חזק שיודע להתמודד עם דף ההפניה של d.apkpure.com
+        self.scraper = cloudscraper.create_scraper(
+            browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'desktop': True
+            }
+        )
+        self.scraper.headers.update({
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        })
+
+    def _extract_version(self, text):
+        if not text:
+            return None
+        match = re.search(r"(\d+(?:\.\d+){1,})", text)
+        return match.group(1) if match else None
+
+    def _get_apkpure_direct_url(self, package_name):
+        """
+        פונה ישירות ל-API של APKPure (הכפתור הירוק) ומחלץ את כתובת ההפניה הסופית (winudf.com).
+        מבקש פורמט XAPK כדי לקבל את הגרסה המלאה והמקורית ביותר (arm64-v8a).
+        """
+        url = f"https://d.apkpure.com/b/XAPK/{package_name}?version=latest"
+        try:
+            print(f"[*] [Custom Fallback] Resolving direct APKPure XAPK link for {package_name}...")
+            # משתמשים ב-stream=True וקוראים רק הדרים כדי לקבל את כתובת ההפניה מבלי להוריד את הקובץ פעמיים
+            r = self.scraper.get(url, allow_redirects=True, stream=True, timeout=self.timeout)
+            final_url = r.url
+            r.close() # סגירת החיבור מיידית
+            
+            if "winudf.com" in final_url:
+                print(f"[+] [Custom Fallback] Successfully resolved to winudf CDN: {final_url[:60]}...")
+                return final_url
+        except Exception as e:
+            print(f"[-] APKPure direct link resolution failed: {e}")
+        return None
 
     def get_latest_version(self, package_name):
         """
         שואב את מספר הגרסה דרך מקורות שאינם חסומים ב-Cloudflare:
-        1. APKPure Mobile API (המקור הקיים שלכם)
-        2. Aptoide API (המקור הקיים שלכם)
-        3. Uptodown (במידה והוגדר תת-דומיין)
         """
         print(f"[*] [Custom Fallback] Checking latest version for {package_name}...")
         
-        # 1. ניסיון דרך APKPure Mobile הקיים בריפו שלכם (ללא Cloudflare)
+        # 1. ניסיון עדיפות א' - חילוץ הגרסה הישירה של ה-XAPK המלא מ-APKPure
         try:
-            from core.sources.apkpure_mobile import APKPureMobileSource
-            pure = APKPureMobileSource(timeout=self.timeout)
-            version, release_url, title = pure.get_latest_version(package_name)
-            if version and version != "latest":
-                print(f"[+] [Custom Fallback] Found version on APKPure Mobile: {version}")
-                return version, f"apkpure_mobile:{release_url}", title
+            best_url = self._get_apkpure_direct_url(package_name)
+            if best_url:
+                version = self._extract_version(best_url)
+                if not version:
+                    version = "latest"
+                print(f"[+] [Custom Fallback] Selected best APKPure Mobile variant: {version}")
+                return version, f"apkpure_mobile:{best_url}", package_name
         except Exception as e:
-            print(f"[-] APKPure Mobile version check failed: {e}")
+            print(f"[-] APKPure Mobile variant check failed: {e}")
 
         # 2. ניסיון דרך Aptoide הקיים בריפו שלכם (ללא Cloudflare)
         try:
@@ -59,7 +95,6 @@ class CustomFallbackSource:
     def get_download_url(self, initial_url):
         """
         מחלץ את קישור ההורדה הישיר על בסיס המקור שזוהה בשלב הקודם.
-        מעקף זה מונע לחלוטין את חסימות 403 של Cloudflare.
         """
         print(f"[*] [Custom Fallback] Resolving download URL for: {initial_url}")
 
@@ -78,11 +113,9 @@ class CustomFallbackSource:
         # במקרה שלא זוהה קישור מובנה, הרץ בדיקה ישירה לפי הסדר
         package_name = initial_url.split("fallback:", 1)[1] if "fallback:" in initial_url else initial_url
         
-        # 1. APKPure Mobile
+        # 1. APKPure Mobile Direct (XAPK)
         try:
-            from core.sources.apkpure_mobile import APKPureMobileSource
-            pure = APKPureMobileSource(timeout=self.timeout)
-            _, download_url, _ = pure.get_latest_version(package_name)
+            download_url = self._get_apkpure_direct_url(package_name)
             if download_url:
                 return download_url
         except:
