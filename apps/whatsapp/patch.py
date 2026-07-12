@@ -18,7 +18,7 @@ def patch(decompiled_dir: str) -> bool:
     # 2. חסימות ליבה 
     spi = _patch_secure_pending_intent(decompiled_dir) 
     browser = _patch_force_external_browser(decompiled_dir) 
-    ai = _patch_kill_meta_ai_fab_smali(decompiled_dir) 
+     
     # 3. טיפול בסטטוסים 
     status_nuke = _patch_nuke_status_activity(decompiled_dir) 
     status_redirect = _patch_redirect_status_intents(decompiled_dir) 
@@ -33,7 +33,7 @@ def patch(decompiled_dir: str) -> bool:
     companion_redirect = _patch_companion_mode_redirect(decompiled_dir)
     nuke_conv = _patch_nuke_newsletter_conversation(decompiled_dir)
 
-    results = [photos, newsletter, tabs, links_nuke, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv, ai] 
+    results = [photos, newsletter, tabs, links_nuke, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
@@ -860,50 +860,6 @@ def _patch_nuke_newsletter_conversation(root_dir):
 
     except Exception as e:
         print(f"    [-] Error: {e}")
-        return False
-        
-# --------------------------------------------------------- 
-# 13
-# ---------------------------------------------------------        
-def _patch_kill_meta_ai_fab_smali(root_dir):
-    import os, re
-    print("\n[*] Nuking Meta AI FABs via Smali ID-Nullification trick...")
-    
-    # ה-IDs שהבאת מ-MT Manager:
-    # 0x7f0b12f5 = fab_second
-    # 0x7f0b12f6 = fab_second_view_stub
-    # 0x7f0b12e8 = extended_mini_fab (גרסת הגלולה המורחבת של כפתור המשנה)
-    targets = ['0x7f0b12f5', '0x7f0b12f6', '0x7f0b12e8']
-    patched_files = 0
-    
-    for root_path, _, files in os.walk(root_dir):
-        for file in files:
-            if file.endswith('.smali'):
-                path = os.path.join(root_path, file)
-                try:
-                    with open(path, 'r', encoding='utf-8') as f:
-                        content = f.read()
-                    
-                    original_content = content
-                    for target in targets:
-                        # חיפוש טעינת ה-ID לתוך משתנה (למשל: const v0, 0x7f0b12f5)
-                        # והחלפתו ב- 0x0
-                        pattern = r'(const\s+[vp]\d+,\s*)' + target
-                        content = re.sub(pattern, r'\g<1>0x0 # KOSHER_FAB_KILL', content)
-                        
-                    if content != original_content:
-                        with open(path, 'w', encoding='utf-8') as f:
-                            f.write(content)
-                        patched_files += 1
-                        print(f"    [+] Nullified FAB IDs in: {file}")
-                except Exception as e:
-                    pass
-                    
-    if patched_files > 0:
-        print(f"    [SUCCESS] Meta AI FABs neutralized in {patched_files} smali files.")
-        return True
-    else:
-        print("    [-] Could not find target FAB IDs in Smali. Maybe IDs changed in this version?")
         return False
 # --------------------------------------------------------- 
 # פונקציות עזר 
