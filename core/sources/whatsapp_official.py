@@ -30,7 +30,7 @@ class WhatsAppOfficialSource:
 
     def get_latest_version(self, package_name: str):
         """
-        Fetch the latest WhatsApp APK directly from whatsapp.com.
+        Fetch the latest WhatsApp APK directly from whatsapp.com/android.
         
         Returns:
             (version, download_link, title)
@@ -44,7 +44,7 @@ class WhatsAppOfficialSource:
             soup = BeautifulSoup(html, 'html.parser')
 
             # --- 1. Find the direct APK download link ---
-            # Look for links that point to scontent.whatsapp.net with .apk
+            # Look for <a> tags with href containing "scontent.whatsapp.net" and ending with ".apk"
             apk_link = None
             all_links = soup.find_all('a', href=True)
             for link in all_links:
@@ -53,7 +53,7 @@ class WhatsAppOfficialSource:
                     apk_link = href
                     break
 
-            # Fallback: search in the raw HTML (in case it's in a script or meta tag)
+            # Fallback: search in raw HTML (in case it's inside a meta or script)
             if not apk_link:
                 pattern = r'https://scontent\.whatsapp\.net/[^\s"\'<>]+\.apk[^\s"\'<>]*'
                 match = re.search(pattern, html)
@@ -66,11 +66,12 @@ class WhatsAppOfficialSource:
 
             print(f"[+] [WhatsApp Official] Found APK link: {apk_link[:100]}...")
 
-            # --- 2. Extract version number ---
+            # --- 2. Extract version number from the page ---
             version = None
 
-            # Try to find version in the HTML (common pattern: "Version X.Y.Z" or "vX.Y.Z")
+            # Look for version in text (e.g., "גרסה 2.23.12.75" or "Version X.Y.Z")
             version_patterns = [
+                r'גרסה\s+([\d.]+)',
                 r'Version\s+([\d.]+)',
                 r'version["\']?\s*[:=]\s*["\']?([\d.]+)',
                 r'v([\d.]+)',
@@ -98,7 +99,7 @@ class WhatsAppOfficialSource:
                         if ver_match:
                             version = ver_match.group(1)
 
-            # Final fallback: use the current date as version (not ideal, but better than nothing)
+            # Final fallback: use current date as version (not ideal, but better than nothing)
             if not version:
                 from datetime import datetime
                 version = datetime.utcnow().strftime("%Y.%m.%d")
