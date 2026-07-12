@@ -33,7 +33,10 @@
     "name_play": "egg - Bus & Train in Israel"
   },
   "patching": {
-    "inject_updater": true
+    "inject_updater": true,
+    "hotfixes": {
+      "10.1.62": ".1"
+    },
   },
   "paths": {
     "version_file": "apps/egg/version.txt",
