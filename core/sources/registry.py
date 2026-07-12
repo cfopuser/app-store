@@ -8,6 +8,7 @@ from .apkpure_mobile import APKPureMobileSource
 from .github import GitHubSource
 from .apkcombo import APKComboSource
 from .whatsapp_official import WhatsAppOfficialSource
+from .custom_fallback import CustomFallbackSource
 
 @dataclass(frozen=True)
 class SourceDefinition:
@@ -32,6 +33,10 @@ SOURCE_DEFINITIONS: dict[str, SourceDefinition] = {
             asset_regex=cfg.get("github_asset_regex")
         ),
         lookup_field="repo",
+    ),
+    "custom_fallback": SourceDefinition(
+        factory=lambda cfg: CustomFallbackSource(uptodown_subdomain=cfg.get("uptodown_subdomain")),
+        lookup_field="package_name"
     ),
 }
 
