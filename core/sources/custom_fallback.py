@@ -3,7 +3,6 @@
 import os
 import re
 import time
-import requests
 from bs4 import BeautifulSoup
 import cloudscraper
 
@@ -12,7 +11,7 @@ class CustomFallbackSource:
         self.uptodown_subdomain = uptodown_subdomain
         self.timeout = timeout
         
-        # אתחול סקרייפר חזק שיודע להתמודד עם דף ההפניה של d.apkpure.com
+        # אתחול סקרייפר שעוקף Cloudflare
         self.scraper = cloudscraper.create_scraper(
             browser={
                 'browser': 'chrome',
@@ -31,119 +30,117 @@ class CustomFallbackSource:
         match = re.search(r"(\d+(?:\.\d+){1,})", text)
         return match.group(1) if match else None
 
-    def _get_apkpure_direct_url(self, package_name):
+    def _get_best_apkpure_variant(self, package_name):
         """
-        פונה ישירות ל-API של APKPure (הכפתור הירוק) ומחלץ את כתובת ההפניה הסופית (winudf.com).
-        מבקש פורמט XAPK כדי לקבל את הגרסה המלאה והמקורית ביותר (arm64-v8a).
+        פונה ל-API הפנימי של APKPure, קורא את כל הוריאציות של ה-APK (32bit ו-64bit),
+        בודק את המשקל שלהן בשרת ובוחר אקטיבית את הגרסה הכבדה ביותר (128MB - arm64).
         """
-        url = f"https://d.apkpure.com/b/XAPK/{package_name}?version=latest"
+        api_url = "https://api.pureapk.com/m/v3/cms/app_version"
+        headers = {
+            'x-sv': '29',
+            'x-abis': 'arm64-v8a,armeabi-v7a,armeabi',
+            'x-gp': '1',
+        }
+        params = {
+            'hl': 'en-US',
+            'package_name': package_name
+        }
         try:
-            print(f"[*] [Custom Fallback] Resolving direct APKPure XAPK link for {package_name}...")
-            # משתמשים ב-stream=True וקוראים רק הדרים כדי לקבל את כתובת ההפניה מבלי להוריד את הקובץ פעמיים
-            r = self.scraper.get(url, allow_redirects=True, stream=True, timeout=self.timeout)
-            final_url = r.url
-            r.close() # סגירת החיבור מיידית
+            print(f"[*] [Custom Fallback] Querying APKPure API for {package_name} variants...")
+            r = self.scraper.get(api_url, params=params, headers=headers, timeout=self.timeout)
+            r.raise_for_status()
             
-            if "winudf.com" in final_url:
-                print(f"[+] [Custom Fallback] Successfully resolved to winudf CDN: {final_url[:60]}...")
-                return final_url
+            # חילוץ כל הקישורים הבינאריים מתשובת ה-API
+            strings = re.findall(rb'[ -~]{8,}', r.content)
+            valid_urls = []
+            for s in strings:
+                if s.startswith(b'http'):
+                    s_upper = s.upper()
+                    if b'/APK' in s_upper or b'/XAPK' in s_upper:
+                        url = s.decode('utf-8')
+                        if url not in valid_urls:
+                            valid_urls.append(url)
+            
+            if not valid_urls:
+                print("[-] No valid URLs found in API response.")
+                return None
+                
+            print(f"[*] Found {len(valid_urls)} variant(s). Checking file sizes to find the largest (arm64)...")
+            
+            best_url = valid_urls[0]
+            max_size = 0
+            
+            # בודקים את הגודל של כל גרסה (עד 4 וריאציות) ובוחרים את הגדולה ביותר
+            for url in valid_urls[:4]:
+                try:
+                    # בדיקת HEAD מהירה כדי לקבל משקל ללא הורדת הקובץ
+                    head_res = self.scraper.head(url, allow_redirects=True, timeout=5)
+                    size = int(head_res.headers.get("Content-Length", 0))
+                    mb_size = size // 1024 // 1024
+                    print(f"    - Found variant: {mb_size} MB | URL: {url[:55]}...")
+                    if size > max_size:
+                        max_size = size
+                        best_url = url
+                except Exception as e:
+                    pass
+                    
+            print(f"[+] Selected the largest variant: {max_size // 1024 // 1024} MB (arm64-v8a)")
+            return best_url
         except Exception as e:
-            print(f"[-] APKPure direct link resolution failed: {e}")
-        return None
+            print(f"[-] APKPure API check failed: {e}")
+            return None
 
     def get_latest_version(self, package_name):
-        """
-        שואב את מספר הגרסה דרך מקורות שאינם חסומים ב-Cloudflare:
-        """
         print(f"[*] [Custom Fallback] Checking latest version for {package_name}...")
         
-        # 1. ניסיון עדיפות א' - חילוץ הגרסה הישירה של ה-XAPK המלא מ-APKPure
+        # 1. עדיפות א' - חיפוש ב-APKPure ולקיחת הגרסה הכבדה
         try:
-            best_url = self._get_apkpure_direct_url(package_name)
+            best_url = self._get_best_apkpure_variant(package_name)
             if best_url:
                 version = self._extract_version(best_url)
                 if not version:
                     version = "latest"
-                print(f"[+] [Custom Fallback] Selected best APKPure Mobile variant: {version}")
                 return version, f"apkpure_mobile:{best_url}", package_name
         except Exception as e:
-            print(f"[-] APKPure Mobile variant check failed: {e}")
+            print(f"[-] APKPure variant check failed: {e}")
 
-        # 2. ניסיון דרך Aptoide הקיים בריפו שלכם (ללא Cloudflare)
+        # 2. גיבוי - Aptoide
         try:
             from core.sources.aptoide import AptoideSource
             aptoide = AptoideSource(timeout=self.timeout)
             version, download_url, title = aptoide.get_latest_version(package_name)
             if version:
-                print(f"[+] [Custom Fallback] Found version on Aptoide: {version}")
                 return version, f"aptoide:{download_url}", title
         except Exception as e:
-            print(f"[-] Aptoide version check failed: {e}")
+            pass
 
-        # 3. ניסיון דרך Uptodown (ללא Cloudflare)
+        # 3. גיבוי - Uptodown
         if self.uptodown_subdomain:
             try:
                 version, download_url, title = self._scrape_uptodown_meta(self.uptodown_subdomain)
                 if version:
-                    print(f"[+] [Custom Fallback] Found version on Uptodown: {version}")
                     return version, f"uptodown:{download_url}", title
             except Exception as e:
-                print(f"[-] Uptodown version check failed: {e}")
+                pass
 
         return "latest", f"fallback:{package_name}", package_name
 
     def get_download_url(self, initial_url):
-        """
-        מחלץ את קישור ההורדה הישיר על בסיס המקור שזוהה בשלב הקודם.
-        """
-        print(f"[*] [Custom Fallback] Resolving download URL for: {initial_url}")
-
         if initial_url.startswith("apkpure_mobile:"):
-            real_url = initial_url.split("apkpure_mobile:", 1)[1]
-            return real_url
-
+            return initial_url.split("apkpure_mobile:", 1)[1]
         if initial_url.startswith("aptoide:"):
-            real_url = initial_url.split("aptoide:", 1)[1]
-            return real_url
-
+            return initial_url.split("aptoide:", 1)[1]
         if initial_url.startswith("uptodown:"):
-            real_url = initial_url.split("uptodown:", 1)[1]
-            return real_url
+            return initial_url.split("uptodown:", 1)[1]
 
-        # במקרה שלא זוהה קישור מובנה, הרץ בדיקה ישירה לפי הסדר
+        # גיבוי אחרון בהחלט
         package_name = initial_url.split("fallback:", 1)[1] if "fallback:" in initial_url else initial_url
+        best_url = self._get_best_apkpure_variant(package_name)
+        if best_url: return best_url
         
-        # 1. APKPure Mobile Direct (XAPK)
-        try:
-            download_url = self._get_apkpure_direct_url(package_name)
-            if download_url:
-                return download_url
-        except:
-            pass
-
-        # 2. Aptoide
-        try:
-            from core.sources.aptoide import AptoideSource
-            aptoide = AptoideSource(timeout=self.timeout)
-            _, download_url, _ = aptoide.get_latest_version(package_name)
-            if download_url:
-                return download_url
-        except:
-            pass
-
-        # 3. Uptodown
-        if self.uptodown_subdomain:
-            try:
-                _, download_url, _ = self._scrape_uptodown_meta(self.uptodown_subdomain)
-                if download_url:
-                    return download_url
-            except:
-                pass
-
         return None
 
     def _scrape_uptodown_meta(self, subdomain):
-        """Uptodown scraping (לא חסום ב-Cloudflare)"""
         base_url = subdomain if subdomain.startswith("http") else f"https://{subdomain}.en.uptodown.com/android"
         download_page = f"{base_url.rstrip('/')}/download"
         
@@ -157,8 +154,7 @@ class CustomFallbackSource:
         name_el = soup.select_one('#detail-app-name')
         file_id = name_el.get('data-file-id') if name_el else None
         
-        if not file_id:
-            return None, None, None
+        if not file_id: return None, None, None
 
         pre_download_url = f"{download_page.rstrip('/')}/{file_id}-x"
         self.scraper.headers.update({'Referer': download_page})
@@ -169,8 +165,7 @@ class CustomFallbackSource:
         download_button = soup2.select_one('#detail-download-button')
         final_token = download_button.get('data-url') if download_button else None
         
-        if not final_token:
-            return None, None, None
+        if not final_token: return None, None, None
 
         final_token = final_token.strip('/')
         download_url = f"https://dw.uptodown.com/dwn/{final_token}/app.apk"
