@@ -23,7 +23,7 @@ class UptodownSource:
         if self.debug:
             print("[DEBUG]", *args, **kwargs)
 
-    # ---------- חילוץ גרסה ממקורות שונים ----------
+    # ---------- חילוץ גרסה ----------
     def _extract_version_from_title(self, soup):
         title = soup.find('title')
         if title:
@@ -33,7 +33,6 @@ class UptodownSource:
         return None
 
     def _extract_version_from_ld_json(self, soup):
-        """מחזירה גרסה עם 4 חלקים מתוך JSON‑LD."""
         scripts = soup.find_all('script', type='application/ld+json')
         for script in scripts:
             if script.string:
@@ -74,20 +73,19 @@ class UptodownSource:
         return None
 
     def _get_real_version(self, soup, download_url):
-        """סדר עדיפויות: title → JSON‑LD → טקסט → div.version → HEAD."""
-        # 1. title (הכי אמין)
+        # 1. title
         ver = self._extract_version_from_title(soup)
         if ver:
             self._log(f"Version from title: {ver}")
             return ver
 
-        # 2. JSON‑LD (רק 4 חלקים)
+        # 2. JSON‑LD
         ver = self._extract_version_from_ld_json(soup)
         if ver:
             self._log(f"Version from LD+JSON: {ver}")
             return ver
 
-        # 3. חיפוש כללי בטקסט (4 חלקים)
+        # 3. text
         text = soup.get_text()
         matches = re.findall(r'\b(\d+\.\d+\.\d+\.\d+)\b', text)
         if matches:
@@ -95,13 +93,13 @@ class UptodownSource:
             self._log(f"Version from text: {ver}")
             return ver
 
-        # 4. div.version (גיבוי, לא אמין)
+        # 4. div.version (גיבוי)
         ver = self._extract_version_from_div(soup)
         if ver:
             self._log(f"Version from div.version: {ver}")
             return ver
 
-        # 5. HEAD (גיבוי אחרון)
+        # 5. HEAD
         if download_url:
             ver = self._extract_version_from_headers(download_url)
             if ver:
@@ -120,6 +118,7 @@ class UptodownSource:
             if self.uptodown_subdomain:
                 app_url = f"https://{self.uptodown_subdomain}.en.uptodown.com/android"
             else:
+                # --- תיקון: כתובת חיפוש תקינה ---
                 search_url = f"https://en.uptodown.com/android/search?q={package_name}"
                 self._log(f"Search URL: {search_url}")
                 r_search = self.scraper.get(search_url, timeout=self.timeout)
@@ -130,19 +129,21 @@ class UptodownSource:
                 for link in all_links[:15]:
                     self._log(f"  link: {link.get('href')} - text: {link.get_text(strip=True)[:50]}")
 
-                # חפש קישור אפליקציה
+                # חפש קישור אפליקציה: /android/ או /app/, לא search/developer
                 for link in all_links:
                     href = link.get('href', '')
                     if href and ('/android/' in href or '/app/' in href):
                         if 'search' not in href and 'developer' not in href:
+                            # אם הקישור מכיל את שם החבילה או את שם האפליקציה (למשל whatsapp)
                             if package_name in href or 'whatsapp' in href.lower():
                                 app_url = href
                                 self._log(f"Selected link (package match): {app_url}")
                                 break
+                # אם לא נמצא, ניקח את הראשון עם /android/
                 if not app_url:
                     for link in all_links:
                         href = link.get('href', '')
-                        if href.startswith('/android/') and 'search' not in href:
+                        if href and href.startswith('/android/') and 'search' not in href:
                             app_url = href
                             self._log(f"Selected link (first /android/): {app_url}")
                             break
@@ -155,12 +156,12 @@ class UptodownSource:
                 self._log("App not found.")
                 return None, None
 
+            # --- כעת המשך ההורדה כרגיל ---
             download_page = f"{app_url.rstrip('/')}/download"
             self._log(f"Download page: {download_page}")
             r_dl = self.scraper.get(download_page, timeout=self.timeout)
             soup_dl = BeautifulSoup(r_dl.text, 'html.parser')
 
-            # שליפת מזהה קובץ
             name_el = soup_dl.select_one('#detail-app-name')
             if not name_el:
                 return None, None
@@ -199,7 +200,6 @@ class UptodownSource:
                 self._log("No pure APK variant found.")
                 return None, None
 
-            # חילוץ טוקן
             pre_download_url = f"{download_page.rstrip('/')}/{target_file_id}-x"
             self.scraper.headers.update({'Referer': download_page})
             r_pre = self.scraper.get(pre_download_url, timeout=self.timeout)
@@ -212,7 +212,6 @@ class UptodownSource:
             final_token = final_token.strip('/')
             download_url = f"https://dw.uptodown.com/dwn/{final_token}/app.apk"
 
-            # חילוץ גרסה
             version_name = self._get_real_version(soup_dl, download_url)
 
             self._log(f"Final version: {version_name}")
