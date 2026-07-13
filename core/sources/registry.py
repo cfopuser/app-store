@@ -9,7 +9,7 @@ from .github import GitHubSource
 from .apkcombo import APKComboSource
 from .whatsapp_official import WhatsAppOfficialSource
 from .custom_fallback import CustomFallbackSource
-
+from .uptodown import UptodownSource
 @dataclass(frozen=True)
 class SourceDefinition:
     factory: Callable[[dict], Any]
@@ -36,6 +36,10 @@ SOURCE_DEFINITIONS: dict[str, SourceDefinition] = {
     ),
     "custom_fallback": SourceDefinition(
         factory=lambda cfg: CustomFallbackSource(uptodown_subdomain=cfg.get("uptodown_subdomain")),
+        lookup_field="package_name"
+    ),
+    "uptodown": SourceDefinition(
+        factory=lambda cfg: UptodownSource(uptodown_subdomain=cfg.get("uptodown_subdomain")),
         lookup_field="package_name"
     ),
 }
