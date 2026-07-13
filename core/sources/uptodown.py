@@ -25,7 +25,8 @@ class UptodownSource:
     def _extract_version_from_title(self, soup):
         title = soup.find('title')
         if title:
-            match = re.search(r'(\d+\.\d+(?:\.\d+)*)', title.get_text())
+            # תומך ב-2 חלקים ומעלה, ללא הגבלה. למשל 1.2 או 1.2.3.4.5
+            match = re.search(r'(\d+(?:\.\d+)+)', title.get_text())
             if match:
                 return match.group(1)
         return None
@@ -48,15 +49,16 @@ class UptodownSource:
         return None
 
     def _extract_version_from_div(self, soup):
-        div_ver = soup.select_one('div.version')
-        if div_ver:
-            match = re.search(r'(\d+\.\d+(?:\.\d+)*)', div_ver.get_text())
+        # מחפש קלאסים אופייניים לגרסה ב-Uptodown
+        version_el = soup.select_one('.version, .detail-version')
+        if version_el:
+            match = re.search(r'(\d+(?:\.\d+)+)', version_el.get_text())
             if match:
                 return match.group(1)
         return None
 
     def _extract_version_from_url(self, url):
-        match = re.search(r'(\d+\.\d+(?:\.\d+)*)', url)
+        match = re.search(r'(\d+(?:\.\d+)+)', url)
         return match.group(1) if match else None
 
     def _extract_version_from_headers(self, url):
@@ -72,38 +74,53 @@ class UptodownSource:
         return None
 
     def _get_real_version(self, soup, download_url):
-        # 1. חפש 4 חלקים בטקסט
-        text = soup.get_text()
-        four_part = re.findall(r'\b(\d+\.\d+\.\d+\.\d+)\b', text)
-        if four_part:
-            best = max(four_part, key=lambda v: tuple(map(int, v.split('.'))))
-            self._log(f"Version from text (4-part): {best}")
-            return best
+        # סדר חילוץ מבוסס אמינות:
 
-        # 2. title
-        ver = self._extract_version_from_title(soup)
-        if ver:
-            self._log(f"Version from title: {ver}")
-            return ver
-
-        # 3. JSON-LD
+        # 1. JSON-LD (הכי אמין, מידע מובנה ומדויק מהאתר)
         ver = self._extract_version_from_ld_json(soup)
         if ver:
             self._log(f"Version from LD+JSON: {ver}")
             return ver
 
-        # 4. div.version
+        # 2. אלמנט ייעודי לגרסה באתר (div/span שמיועד לזה)
         ver = self._extract_version_from_div(soup)
         if ver:
-            self._log(f"Version from div.version: {ver}")
+            self._log(f"Version from HTML element: {ver}")
             return ver
 
-        # 5. HEAD
+        # 3. כותרת העמוד (Title) - לרוב מכיל את שם האפליקציה והגרסה
+        ver = self._extract_version_from_title(soup)
+        if ver:
+            self._log(f"Version from title: {ver}")
+            return ver
+
+        # 4. מתוך ה-Headers של ההורדה (שם הקובץ האמיתי בשרת)
         if download_url:
             ver = self._extract_version_from_headers(download_url)
             if ver:
                 self._log(f"Version from Content-Disposition: {ver}")
                 return ver
+
+        # 5. רשת ביטחון אחרונה: סריקת כל הטקסט בעמוד
+        self._log("Searching raw text for version (fallback)...")
+        text = soup.get_text()
+        
+        # חיפוש דינאמי: תופס מספר, ואחריו בין 1 ל-5 פעמים "נקודה ומספר" 
+        # (מכסה גרסאות מ-1.0 ועד 1.2.3.4.5.6)
+        all_versions = re.findall(r'\b(\d+(?:\.\d+){1,5})\b', text)
+        
+        if all_versions:
+            # סינון גרסאות "זבל" - נעדיף גרסאות שיש בהן לפחות 2 נקודות (3 חלקים ומעלה)
+            valid_versions = [v for v in all_versions if v.count('.') >= 2]
+            
+            # אם אין גרסאות ארוכות, נתפשר על מה שיש (למשל גרסאות של שני חלקים כמו 4.5)
+            if not valid_versions:
+                valid_versions = all_versions
+                
+            # בחירת הגרסה הגבוהה ביותר מבין התוצאות
+            best = max(valid_versions, key=lambda v: tuple(map(int, v.split('.'))))
+            self._log(f"Version from text fallback: {best}")
+            return best
 
         self._log("No version found, using 'latest'")
         return "latest"
