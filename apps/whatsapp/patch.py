@@ -33,7 +33,7 @@ def patch(decompiled_dir: str) -> bool:
     companion_redirect = _patch_companion_mode_redirect(decompiled_dir)
     nuke_conv = _patch_nuke_newsletter_conversation(decompiled_dir)
 
-    results = [photos, newsletter, tabs, links_nuke, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv, ai] 
+    results = [photos, newsletter, tabs, links_nuke, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
