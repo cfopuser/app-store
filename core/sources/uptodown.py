@@ -120,33 +120,60 @@ class UptodownSource:
                 search_url = f"https://en.uptodown.com/android/search?q={package_name}"
                 self._log(f"Search URL: {search_url}")
                 r_search = self.scraper.get(search_url, timeout=self.timeout)
-                soup_search = BeautifulSoup(r_search.text, 'html.parser')
-
-                # סינון מועמדים: קישורים לתת-דומיינים, למעט הקישור הראשי של החנות
-                candidates = []
-                for link in soup_search.find_all('a', href=True):
-                    href = link.get('href', '')
-                    if re.match(r'https://[a-z0-9-]+\.en\.uptodown\.com/android$', href):
-                        if 'uptodown-android' not in href:
-                            candidates.append(href)
-
-                self._log(f"Found {len(candidates)} app candidate(s)")
-                if candidates:
-                    app_url = candidates[0]
-                    self._log(f"Selected app URL: {app_url}")
+                
+                # 1. בדיקה אם Uptodown ביצע הפניה אוטומטית ישירות לדף האפליקציה
+                if r_search.url != search_url and re.match(r'https://[a-z0-9-]+\.en\.uptodown\.com/android/?$', r_search.url):
+                    self._log("Search auto-redirected directly to the app page.")
+                    app_url = r_search.url.rstrip('/')
                 else:
-                    self._log("No app link found.")
-                    return None, None
+                    soup_search = BeautifulSoup(r_search.text, 'html.parser')
+
+                    # 2. איסוף מועמדים ייחודיים בלבד כדי למנוע כפילויות
+                    candidates = []
+                    for link in soup_search.find_all('a', href=True):
+                        href = link.get('href', '').rstrip('/')
+                        if re.match(r'https://[a-z0-9-]+\.en\.uptodown\.com/android$', href):
+                            if 'uptodown-android' not in href and href not in candidates:
+                                candidates.append(href)
+
+                    self._log(f"Found {len(candidates)} app candidate(s)")
+                    if candidates:
+                        # 3. אופטימיזציה: מיון המועמדים כדי למזער קריאות רשת
+                        # נבדוק קודם קישורים שה-URL שלהם מכיל את המילה העיקרית של החבילה (למשל 'whatsapp')
+                        pkg_keyword = package_name.lower().split('.')[-1]
+                        candidates = sorted(candidates, key=lambda c: 0 if pkg_keyword in c else 1)
+                        
+                        for cand_url in candidates:
+                            self._log(f"Verifying candidate: {cand_url}")
+                            try:
+                                cand_r = self.scraper.get(cand_url, timeout=self.timeout)
+                                # 4. אימות מדויק: מוודאים ששם החבילה (לדוגמה com.whatsapp) קיים ב-HTML של המועמד
+                                # שימוש ב- boundaries (\b) מונע זיהוי שגוי של חבילות עם שם דומה 
+                                if re.search(r'\b' + re.escape(package_name) + r'\b', cand_r.text):
+                                    app_url = cand_url
+                                    break
+                            except Exception as e:
+                                self._log(f"Error checking candidate {cand_url}: {e}")
+                                
+                        if not app_url:
+                            self._log("Warning: Could not strictly verify package name. Falling back to first candidate.")
+                            app_url = candidates[0]
+
+                        self._log(f"Selected app URL: {app_url}")
+                    else:
+                        self._log("No app link found.")
+                        return None, None
 
             if not app_url:
                 self._log("App not found.")
                 return None, None
 
-            download_page = f"{app_url.rstrip('/')}/download"
+            download_page = f"{app_url}/download"
             self._log(f"Download page: {download_page}")
             r_dl = self.scraper.get(download_page, timeout=self.timeout)
             soup_dl = BeautifulSoup(r_dl.text, 'html.parser')
 
+            # --- מכאן והלאה שאר הקוד נשאר ללא שינוי ---
             # שליפת מזהה קובץ
             name_el = soup_dl.select_one('#detail-app-name')
             if not name_el:
@@ -187,7 +214,7 @@ class UptodownSource:
                 return None, None
 
             # חילוץ טוקן
-            pre_download_url = f"{download_page.rstrip('/')}/{target_file_id}-x"
+            pre_download_url = f"{download_page}/{target_file_id}-x"
             self.scraper.headers.update({'Referer': download_page})
             r_pre = self.scraper.get(pre_download_url, timeout=self.timeout)
             soup_pre = BeautifulSoup(r_pre.text, 'html.parser')
