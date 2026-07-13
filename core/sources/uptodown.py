@@ -21,11 +21,10 @@ class UptodownSource:
         if self.debug:
             print("[DEBUG]", *args, **kwargs)
 
-    # ---------- Version extraction (generic, accepts any x.y.z...) ----------
+    # ---------- Version extraction ----------
     def _extract_version_from_title(self, soup):
         title = soup.find('title')
         if title:
-            # Match any dot‑separated numeric version (e.g. 1.2, 1.2.3, 1.2.3.4)
             match = re.search(r'(\d+\.\d+(?:\.\d+)*)', title.get_text())
             if match:
                 return match.group(1)
@@ -38,7 +37,6 @@ class UptodownSource:
                 try:
                     data = json.loads(script.string)
                     ver = None
-                    # Prefer mainEntity.softwareVersion, then top-level softwareVersion
                     if 'mainEntity' in data and isinstance(data['mainEntity'], dict):
                         ver = data['mainEntity'].get('softwareVersion')
                     else:
@@ -74,24 +72,24 @@ class UptodownSource:
         return None
 
     def _get_real_version(self, soup, download_url):
-        # 1. title
+        # 1. חפש 4 חלקים בטקסט
+        text = soup.get_text()
+        four_part = re.findall(r'\b(\d+\.\d+\.\d+\.\d+)\b', text)
+        if four_part:
+            best = max(four_part, key=lambda v: tuple(map(int, v.split('.'))))
+            self._log(f"Version from text (4-part): {best}")
+            return best
+
+        # 2. title
         ver = self._extract_version_from_title(soup)
         if ver:
             self._log(f"Version from title: {ver}")
             return ver
 
-        # 2. JSON-LD (now unfiltered)
+        # 3. JSON-LD
         ver = self._extract_version_from_ld_json(soup)
         if ver:
             self._log(f"Version from LD+JSON: {ver}")
-            return ver
-
-        # 3. page text (flexible pattern)
-        text = soup.get_text()
-        matches = re.findall(r'\b(\d+\.\d+(?:\.\d+)*)\b', text)
-        if matches:
-            ver = matches[0]
-            self._log(f"Version from text: {ver}")
             return ver
 
         # 4. div.version
@@ -100,7 +98,7 @@ class UptodownSource:
             self._log(f"Version from div.version: {ver}")
             return ver
 
-        # 5. HEAD Content-Disposition
+        # 5. HEAD
         if download_url:
             ver = self._extract_version_from_headers(download_url)
             if ver:
@@ -119,22 +117,21 @@ class UptodownSource:
             if self.uptodown_subdomain:
                 app_url = f"https://{self.uptodown_subdomain}.en.uptodown.com/android"
             else:
-                # FIXED: real search URL
                 search_url = f"https://en.uptodown.com/android/search?q={package_name}"
                 self._log(f"Search URL: {search_url}")
                 r_search = self.scraper.get(search_url, timeout=self.timeout)
                 soup_search = BeautifulSoup(r_search.text, 'html.parser')
 
-                # FIXED: extract only genuine app page links (subdomain.en.uptodown.com/android)
+                # סינון מועמדים: קישורים לתת-דומיינים, למעט הקישור הראשי של החנות
                 candidates = []
                 for link in soup_search.find_all('a', href=True):
                     href = link.get('href', '')
                     if re.match(r'https://[a-z0-9-]+\.en\.uptodown\.com/android$', href):
-                        candidates.append(href)
+                        if 'uptodown-android' not in href:
+                            candidates.append(href)
 
                 self._log(f"Found {len(candidates)} app candidate(s)")
                 if candidates:
-                    # Uptodown sorts by relevance – first one is the intended app
                     app_url = candidates[0]
                     self._log(f"Selected app URL: {app_url}")
                 else:
@@ -150,7 +147,7 @@ class UptodownSource:
             r_dl = self.scraper.get(download_page, timeout=self.timeout)
             soup_dl = BeautifulSoup(r_dl.text, 'html.parser')
 
-            # Extract file ID
+            # שליפת מזהה קובץ
             name_el = soup_dl.select_one('#detail-app-name')
             if not name_el:
                 return None, None
@@ -189,7 +186,7 @@ class UptodownSource:
                 self._log("No pure APK variant found.")
                 return None, None
 
-            # Extract token
+            # חילוץ טוקן
             pre_download_url = f"{download_page.rstrip('/')}/{target_file_id}-x"
             self.scraper.headers.update({'Referer': download_page})
             r_pre = self.scraper.get(pre_download_url, timeout=self.timeout)
@@ -202,7 +199,7 @@ class UptodownSource:
             final_token = final_token.strip('/')
             download_url = f"https://dw.uptodown.com/dwn/{final_token}/app.apk"
 
-            # Get version using improved extraction
+            # חילוץ גרסה
             version_name = self._get_real_version(soup_dl, download_url)
 
             self._log(f"Final version: {version_name}")
