@@ -115,9 +115,12 @@ class UptodownSource:
         try:
             app_url = None
 
+            # ... inside _get_uptodown_pure_apk ...
+
             if self.uptodown_subdomain:
                 app_url = f"https://{self.uptodown_subdomain}.en.uptodown.com/android"
             else:
+                # FIX 1: use the real search URL
                 search_url = f"https://en.uptodown.com/android/search?q={package_name}"
                 self._log(f"Search URL: {search_url}")
                 r_search = self.scraper.get(search_url, timeout=self.timeout)
@@ -128,42 +131,42 @@ class UptodownSource:
                 for link in all_links[:15]:
                     self._log(f"  link: {link.get('href')} - text: {link.get_text(strip=True)[:50]}")
 
-                # אסוף מועמדים
+                # FIX 2: better candidate extraction – look for absolute uptodown subdomain URLs
                 candidates = []
                 for link in all_links:
                     href = link.get('href', '')
                     text = link.get_text(strip=True)
-                    if href and ('/android/' in href or '/app/' in href):
-                        if 'search' not in href and 'developer' not in href:
-                            candidates.append((href, text))
+                    # Match absolute URLs like https://appname.en.uptodown.com/android
+                    if href and 'en.uptodown.com/android' in href and 'search' not in href:
+                        candidates.append((href, text))
 
                 self._log(f"Found {len(candidates)} candidate links")
                 for href, text in candidates:
                     self._log(f"  candidate: {href} - text: {text}")
 
                 if candidates:
-                    # התאמה לפי package_name
+                    # Match by package_name or keyword as before
                     for href, text in candidates:
                         if package_name in href or package_name in text:
                             app_url = href
                             self._log(f"Selected link (package match): {app_url}")
                             break
                     if not app_url:
-                        # התאמה לפי מילת מפתח (למשל whatsapp)
                         for href, text in candidates:
+                            # fallback keyword match – adjust as needed
                             if 'whatsapp' in href.lower() or 'whatsapp' in text.lower():
                                 app_url = href
                                 self._log(f"Selected link (keyword match): {app_url}")
                                 break
-                    if not app_url:
-                        # ברירת מחדל: הראשון
+                    if not app_url and candidates:
                         app_url = candidates[0][0]
                         self._log(f"Selected link (first candidate): {app_url}")
 
                     if app_url and not app_url.startswith('http'):
-                        app_url = 'https://en.uptodown.com' + app_url
+                        app_url = 'https://' + app_url
                         self._log(f"Full app URL: {app_url}")
 
+            # ... rest of the method
             if not app_url:
                 self._log("App not found.")
                 return None, None
