@@ -18,7 +18,7 @@ def patch(decompiled_dir: str) -> bool:
     # 2. חסימות ליבה 
     spi = _patch_secure_pending_intent(decompiled_dir) 
     browser = _patch_force_external_browser(decompiled_dir) 
-    ai = _patch_kill_meta_ai_fab_smali(decompiled_dir) 
+    #ai = _patch_kill_meta_ai_fab_smali(decompiled_dir) 
     # 3. טיפול בסטטוסים 
     status_nuke = _patch_nuke_status_activity(decompiled_dir) 
     status_redirect = _patch_redirect_status_intents(decompiled_dir) 
