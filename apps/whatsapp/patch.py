@@ -906,11 +906,11 @@ def _patch_kill_meta_ai_fab_smali(root_dir):
         print("    [-] Could not find target FAB IDs in Smali. Maybe IDs changed in this version?")
         return False
 # --------------------------------------------------------- 
-# 14. הריגת הגישה ל-Meta AI בתוך מסך השיחה
+# 14. הריגת הגישה ל-Meta AI בתוך מסך השיחה (שיטת ה-Return Void)
 # --------------------------------------------------------- 
 def _patch_kill_meta_ai_conversation(root_dir):
-    import os, re
-    print(f"\n[14] Nuking Meta AI inside Conversation Activity...")
+    import os
+    print(f"\n[14] Nuking Meta AI inside Conversation Activity (Safe Injection)...")
     target_file = _find_file_recursive(root_dir, "Conversation.smali")
     if not target_file:
         print("    [-] Conversation.smali not found.")
@@ -920,10 +920,31 @@ def _patch_kill_meta_ai_conversation(root_dir):
         with open(target_file, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # חיפוש מתודת onCreate והסוף המוחלט שלה כדי למנוע קריסות של חוסר אתחול
-        pattern = re.compile(r"(\.method public onCreate\(Landroid/os/Bundle;\)V.*?)(\s+return-void\s*\.end method)", re.DOTALL)
+        if "KOSHER META AI KILLER" in content:
+            print("    [-] Meta AI patch already present.")
+            return True
+
+        # 1. מוצאים איפה מתחילה ואיפה נגמרת הפונקציה onCreate בלבד!
+        start_str = ".method public onCreate(Landroid/os/Bundle;)V"
+        start_idx = content.find(start_str)
+        if start_idx == -1:
+            print("    [-] onCreate not found.")
+            return False
+            
+        end_str = ".end method"
+        end_idx = content.find(end_str, start_idx)
         
-        # קוד Smali שבודק אם זה Meta AI וסוגר את המסך בעדינות
+        # חותכים רק את התוכן של הפונקציה כדי לא לגעת בשאר הקובץ
+        on_create_body = content[start_idx:end_idx]
+        
+        # 2. מוצאים את ה- return-void האחרון בתוך הפונקציה (שזה בדיוק איפה שעשית ידנית)
+        last_return_idx = on_create_body.rfind("return-void")
+        
+        if last_return_idx == -1:
+            print("    [-] return-void not found in onCreate.")
+            return False
+
+        # קוד ההזרקה שעבד לך מושלם ידנית
         injection = """
     # --- KOSHER META AI KILLER ---
     invoke-virtual {p0}, Landroid/app/Activity;->getIntent()Landroid/content/Intent;
@@ -941,27 +962,23 @@ def _patch_kill_meta_ai_conversation(root_dir):
 
     if-eqz v1, :cond_meta_safe
 
-    # זיהינו את ה-AI - סוגרים את המסך באלגנטיות אחרי שכל המשתנים כבר נטענו
     invoke-virtual {p0}, Landroid/app/Activity;->finish()V
 
     :cond_meta_safe
-    # --- END KOSHER META AI KILLER ---
-"""
-        if "KOSHER META AI KILLER" not in content:
-            match = pattern.search(content)
-            if match:
-                # הזרקה רגע לפני ה- return-void וה- .end method
-                new_content = content[:match.end(1)] + injection + match.group(2) + content[match.end(2):]
-                with open(target_file, 'w', encoding='utf-8') as f:
-                    f.write(new_content)
-                print("    [+] Meta AI securely blocked at the end of Conversation.onCreate")
-                return True
-            else:
-                print("    [-] Could not find the end of onCreate in Conversation.smali.")
-                return False
-        else:
-            print("    [-] Meta AI patch already present.")
-            return True
+    return-void
+    # --- END KOSHER META AI KILLER ---"""
+
+        # 3. מחליפים רק את ה-return-void הספציפי הזה
+        new_on_create_body = on_create_body[:last_return_idx] + injection.strip() + on_create_body[last_return_idx + len("return-void"):]
+        
+        # 4. מרכיבים חזרה את הקובץ
+        new_content = content[:start_idx] + new_on_create_body + content[end_idx:]
+
+        with open(target_file, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+            
+        print("    [+] Meta AI securely blocked exactly at the last RETURN-VOID")
+        return True
 
     except Exception as e:
         print(f"    [-] Error: {e}")
