@@ -110,14 +110,55 @@ class UptodownSource:
         try:
             app_url = None
             if self.uptodown_subdomain:
-                app_url = f"https://{self.uptodown_subdomain}.en.uptodown.com/android"
-            else:
-                search_url = f"https://en.uptodown.com/android/search?q={package_name}"
-                r_search = self.scraper.get(search_url, timeout=self.timeout)
-                soup_search = BeautifulSoup(r_search.text, 'html.parser')
-                first_item = soup_search.select_one('.item .name a')
-                if first_item:
-                    app_url = first_item.get('href')
+    # אם יש subdomain, נשתמש בו ישירות (אבל זה עלול להיות עמוד הבית)
+    app_url = f"https://{self.uptodown_subdomain}.en.uptodown.com/android"
+else:
+    search_url = f"https://en.uptodown.com/android/search?q={package_name}"
+    self._log(f"Search URL: {search_url}")
+    r_search = self.scraper.get(search_url, timeout=self.timeout)
+    soup_search = BeautifulSoup(r_search.text, 'html.parser')
+    
+    # הדפסת קישורים לדיבוג (ניתן להסיר אחר כך)
+    all_links = soup_search.find_all('a', href=True)
+    self._log(f"Found {len(all_links)} links in search results")
+    for link in all_links[:15]:  # מדפיסים 15 ראשונים
+        self._log(f"  link: {link.get('href')} - text: {link.get_text(strip=True)[:50]}")
+    
+    # חפש קישור שמוביל לדף אפליקציה (מכיל /android/ ולא מכיל search)
+    for link in all_links:
+        href = link.get('href', '')
+        if href and ('/android/' in href or '/app/' in href):
+            # לוודא שזה לא קישור לחיפוש או למפתח
+            if 'search' not in href and 'developer' not in href:
+                # מעדיף קישור שמכיל את שם החבילה (אם אפשר)
+                if package_name in href or 'whatsapp' in href.lower():
+                    app_url = href
+                    self._log(f"Selected link (package match): {app_url}")
+                    break
+        # גיבוי: אם מצאנו קישור עם המחלקה .item .name a (כמו קודם)
+        if link.get('class') and 'item' in ' '.join(link.get('class')):
+            app_url = link.get('href')
+            self._log(f"Selected link (fallback .item .name): {app_url}")
+            # לא break, נמשיך לחפש טוב יותר
+            continue
+    
+    # אם עדיין אין app_url, ניקח את הקישור הראשון שמתחיל ב-/android/
+    if not app_url:
+        for link in all_links:
+            href = link.get('href', '')
+            if href.startswith('/android/') and 'search' not in href:
+                app_url = href
+                self._log(f"Selected link (first /android/): {app_url}")
+                break
+    
+    # אם href הוא יחסי, נוסיף דומיין
+    if app_url and not app_url.startswith('http'):
+        app_url = 'https://en.uptodown.com' + app_url
+        self._log(f"Full app URL: {app_url}")
+
+if not app_url:
+    self._log("App not found in search results.")
+    return None, None
 
             if not app_url:
                 self._log("App not found.")
