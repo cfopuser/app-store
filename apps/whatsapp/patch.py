@@ -18,7 +18,7 @@ def patch(decompiled_dir: str) -> bool:
     # 2. חסימות ליבה 
     spi = _patch_secure_pending_intent(decompiled_dir) 
     browser = _patch_force_external_browser(decompiled_dir) 
-    #ai = _patch_kill_meta_ai_fab_smali(decompiled_dir) 
+    ai_kill = _patch_kill_meta_ai_conversation(decompiled_dir) 
     # 3. טיפול בסטטוסים 
     status_nuke = _patch_nuke_status_activity(decompiled_dir) 
     status_redirect = _patch_redirect_status_intents(decompiled_dir) 
@@ -33,7 +33,7 @@ def patch(decompiled_dir: str) -> bool:
     companion_redirect = _patch_companion_mode_redirect(decompiled_dir)
     nuke_conv = _patch_nuke_newsletter_conversation(decompiled_dir)
 
-    results = [photos, newsletter, tabs, links_nuke, spi, browser, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv] 
+    results = [photos, newsletter, tabs, links_nuke, spi, browser, ai_kill, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv] 
      
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
@@ -904,6 +904,67 @@ def _patch_kill_meta_ai_fab_smali(root_dir):
         return True
     else:
         print("    [-] Could not find target FAB IDs in Smali. Maybe IDs changed in this version?")
+        return False
+# --------------------------------------------------------- 
+# 14. הריגת הגישה ל-Meta AI בתוך מסך השיחה
+# --------------------------------------------------------- 
+def _patch_kill_meta_ai_conversation(root_dir):
+    import os, re
+    print(f"\n[14] Nuking Meta AI inside Conversation Activity...")
+    target_file = _find_file_recursive(root_dir, "Conversation.smali")
+    if not target_file:
+        print("    [-] Conversation.smali not found.")
+        return False
+
+    try:
+        with open(target_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # חיפוש מתודת onCreate והסוף המוחלט שלה כדי למנוע קריסות של חוסר אתחול
+        pattern = re.compile(r"(\.method public onCreate\(Landroid/os/Bundle;\)V.*?)(\s+return-void\s*\.end method)", re.DOTALL)
+        
+        # קוד Smali שבודק אם זה Meta AI וסוגר את המסך בעדינות
+        injection = """
+    # --- KOSHER META AI KILLER ---
+    invoke-virtual {p0}, Landroid/app/Activity;->getIntent()Landroid/content/Intent;
+    move-result-object v0
+    if-eqz v0, :cond_meta_safe
+
+    const-string v1, "jid"
+    invoke-virtual {v0, v1}, Landroid/content/Intent;->getStringExtra(Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v1
+    if-eqz v1, :cond_meta_safe
+
+    const-string v2, "1313555000"
+    invoke-virtual {v1, v2}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+    move-result v1
+
+    if-eqz v1, :cond_meta_safe
+
+    # זיהינו את ה-AI - סוגרים את המסך באלגנטיות אחרי שכל המשתנים כבר נטענו
+    invoke-virtual {p0}, Landroid/app/Activity;->finish()V
+
+    :cond_meta_safe
+    # --- END KOSHER META AI KILLER ---
+"""
+        if "KOSHER META AI KILLER" not in content:
+            match = pattern.search(content)
+            if match:
+                # הזרקה רגע לפני ה- return-void וה- .end method
+                new_content = content[:match.end(1)] + injection + match.group(2) + content[match.end(2):]
+                with open(target_file, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                print("    [+] Meta AI securely blocked at the end of Conversation.onCreate")
+                return True
+            else:
+                print("    [-] Could not find the end of onCreate in Conversation.smali.")
+                return False
+        else:
+            print("    [-] Meta AI patch already present.")
+            return True
+
+    except Exception as e:
+        print(f"    [-] Error: {e}")
         return False
 # --------------------------------------------------------- 
 # פונקציות עזר 
