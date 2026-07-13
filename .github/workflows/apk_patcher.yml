@@ -6,9 +6,25 @@ on:
   workflow_dispatch:
     inputs:
       app_id:
-        description: 'Specific app ID to process (leave empty for all)'
-        required: false
-        default: ''
+        description: 'Specific app ID to process (choose "all" for all apps)'
+        required: true
+        type: choice
+        default: 'all'
+        options:
+          - 'all'
+          - 'bezeq'
+          - 'bit'
+          - 'egg'
+          - 'hopon'
+          - 'meld'
+          - 'metrolist'
+          - 'mizrahi'
+          - 'sealplus'
+          - 'spotify'
+          - 'termux'
+          - 'waze'
+          - 'whatsapp'
+          - 'yahav'
 
 jobs:
   # ──────────────────────────────────────────────
@@ -25,7 +41,7 @@ jobs:
       - name: Find registered apps
         id: find
         run: |
-          if [ -n "${{ github.event.inputs.app_id }}" ]; then
+          if [ -n "${{ github.event.inputs.app_id }}" ] && [ "${{ github.event.inputs.app_id }}" != "all" ]; then
             # Manual trigger for specific app
             APPS='["${{ github.event.inputs.app_id }}"]'
           else
@@ -34,7 +50,7 @@ jobs:
           fi
           echo "apps=$APPS" >> $GITHUB_OUTPUT
           echo "Discovered apps: $APPS"
-
+          
   # ──────────────────────────────────────────────
   # Job 2: Build each app in parallel
   # ──────────────────────────────────────────────
