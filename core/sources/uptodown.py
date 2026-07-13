@@ -1,5 +1,3 @@
-# core/sources/uptodown_source_debug.py
-
 import re
 import json
 from bs4 import BeautifulSoup
