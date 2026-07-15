@@ -79,8 +79,9 @@ def patch(decompiled_dir: str) -> bool:
     # 5. שינוי מסך הבית ל-Companion Mode במקום EULA
     companion_redirect = _patch_companion_mode_redirect(decompiled_dir)
     nuke_conv = _patch_nuke_newsletter_conversation(decompiled_dir)
-
-    results = [photos, newsletter, tabs, links_nuke, spi, browser, ai_kill, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv] 
+    media_provider = _patch_file_provider_media(decompiled_dir)
+    
+    results = [photos, newsletter, tabs, links_nuke, spi, browser, ai_kill, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv, media_provider] 
      
     _upload_diffs_at_the_end()
 
@@ -1013,6 +1014,42 @@ def _patch_kill_meta_ai_conversation(root_dir):
     except Exception as e:
         print(f"    [-] Error: {e}")
         return False
+
+# --------------------------------------------------------- 
+# 15. תיקון ספק מדיה (Media Provider) לתיקון פתיחת PDF
+# מתקן את ההדבקה הדינמית של SigBypass
+# --------------------------------------------------------- 
+def _patch_file_provider_media(root_dir, suffix="kosher"):
+    print(f"\n[15] Fixing Media FileProvider for Cloned Package...")
+    patched_files = 0
+    
+    # מתקנים אך ורק את המחרוזות שהוכחנו ידנית שעובדות עבור PDF
+    replacements = {
+        '".provider.media': f'".{suffix}.provider.media',
+        '"com.whatsapp.provider.media': f'"com.whatsapp.{suffix}.provider.media'
+    }
+    
+    for root_path, _, files in os.walk(root_dir):
+        for file in files:
+            if file.endswith('.smali'):
+                path = os.path.join(root_path, file)
+                try:
+                    with open(path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    
+                    original_content = content
+                    for old_str, new_str in replacements.items():
+                        if old_str in content:
+                            content = content.replace(old_str, new_str)
+                            
+                    if original_content != content:
+                        _save_and_accumulate_diff(path, original_content, content)
+                        patched_files += 1
+                except Exception:
+                    pass
+                    
+    print(f"    [+] Fixed provider.media strings in {patched_files} Smali files.")
+    return True
 # --------------------------------------------------------- 
 # פונקציות עזר 
 # --------------------------------------------------------- 
