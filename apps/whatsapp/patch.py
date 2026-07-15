@@ -72,7 +72,7 @@ def patch(decompiled_dir: str) -> bool:
      
     # 4. חסימת טאב הגיפים
     gifs_tab = _patch_gifs_tab(decompiled_dir) 
-    # mime_crash = _patch_mime_type_crash(decompiled_dir) 
+    mime_crash = _patch_mime_type_crash(decompiled_dir) 
     sig_bypass = _patch_signature_bypass(decompiled_dir)
     kotlin_fix = _patch_kotlin_null_check(decompiled_dir)
     
@@ -80,7 +80,7 @@ def patch(decompiled_dir: str) -> bool:
     companion_redirect = _patch_companion_mode_redirect(decompiled_dir)
     nuke_conv = _patch_nuke_newsletter_conversation(decompiled_dir)
 
-    results = [photos, newsletter, tabs, links_nuke, spi, browser, ai_kill, status_nuke, status_redirect, gifs_tab, sig_bypass, kotlin_fix, companion_redirect, nuke_conv] 
+    results = [photos, newsletter, tabs, links_nuke, spi, browser, ai_kill, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv] 
      
     _upload_diffs_at_the_end()
 
