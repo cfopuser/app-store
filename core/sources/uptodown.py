@@ -119,7 +119,7 @@ class UptodownSource:
                 parts = package_name.split('.')
                 query_parts = [p for p in parts if p.lower() not in ('com', 'org', 'net', 'co', 'io', 'gov', 'android', 'app', 'mobile')]
                 
-                # 1. ניחוש חכם של כתובת ה-URL (חסכוני ומהיר יותר)
+                # 1. ניחוש חכם של כתובת ה-URL
                 if query_parts:
                     guess_subdomain = query_parts[0].lower()
                     direct_url = f"https://{guess_subdomain}.en.uptodown.com/android"
@@ -205,58 +205,67 @@ class UptodownSource:
             default_file_id = name_el.get('data-file-id')
             target_file_id = default_file_id
 
-            format_el = soup_dl.select_one('span.format')
-            file_format = format_el.get_text(strip=True).upper() if format_el else ""
-            
-            self._log(f"Default file format: {file_format}")
-
-            # הגיון מתקדם לחילוץ APK טהור מתפריט ה-Variants (כפי שנראה בתמונה ששלחת)
-            if "XAPK" in file_format:
-                self._log("Default is XAPK. Searching for a pure APK variant...")
-                variants_btn = soup_dl.select_one('button.variants')
+            # מנגנון אלגוריתמי משופר: בודק *תמיד* את תפריט ה-Variants כדי להעדיף APK טהור על פני XAPK
+            variants_btn = soup_dl.select_one('button.variants')
+            if variants_btn:
+                self._log("Variants button found. Searching for a pure APK variant...")
+                data_version = variants_btn.get('data-version')
                 
-                if variants_btn:
-                    data_version = variants_btn.get('data-version')
-                    data_code_match = re.search(r'data-code="(\d+)"', r_dl.text)
-                    if not data_code_match:
-                         data_code_match = re.search(r'data-code\s*:\s*\'(\d+)\'', r_dl.text)
-                         
-                    if data_code_match and data_version:
+                # חילוץ מזהה האפליקציה (data-code) ב-Uptodown
+                data_code = None
+                data_code_match = re.search(r'data-code="(\d+)"', r_dl.text)
+                if data_code_match:
+                    data_code = data_code_match.group(1)
+                else:
+                    data_code_match = re.search(r'data-code\s*:\s*[\'\"](\d+)[\'\"]', r_dl.text)
+                    if data_code_match:
                         data_code = data_code_match.group(1)
-                        domain = app_url.split('//')[1].split('/')[0]
-                        variants_url = f"https://{domain}/app/{data_code}/version/{data_version}/files"
-                        self._log(f"Fetching variants from: {variants_url}")
-                        
-                        try:
-                            r_var = self.scraper.get(variants_url, timeout=self.timeout)
-                            if r_var.status_code == 200:
-                                var_json = r_var.json()
-                                var_html = var_json.get('content', '')
-                                var_soup = BeautifulSoup(var_html, 'html.parser')
+                    else:
+                        code_el = soup_dl.find(attrs={"data-code": True})
+                        if code_el:
+                            data_code = code_el.get("data-code")
+
+                if data_code and data_version:
+                    domain = app_url.split('//')[1].split('/')[0]
+                    variants_url = f"https://{domain}/app/{data_code}/version/{data_version}/files"
+                    self._log(f"Fetching variants from: {variants_url}")
+                    
+                    try:
+                        r_var = self.scraper.get(variants_url, timeout=self.timeout)
+                        if r_var.status_code == 200:
+                            var_json = r_var.json()
+                            var_html = var_json.get('content', '')
+                            var_soup = BeautifulSoup(var_html, 'html.parser')
+                            
+                            file_id_elements = var_soup.find_all(attrs={"data-file-id": True})
+                            for el in file_id_elements:
+                                curr = el
+                                found_format = None
                                 
-                                file_id_elements = var_soup.find_all(attrs={"data-file-id": True})
-                                for el in file_id_elements:
-                                    curr = el
-                                    found_format = None
+                                # סורק את עץ ה-HTML כלפי מעלה כדי למצוא תגיות שמעידות על הפורמט של השורה
+                                while curr and curr.name not in ['body', 'html']:
+                                    text = curr.get_text(separator=" ", strip=True).upper()
+                                    has_apk = bool(re.search(r'\bAPK\b', text))
+                                    has_xapk = bool(re.search(r'\bXAPK\b', text))
                                     
-                                    # סורק כלפי מעלה בהיררכיית ה-HTML של המועמד כדי למצוא תגיות APK/XAPK
-                                    while curr and curr.name not in ['body', 'html']:
-                                        text = curr.get_text(separator=" ", strip=True).upper()
-                                        words = text.split()
-                                        if "XAPK" in words:
-                                            found_format = "XAPK"
-                                            break
-                                        elif "APK" in words:
-                                            found_format = "APK"
-                                            break
-                                        curr = curr.parent
-                                        
-                                    if found_format == "APK":
-                                        target_file_id = el.get('data-file-id')
-                                        self._log(f"Found pure APK variant file ID: {target_file_id}")
+                                    if has_apk and has_xapk:
+                                        # הגענו לאלמנט שמכיל מספר שורות (גם APK וגם XAPK), אז נעצור ולא נמשיך לעלות
                                         break
-                        except Exception as e:
-                            self._log(f"Failed to fetch or parse variants: {e}")
+                                    elif has_xapk:
+                                        found_format = "XAPK"
+                                        break
+                                    elif has_apk:
+                                        found_format = "APK"
+                                        break
+                                        
+                                    curr = curr.parent
+                                    
+                                if found_format == "APK":
+                                    target_file_id = el.get('data-file-id')
+                                    self._log(f"Found pure APK variant file ID: {target_file_id}")
+                                    break
+                    except Exception as e:
+                        self._log(f"Failed to fetch or parse variants: {e}")
 
             if not target_file_id:
                 self._log("No valid file ID found.")
