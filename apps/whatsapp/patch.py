@@ -72,7 +72,7 @@ def patch(decompiled_dir: str) -> bool:
      
     # 4. חסימת טאב הגיפים
     gifs_tab = _patch_gifs_tab(decompiled_dir) 
-    mime_crash = _patch_mime_type_crash(decompiled_dir) 
+    # mime_crash = _patch_mime_type_crash(decompiled_dir) 
     sig_bypass = _patch_signature_bypass(decompiled_dir)
     kotlin_fix = _patch_kotlin_null_check(decompiled_dir)
     
