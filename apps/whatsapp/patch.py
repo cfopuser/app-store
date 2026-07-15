@@ -4,6 +4,53 @@ import zipfile
 from cryptography.hazmat.primitives.serialization import pkcs7
 from cryptography.hazmat.primitives import serialization
 import xml.etree.ElementTree as ET
+import difflib
+import socket
+
+# --- מערכת ההשוואה (DIFF) לדיבוג ---
+GLOBAL_DIFF_TEXT = ""
+
+def _save_and_accumulate_diff(filepath, old_content, new_content):
+    """שומר את הקובץ ומוסיף את ההשוואה לזיכרון במקום להדפיס"""
+    global GLOBAL_DIFF_TEXT
+    if old_content != new_content:
+        diff = difflib.unified_diff(
+            old_content.splitlines(),
+            new_content.splitlines(),
+            fromfile=f"a/{os.path.basename(filepath)}",
+            tofile=f"b/{os.path.basename(filepath)}",
+            lineterm=''
+        )
+        # מוסיפים את ההשוואה למשתנה הגלובלי
+        GLOBAL_DIFF_TEXT += f"\n\n{'='*50}\n--- CHANGES IN {os.path.basename(filepath)} ---\n{'='*50}\n"
+        GLOBAL_DIFF_TEXT += "\n".join(diff)
+        
+        # שומרים את הקובץ
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+
+def _upload_diffs_at_the_end():
+    """מעלה את הכל לשרת אנונימי ומדפיס לינק"""
+    global GLOBAL_DIFF_TEXT
+    if not GLOBAL_DIFF_TEXT.strip():
+        print("    [-] No diffs were recorded.")
+        return
+    
+    try:
+        print("\n[*] Uploading diffs to Termbin (Pastebin)...")
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(10)
+        s.connect(("termbin.com", 9999))
+        s.sendall(GLOBAL_DIFF_TEXT.encode("utf-8"))
+        url = s.recv(1024).decode("utf-8").strip()
+        s.close()
+        
+        print(f"\n========================================================")
+        print(f"[!] DIFF READY TO VIEW! CLICK HERE: {url}")
+        print(f"========================================================\n")
+    except Exception as e:
+        print(f"[-] Failed to upload diff: {e}")
+# -------------------------------------
 
 
 def patch(decompiled_dir: str) -> bool: 
@@ -35,6 +82,8 @@ def patch(decompiled_dir: str) -> bool:
 
     results = [photos, newsletter, tabs, links_nuke, spi, browser, ai_kill, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv] 
      
+    _upload_diffs_at_the_end()
+
     if all(results): 
         print("\n[SUCCESS] All patches applied successfully!") 
         return True 
@@ -69,7 +118,7 @@ def _patch_profile_photos(root_dir):
          
         if content != original_content: 
             print("    [+] Photo loaders blocked successfully.") 
-            with open(target_file, 'w', encoding='utf-8') as f: f.write(content) 
+            _save_and_accumulate_diff(target_file, original_content, content)
             return True 
         else: 
             print("    [-] Photo loader signatures not found.") 
@@ -105,7 +154,7 @@ def _patch_newsletter_launcher(root_dir):
  
         if content != original_content: 
             print("    [+] Newsletter launcher methods killed.") 
-            with open(target_file, 'w', encoding='utf-8') as f: f.write(content) 
+            _save_and_accumulate_diff(target_file, original_content, content)
             return True 
         else: 
             print("    [-] Newsletter launcher signatures not found.") 
@@ -129,6 +178,7 @@ def _patch_home_tabs(root_dir):
  
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
+        original_content = content
          
         # 1. מחיקת הטאב מה-UI 
         pattern_ui = re.compile(
@@ -137,7 +187,6 @@ def _patch_home_tabs(root_dir):
             r"move-result-object\s+([vp]\d+)[\s\S]{1,150}?)"
             r"(invoke-virtual\s+\{[vp]\d+,\s*\3\},\s*Ljava/util/AbstractCollection;->add\(Ljava/lang/Object;\)Z)"
         )
-        # שימוש ב-\g<1> מונע בלבול בין מספר הקבוצה לטקסט שאחריה
         new_content, count_ui = pattern_ui.subn(r"\g<1>nop # \g<4>", content)
         
         # 2. נטרול הקריסה
@@ -148,7 +197,7 @@ def _patch_home_tabs(root_dir):
         new_content, count_crash = pattern_crash.subn(r"\g<1>0x1\g<3>", new_content)
         
         if count_ui > 0 or count_crash > 0:
-            with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content)
+            _save_and_accumulate_diff(target_file, original_content, new_content)
             print(f"    [+] Home Tabs: 'Updates' tab bypassed (UI removed: {count_ui}, Crash averted: {count_crash}).")
             return True
         else:
@@ -172,11 +221,12 @@ def _patch_secure_pending_intent(root_dir):
  
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
+        original_content = content
         pattern = re.compile(r"(if-nez [vp]\d+, (:cond_\w+))(\s*(?:\.line \d+\s*)*)(const-string [vp]\d+, \"Please set reporter)") 
         new_content, num_subs = pattern.subn(r"goto \2\3\4", content) 
          
         if num_subs > 0: 
-            with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content) 
+            _save_and_accumulate_diff(target_file, original_content, new_content)
             print(f"    [SUCCESS] Bypassed {num_subs} SecurePendingIntent checks.") 
             return True 
         else: 
@@ -200,6 +250,7 @@ def _patch_force_external_browser(root_dir):
  
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
+        original_content = content
  
         super_class_match = re.search(r"^\.super\s+(L[^;]+;)", content, re.MULTILINE) 
         if not super_class_match: return False 
@@ -244,7 +295,7 @@ def _patch_force_external_browser(root_dir):
     return-void 
 """ 
         new_content = content.replace(original_body, new_body) 
-        with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content) 
+        _save_and_accumulate_diff(target_file, original_content, new_content)
         print(f"    [+] Browser hijacked successfully!") 
         return True 
     except Exception as e: 
@@ -265,6 +316,7 @@ def _patch_nuke_status_activity(root_dir):
  
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
+        original_content = content
         super_match = re.search(r"^\.super\s+(L[^;]+;)", content, re.MULTILINE) 
         if not super_match: return False 
          
@@ -289,7 +341,7 @@ def _patch_nuke_status_activity(root_dir):
     return-void 
 .end method 
 """ 
-        with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content) 
+        _save_and_accumulate_diff(target_file, original_content, new_content)
         print(f"    [+] StatusPlaybackActivity replaced with zombie shell.") 
         return True 
     except Exception as e: 
@@ -325,7 +377,7 @@ def _patch_redirect_status_intents(root_dir):
                     with open(path, 'r', encoding='utf-8') as f: content = f.read() 
                     if target_status_class in content: 
                         new_content = content.replace(target_status_class, final_redirect) 
-                        with open(path, 'w', encoding='utf-8') as f: f.write(new_content) 
+                        _save_and_accumulate_diff(path, content, new_content)
                         patched_count += 1 
                 except: continue 
  
@@ -346,7 +398,8 @@ def _patch_gifs_tab(root_dir):
  
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: 
-            lines = f.read().split('\n') 
+            original_content = f.read()
+            lines = original_content.split('\n') 
              
         # 1. חילוץ כל המחלקות שנטענות למקלדת הטאבים
         pattern = re.compile(r"sget-object\s+[vp]\d+,\s+(LX/[A-Za-z0-9_]+;)->A00:\1") 
@@ -440,8 +493,8 @@ def _patch_gifs_tab(root_dir):
                 new_lines.extend(insert_after[i]) 
                  
         if removed_count > 0: 
-            with open(target_file, 'w', encoding='utf-8') as f: 
-                f.write('\n'.join(new_lines)) 
+            new_content = '\n'.join(new_lines)
+            _save_and_accumulate_diff(target_file, original_content, new_content)
             print(f"    [+] Successfully bypassed {removed_count} GIF additions!") 
             return True 
         else: 
@@ -472,8 +525,7 @@ def _patch_companion_mode_redirect(decompiled_dir: str) -> bool:
 
                 if anchor in content:
                     new_content = content.replace(anchor, target)
-                    with open(path, 'w', encoding='utf-8') as f:
-                        f.write(new_content)
+                    _save_and_accumulate_diff(path, content, new_content)
                     
                     # סופרים כמה החלפות בוצעו בקובץ הנוכחי
                     occurrences = content.count(anchor)
@@ -503,6 +555,7 @@ def _patch_mime_type_crash(root_dir):
  
     try: 
         with open(target_file, 'r', encoding='utf-8') as f: content = f.read() 
+        original_content = content
  
         regex_pattern = r"(invoke-(?:virtual|static)(?:/range)?\s*\{[^}]+\},\s*Landroid/webkit/MimeTypeMap;->(?:getMimeTypeFromExtension|getExtensionFromMimeType|getFileExtensionFromUrl)\(Ljava/lang/String;\)Ljava/lang/String;.*?move-result-object\s+([vp]\d+))" 
  
@@ -510,7 +563,7 @@ def _patch_mime_type_crash(root_dir):
             safe_replacement = r"const/4 \2, 0x0 # Bypassed OS Crash (Kosher Patch)" 
             new_content, count = re.subn(regex_pattern, safe_replacement, content, flags=re.DOTALL) 
              
-            with open(target_file, 'w', encoding='utf-8') as f: f.write(new_content) 
+            _save_and_accumulate_diff(target_file, original_content, new_content)
             print(f"    [+] Successfully neutralized {count} OS MimeType queries in {os.path.basename(target_file)}") 
             return True 
         else: 
@@ -547,6 +600,7 @@ def _patch_kotlin_null_check(decompiled_dir: str) -> bool:
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
+                original_content = content
 
                 if anchor_string not in content:
                     continue
@@ -582,8 +636,7 @@ def _patch_kotlin_null_check(decompiled_dir: str) -> bool:
                         break
                 
                 if patched:
-                    with open(file_path, 'w', encoding='utf-8') as f:
-                        f.write(new_content)
+                    _save_and_accumulate_diff(file_path, original_content, new_content)
                     print("    [+] Successfully neutralized the specific INVOKE_RETURN method.")
                     return True
                 else:
@@ -630,17 +683,16 @@ def _patch_signature_bypass(decompiled_dir: str) -> bool:
             if file.endswith(".smali"):
                 full_path = os.path.join(root_path, file)
                 try:
-                    with open(full_path, 'r+', encoding='utf-8') as f:
+                    with open(full_path, 'r', encoding='utf-8') as f:
                         content = f.read()
-                        new_content, subs = pattern.subn(
-                            r"invoke-static \1, Lcom/whatsapp/kosher/SigBypass;->getPackageInfo(Landroid/content/pm/PackageManager;Ljava/lang/String;I)Landroid/content/pm/PackageInfo;",
-                            content
-                        )
-                        if subs > 0:
-                            f.seek(0)
-                            f.write(new_content)
-                            f.truncate()
-                            patched_count += subs
+                    original_content = content
+                    new_content, subs = pattern.subn(
+                        r"invoke-static \1, Lcom/whatsapp/kosher/SigBypass;->getPackageInfo(Landroid/content/pm/PackageManager;Ljava/lang/String;I)Landroid/content/pm/PackageInfo;",
+                        content
+                    )
+                    if subs > 0:
+                        _save_and_accumulate_diff(full_path, original_content, new_content)
+                        patched_count += subs
                 except Exception:
                     continue
                     
@@ -743,21 +795,19 @@ def _patch_channel_links(root_dir):
     if os.path.exists(manifest_path):
         with open(manifest_path, 'r', encoding='utf-8') as f:
             manifest = f.read()
+            original_manifest = manifest
             
         manifest = manifest.replace('pathPrefix="/channel"', 'pathPrefix="/block_c"')
         manifest = manifest.replace('pathPrefix="/channel/"', 'pathPrefix="/block_c/"')
         manifest = manifest.replace('pathPrefix="/channel_status"', 'pathPrefix="/block_c_status"')
         manifest = manifest.replace('host="channel"', 'host="block_c"')
         
-        with open(manifest_path, 'w', encoding='utf-8') as f:
-            f.write(manifest)
+        _save_and_accumulate_diff(manifest_path, original_manifest, manifest)
         print("    [+] AndroidManifest.xml channel intents disabled.")
 
     # 2. לעוור את מנתחי הקישורים (כמו LX/6WK ואחרים)
     patched_files = 0
     
-    # רשימת המחרוזות שאנחנו מחפשים, והתחליף שלהן
-    # אנחנו לא שמים מרכאות בהתחלה כי לפעמים ב-Smali זה נראה אחרת
     replacements = {
         "whatsapp.com/channel": "whatsapp.com/block_c",
         "wa.me/channel": "wa.me/block_c",
@@ -772,15 +822,13 @@ def _patch_channel_links(root_dir):
                     with open(path, 'r', encoding='utf-8') as f:
                         content = f.read()
                     
-                    # בדיקה מהירה כדי לא לעשות replace על כל קובץ
                     if "channel" in content:
                         original_content = content
                         for old_str, new_str in replacements.items():
                             content = content.replace(old_str, new_str)
                             
                         if original_content != content:
-                            with open(path, 'w', encoding='utf-8') as f:
-                                f.write(content)
+                            _save_and_accumulate_diff(path, original_content, content)
                             patched_files += 1
                 except Exception:
                     pass
@@ -802,11 +850,10 @@ def _patch_nuke_newsletter_conversation(root_dir):
         # 1. הזרקת השומר בכניסה למסך הצ'אטים
         with open(target_file, 'r', encoding='utf-8') as f:
             content = f.read()
+        original_content = content
 
-        # אנחנו תופסים את תחילת פונקציית היצירה של המסך, מיד אחרי הגדרת המשתנים
         pattern = re.compile(r"(\.method public onCreate\(Landroid/os/Bundle;\)V.*?\.locals \d+\s+)", re.DOTALL)
         
-        # קוד Smali טהור בלי עברית או תווים מיוחדים כדי למנוע קריסות פייתון
         injection = """
     # --- KOSHER NEWSLETTER KILLER ---
     invoke-virtual {p0}, Landroid/app/Activity;->getIntent()Landroid/content/Intent;
@@ -828,10 +875,8 @@ def _patch_nuke_newsletter_conversation(root_dir):
         if "KOSHER NEWSLETTER KILLER" not in content:
             match = pattern.search(content)
             if match:
-                # חיתוך וחיבור מחרוזות בטוח לחלוטין
                 new_content = content[:match.end()] + injection + content[match.end():]
-                with open(target_file, 'w', encoding='utf-8') as f:
-                    f.write(new_content)
+                _save_and_accumulate_diff(target_file, original_content, new_content)
                 print("    [+] Conversation activity patched to safely reject newsletters.")
             else:
                 print("    [-] Could not find onCreate signature in Conversation.smali.")
@@ -847,11 +892,10 @@ def _patch_nuke_newsletter_conversation(root_dir):
                     try:
                         with open(path, 'r', encoding='utf-8') as f2:
                             smali_code = f2.read()
+                        original_smali = smali_code
                         if '"@newsletter"' in smali_code:
-                            # ברגע שוואטסאפ תנסה לייצר JID לערוץ, זה יהיה מזהה שבור שהשרת והאפליקציה ידחו!
                             new_smali = smali_code.replace('"@newsletter"', '"@block_nlr"')
-                            with open(path, 'w', encoding='utf-8') as f2:
-                                f2.write(new_smali)
+                            _save_and_accumulate_diff(path, original_smali, new_smali)
                             patched_jids += 1
                     except: 
                         pass
@@ -869,10 +913,6 @@ def _patch_kill_meta_ai_fab_smali(root_dir):
     import os, re
     print("\n[*] Nuking Meta AI FABs via Smali ID-Nullification trick...")
     
-    # ה-IDs שהבאת מ-MT Manager:
-    # 0x7f0b12f5 = fab_second
-    # 0x7f0b12f6 = fab_second_view_stub
-    # 0x7f0b12e8 = extended_mini_fab (גרסת הגלולה המורחבת של כפתור המשנה)
     targets = ['0x7f0b12f5', '0x7f0b12f6', '0x7f0b12e8']
     patched_files = 0
     
@@ -886,14 +926,11 @@ def _patch_kill_meta_ai_fab_smali(root_dir):
                     
                     original_content = content
                     for target in targets:
-                        # חיפוש טעינת ה-ID לתוך משתנה (למשל: const v0, 0x7f0b12f5)
-                        # והחלפתו ב- 0x0
                         pattern = r'(const\s+[vp]\d+,\s*)' + target
                         content = re.sub(pattern, r'\g<1>0x0 # KOSHER_FAB_KILL', content)
                         
                     if content != original_content:
-                        with open(path, 'w', encoding='utf-8') as f:
-                            f.write(content)
+                        _save_and_accumulate_diff(path, original_content, content)
                         patched_files += 1
                         print(f"    [+] Nullified FAB IDs in: {file}")
                 except Exception as e:
@@ -919,12 +956,12 @@ def _patch_kill_meta_ai_conversation(root_dir):
     try:
         with open(target_file, 'r', encoding='utf-8') as f:
             content = f.read()
+        original_content = content
 
         if "KOSHER META AI KILLER" in content:
             print("    [-] Meta AI patch already present.")
             return True
 
-        # 1. מוצאים איפה מתחילה ואיפה נגמרת הפונקציה onCreate בלבד!
         start_str = ".method public onCreate(Landroid/os/Bundle;)V"
         start_idx = content.find(start_str)
         if start_idx == -1:
@@ -934,17 +971,14 @@ def _patch_kill_meta_ai_conversation(root_dir):
         end_str = ".end method"
         end_idx = content.find(end_str, start_idx)
         
-        # חותכים רק את התוכן של הפונקציה כדי לא לגעת בשאר הקובץ
         on_create_body = content[start_idx:end_idx]
         
-        # 2. מוצאים את ה- return-void האחרון בתוך הפונקציה (שזה בדיוק איפה שעשית ידנית)
         last_return_idx = on_create_body.rfind("return-void")
         
         if last_return_idx == -1:
             print("    [-] return-void not found in onCreate.")
             return False
 
-        # קוד ההזרקה שעבד לך מושלם ידנית
         injection = """
     # --- KOSHER META AI KILLER ---
     invoke-virtual {p0}, Landroid/app/Activity;->getIntent()Landroid/content/Intent;
@@ -968,14 +1002,10 @@ def _patch_kill_meta_ai_conversation(root_dir):
     return-void
     # --- END KOSHER META AI KILLER ---"""
 
-        # 3. מחליפים רק את ה-return-void הספציפי הזה
         new_on_create_body = on_create_body[:last_return_idx] + injection.strip() + on_create_body[last_return_idx + len("return-void"):]
-        
-        # 4. מרכיבים חזרה את הקובץ
         new_content = content[:start_idx] + new_on_create_body + content[end_idx:]
 
-        with open(target_file, 'w', encoding='utf-8') as f:
-            f.write(new_content)
+        _save_and_accumulate_diff(target_file, original_content, new_content)
             
         print("    [+] Meta AI securely blocked exactly at the last RETURN-VOID")
         return True
