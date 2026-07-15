@@ -1,1 +1,1 @@
-{"success": true, "failed_version": "", "error_message": "", "updated_at": "Tue Jun 30 07:42:13 UTC 2026"}
+{"success": false, "failed_version": "unknown", "error_message": "[Spotify: Music and Podcasts] Error during download process: Downloaded file is neither a valid APK nor a convertible XAPK.", "updated_at": "Wed Jul 15 18:29:45 UTC 2026"}
