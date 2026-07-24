@@ -276,7 +276,7 @@ class UptodownSource:
                 
             self._log(f"Final selected file ID: {target_file_id}")
 
-            pre_download_url = f"{download_page}/{target_file_id}-x"
+            pre_download_url = f"{app_url}/download/{target_file_id}-x"
             self.scraper.headers.update({'Referer': download_page})
             r_pre = self.scraper.get(pre_download_url, timeout=self.timeout)
             soup_pre = BeautifulSoup(r_pre.text, 'html.parser')
