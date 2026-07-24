@@ -38,7 +38,7 @@
     "name_play": "Spotify: Music and Podcasts"
   },
   "patching": {
-    "skip_mitm": true,
+    "skip_mitm": true
     
   },
   "paths": {
