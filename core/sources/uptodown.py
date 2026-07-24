@@ -137,7 +137,7 @@ class UptodownSource:
                     search_query = " ".join(query_parts) if query_parts else package_name.replace('.', ' ')
                     search_query_escaped = search_query.replace(' ', '+')
                     
-                    search_url = f"https://en.uptodown.com/android/search?q={search_query_escaped}"
+                    search_url = f"                                         {search_query_escaped}"
                     self._log(f"Search URL: {search_url}")
                     r_search = self.scraper.get(search_url, timeout=self.timeout)
                     
@@ -192,10 +192,7 @@ class UptodownSource:
                 self._log("App not found.")
                 return None, None
 
-            if package_name == "com.spotify.music":
-             download_page = "https://spotify.en.uptodown.com/android/download/1031701445"
-            else:
-             download_page = f"{app_url}/download"
+            download_page = f"{app_url}/download"
             self._log(f"Download page: {download_page}")
             r_dl = self.scraper.get(download_page, timeout=self.timeout)
             soup_dl = BeautifulSoup(r_dl.text, 'html.parser')
@@ -276,7 +273,7 @@ class UptodownSource:
                 
             self._log(f"Final selected file ID: {target_file_id}")
 
-            pre_download_url = f"{app_url}/download/{target_file_id}-x"
+            pre_download_url = f"{download_page}/{target_file_id}-x"
             self.scraper.headers.update({'Referer': download_page})
             r_pre = self.scraper.get(pre_download_url, timeout=self.timeout)
             soup_pre = BeautifulSoup(r_pre.text, 'html.parser')
