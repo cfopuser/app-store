@@ -192,7 +192,10 @@ class UptodownSource:
                 self._log("App not found.")
                 return None, None
 
-            download_page = f"{app_url}/download"
+            if package_name == "com.spotify.music":
+             download_page = "https://spotify.en.uptodown.com/android/download/1031701445"
+            else:
+             download_page = f"{app_url}/download"
             self._log(f"Download page: {download_page}")
             r_dl = self.scraper.get(download_page, timeout=self.timeout)
             soup_dl = BeautifulSoup(r_dl.text, 'html.parser')
