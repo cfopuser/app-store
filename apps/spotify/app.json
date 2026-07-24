@@ -39,7 +39,7 @@
   },
   "patching": {
     "skip_mitm": true,
-    "inject_updater": false
+    
   },
   "paths": {
     "version_file": "apps/spotify/version.txt",
