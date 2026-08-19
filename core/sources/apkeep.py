@@ -129,36 +129,33 @@ class ApkeepSource:
         return match.group(1) if match else None
 
     def get_latest_version(self, package_name: str):
-        print(f"[*] [apkeep] Checking version for {package_name} on Google Play...")
-        cmd = [
-            self.bin_path,
-            "-l",
-            "-a", package_name,
-            "-d", "google-play",
-            "-e", self.google_email,
-            "-t", self.aas_token
-        ]
-
+        print(f"[*] [apkeep] Fetching latest Google Play version for: {package_name}")
+        url = f"https://play.google.com/store/apps/details?id={package_name}&hl=en"
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        
         try:
-            res = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout)
-            output = res.stdout.strip()
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                html = resp.read().decode('utf-8', errors='ignore')
             
-            lines = [line.strip() for line in output.splitlines() if line.strip()]
-            version = None
-            for line in lines:
-                v = self._extract_version(line)
-                if v:
-                    version = v
-                    break
+            # חילוץ תבנית גרסה (למשל [[["2.26.31.77"]]] בתוך ה-JSON של גוגל)
+            version_match = re.search(r'\[\[\["(\d+(?:\.\d+)+)"\]\]', html)
+            if not version_match:
+                # ניסיון חילוץ כללי יותר לגרסה
+                version_match = re.search(r'\["(\d+\.\d+\.\d+(?:\.\d+)?)"\]', html)
 
-            if not version:
-                version = "latest"
-
-            return version, package_name, package_name
+            if version_match:
+                version = version_match.group(1)
+                print(f"[+] [apkeep] Found Google Play version: {version}")
+                return version, package_name, package_name
+            else:
+                print(f"[!] [apkeep] Could not parse exact version from Play Store page, using 'latest'")
+                return "latest", package_name, package_name
 
         except Exception as e:
-            print(f"[-] [apkeep] Failed to query Google Play version: {e}")
-            return None, None, None
-
-    def get_download_url(self, initial_url: str):
+            print(f"[-] [apkeep] Error querying Play Store web page: {e}")
+            return "latest", package_name, package_name
         return f"apkeep_dl:{initial_url}"
