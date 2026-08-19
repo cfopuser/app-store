@@ -9,6 +9,8 @@ from .github import GitHubSource
 from .apkcombo import APKComboSource
 from .whatsapp_official import WhatsAppOfficialSource
 from .custom_fallback import CustomFallbackSource
+from .apkeep import ApkeepSource
+
 from .uptodown import UptodownSource
 @dataclass(frozen=True)
 class SourceDefinition:
@@ -19,6 +21,10 @@ from .google_play import GooglePlaySource
 SOURCE_DEFINITIONS: dict[str, SourceDefinition] = {
     "whatsapp_official": SourceDefinition(factory=lambda _cfg: WhatsAppOfficialSource()),
     "apkmirror": SourceDefinition(factory=lambda _cfg: APKMirrorSource()),
+    "apkeep": SourceDefinition(
+        factory=lambda _cfg: ApkeepSource(),
+        lookup_field="package_name"
+    ),
     "aptoide": SourceDefinition(factory=lambda _cfg: AptoideSource()),
     "apkcombo": SourceDefinition(factory=lambda _cfg: APKComboSource()),
     "google_play": SourceDefinition(factory=lambda _cfg: GooglePlaySource()),
