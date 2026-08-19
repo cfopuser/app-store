@@ -160,3 +160,4 @@ class ApkeepSource:
             return "latest", package_name, package_name
         return f"apkeep_dl:{initial_url}"
     def get_download_url(self, initial_url: str):
+        return f"apkeep_dl:{initial_url}"
