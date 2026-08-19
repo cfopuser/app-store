@@ -1,1 +1,1 @@
-{"success": true, "failed_version": "", "error_message": "", "updated_at": "Wed Aug 19 21:11:52 UTC 2026"}
+{"success": false, "failed_version": "unknown", "error_message": "[egg - Bus & Train in Israel] Error during download process: 'ApkeepSource' object has no attribute 'get_download_url'", "updated_at": "Wed Aug 19 21:28:18 UTC 2026"}
