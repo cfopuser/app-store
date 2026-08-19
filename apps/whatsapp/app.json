@@ -44,6 +44,11 @@
     "updater_target_smali": "com/whatsapp/home/ui/HomeActivity.smali",
     "hotfixes": {
       "2.26.30.70": ".1"
+    },
+    "clone_config": {
+      "old_pkg": "com.whatsapp",
+      "new_pkg": "com.whatsapp.kosher",
+      "app_name_suffix": ""
     }
   },
   "paths": {
