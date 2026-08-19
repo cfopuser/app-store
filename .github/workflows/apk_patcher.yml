@@ -89,8 +89,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y zipalign apksigner
           pip install -r requirements.txt
-          pip install playwright playwright-stealth
-          playwright install --with-deps chromium
           git clone https://github.com/cfopuser/apk-mitm.git
           cd apk-mitm && npm install && npm run build && sudo npm install -g . && cd ..
           APKTOOL_URL=$(curl -s https://api.github.com/repos/iBotPeaches/Apktool/releases/latest | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
@@ -101,6 +99,9 @@ jobs:
       # The pre-patch logic (like Schwartzblat for WhatsApp) is now inside run.py
       - name: Check for updates & download
         id: check_version
+        env:
+          GOOGLE_EMAIL: ${{ secrets.GOOGLE_EMAIL }}
+          AAS_TOKEN: ${{ secrets.AAS_TOKEN }}
         run: python run.py --app ${{ matrix.app }} --step download
 
       # ── Tools (Dynamic Download) ──
