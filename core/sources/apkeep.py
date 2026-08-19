@@ -159,3 +159,4 @@ class ApkeepSource:
             print(f"[-] [apkeep] Error querying Play Store web page: {e}")
             return "latest", package_name, package_name
         return f"apkeep_dl:{initial_url}"
+    def get_download_url(self, initial_url: str):
