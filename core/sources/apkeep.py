@@ -6,12 +6,12 @@ import subprocess
 import urllib.request
 from pathlib import Path
 
-class FakeResponse:
-    """עוטף את הקובץ שהורד ומזרים אותו ל-downloader.py"""
-    def __init__(self, filepath, url):
+class LocalFileResponse:
+    """עוטף את הקובץ שכבר הורדנו ומעביר אותו ל-downloader.py"""
+    def __init__(self, filepath):
         self.filepath = filepath
         self.status_code = 200
-        self.url = url
+        self.url = filepath
         filename = os.path.basename(filepath)
         content_type = "application/vnd.android.package-archive" if filename.endswith(".apk") else "application/octet-stream"
         self.headers = {
@@ -28,62 +28,21 @@ class FakeResponse:
                 yield chunk
 
     def close(self):
-        if os.path.exists(self.filepath):
-            try:
-                os.remove(self.filepath)
-            except Exception:
-                pass
+        pass # אנחנו לא מוחקים כאן, ה-OS ינקה את תיקיית ה-scratch בסוף הריצה
 
 
 class ApkeepScraper:
-    def __init__(self, source_instance):
-        self.source = source_instance
-
     def get(self, url, stream=False, headers=None, allow_redirects=True):
-        package_name = url.split("apkeep_dl:")[1]
-        out_dir = os.path.join(os.getcwd(), "scratch", "apkeep_tmp")
-        os.makedirs(out_dir, exist_ok=True)
-
-        print(f"[*] [apkeep] Downloading {package_name} from Google Play Store...")
-
-        # הרצת פקודת ההורדה מול גוגל פליי
-        cmd = [
-            self.source.bin_path,
-            "-a", package_name,
-            "-d", "google-play",
-            "-e", self.source.google_email,
-            "-t", self.source.aas_token,
-            out_dir
-        ]
-
-        try:
-            subprocess.run(cmd, check=True)
-        except subprocess.CalledProcessError as e:
-            raise RuntimeError(f"apkeep download failed: {e}")
-
-        # איתור הקובץ שירד
-        downloaded_file = None
-        for f in os.listdir(out_dir):
-            if f.startswith(package_name) and f.endswith((".apk", ".xapk", ".apks")):
-                downloaded_file = os.path.join(out_dir, f)
-                break
-
-        if not downloaded_file:
-            candidates = [os.path.join(out_dir, f) for f in os.listdir(out_dir) if f.endswith((".apk", ".xapk", ".apks"))]
-            if candidates:
-                downloaded_file = candidates[0]
-
-        if not downloaded_file:
-            raise RuntimeError("apkeep finished successfully, but no APK file was found in output directory.")
-
-        return FakeResponse(downloaded_file, url)
+        # ה-URL כאן הוא למעשה הנתיב הלוקאלי לקובץ שכבר הורדנו בשלב בדיקת הגרסה!
+        filepath = url.split("apkeep_local:")[1]
+        print(f"[*] [apkeep] Using already downloaded Google Play artifact: {os.path.basename(filepath)}")
+        return LocalFileResponse(filepath)
 
 
 class ApkeepSource:
-    def __init__(self, timeout: int = 60):
+    def __init__(self, timeout: int = 300):
         self.timeout = timeout
         
-        # קריאת נתוני ההזדהות של גוגל מתוך משתני הסביבה (GitHub Secrets)
         self.google_email = os.getenv("GOOGLE_EMAIL", "").strip()
         self.aas_token = os.getenv("AAS_TOKEN", "").strip()
 
@@ -93,11 +52,10 @@ class ApkeepSource:
             )
 
         self.bin_path = self._ensure_binary_exists()
-        self.scraper = ApkeepScraper(self)
+        self.scraper = ApkeepScraper()
         self.headers = {}
 
     def _ensure_binary_exists(self) -> str:
-        """מוריד את הבינארי של apkeep לפי מערכת ההפעלה"""
         bin_dir = os.path.join(os.getcwd(), "core", "bin")
         os.makedirs(bin_dir, exist_ok=True)
 
@@ -118,46 +76,77 @@ class ApkeepSource:
             urllib.request.urlretrieve(url, bin_path)
             if not is_win:
                 os.chmod(bin_path, 0o755)
-            print(f"[+] [apkeep] Tool ready at {bin_path}")
         except Exception as e:
             raise RuntimeError(f"Failed to download apkeep binary: {e}")
 
         return bin_path
 
-    def _extract_version(self, text: str) -> str | None:
-        match = re.search(r"(\d+(?:\.\d+){1,})", text)
-        return match.group(1) if match else None
-
     def get_latest_version(self, package_name: str):
-        print(f"[*] [apkeep] Fetching latest Google Play version for: {package_name}")
-        url = f"https://play.google.com/store/apps/details?id={package_name}&hl=en"
+        print(f"[*] [apkeep] Initiating Google Play download to extract REAL version for {package_name}...")
         
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        }
+        out_dir = os.path.join(os.getcwd(), "scratch", "apkeep_tmp")
+        os.makedirs(out_dir, exist_ok=True)
         
+        # ניקוי קבצים ישנים של האפליקציה בתיקייה (אם נשארו מריצה קודמת)
+        for f in os.listdir(out_dir):
+            if f.startswith(package_name):
+                try: os.remove(os.path.join(out_dir, f))
+                except: pass
+
+        cmd = [
+            self.bin_path,
+            "-a", package_name,
+            "-d", "google-play",
+            "-e", self.google_email,
+            "-t", self.aas_token,
+            out_dir
+        ]
+
         try:
-            req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                html = resp.read().decode('utf-8', errors='ignore')
+            subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
+        except subprocess.CalledProcessError as e:
+            print(f"[-] [apkeep] Download from Google Play failed: {e}")
+            return None, None, None
+
+        # מציאת הקובץ שהורדנו כרגע
+        downloaded_file = None
+        for f in os.listdir(out_dir):
+            if f.startswith(package_name) and f.endswith((".apk", ".xapk", ".apks")):
+                downloaded_file = os.path.join(out_dir, f)
+                break
+        
+        if not downloaded_file:
+            print("[-] [apkeep] Could not find the downloaded file in temp folder.")
+            return None, None, None
+
+        print(f"[*] [apkeep] Extracting versionName directly from {os.path.basename(downloaded_file)}...")
+        
+        # פירוק מהיר (ללא קוד מקור, רק Manifest) כדי לשלוף את הגרסה האמיתית
+        decode_dir = os.path.join(out_dir, f"{package_name}_meta")
+        apktool_cmd = ["apktool", "d", "-s", "-f", "-o", decode_dir, downloaded_file]
+        
+        version = "latest"
+        try:
+            subprocess.run(apktool_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            yml_path = os.path.join(decode_dir, "apktool.yml")
             
-            # חילוץ תבנית גרסה (למשל [[["2.26.31.77"]]] בתוך ה-JSON של גוגל)
-            version_match = re.search(r'\[\[\["(\d+(?:\.\d+)+)"\]\]', html)
-            if not version_match:
-                # ניסיון חילוץ כללי יותר לגרסה
-                version_match = re.search(r'\["(\d+\.\d+\.\d+(?:\.\d+)?)"\]', html)
-
-            if version_match:
-                version = version_match.group(1)
-                print(f"[+] [apkeep] Found Google Play version: {version}")
-                return version, package_name, package_name
-            else:
-                print(f"[!] [apkeep] Could not parse exact version from Play Store page, using 'latest'")
-                return "latest", package_name, package_name
-
+            if os.path.exists(yml_path):
+                with open(yml_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    match = re.search(r"versionName:\s*['\"]?([^'\">\r\n]+)", content)
+                    if match:
+                        version = match.group(1).strip()
+            
+            print(f"[+] [apkeep] Real Google Play Version extracted: {version}")
+            
         except Exception as e:
-            print(f"[-] [apkeep] Error querying Play Store web page: {e}")
-            return "latest", package_name, package_name
-        return f"apkeep_dl:{initial_url}"
-    def get_download_url(self, initial_url: str):
-        return f"apkeep_dl:{initial_url}"
+            print(f"[-] [apkeep] Failed to extract exact version (fallback to 'latest'): {e}")
+
+        # מחזירים את הגרסה, ואת נתיב הקובץ במקום URL!
+        return version, downloaded_file, package_name
+
+
+    def get_download_url(self, local_filepath: str):
+        # המערכת תקרא לפונקציה הזו רק אם נמצא ש`version` שונה מהמקומי.
+        # לכן פשוט נחזיר קידומת שתגיד ל-Scraper להשתמש בקובץ הקיים!
+        return f"apkeep_local:{local_filepath}"
