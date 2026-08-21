@@ -96,7 +96,7 @@ class ApkeepSource:
         return bin_path
 
     def _download_universal_xapk(self, package_name: str, out_dir: str) -> str:
-        """הרעיון שלך: מזייף בקשות עבור שני פרופילי מעבדים, אוסף את החלקים, ובונה קובץ XAPK אוניברסלי"""
+        """מזייף בקשות עבור שני פרופילי מעבדים מלאים, אוסף את החלקים, ובונה קובץ XAPK אוניברסלי"""
         os.makedirs(out_dir, exist_ok=True)
         
         dir_64 = os.path.join(out_dir, "64")
@@ -104,15 +104,39 @@ class ApkeepSource:
         os.makedirs(dir_64, exist_ok=True)
         os.makedirs(dir_32, exist_ok=True)
 
-        # יצירת פרופיל עבור 64-ביט
+        # יצירת פרופיל מלא עבור מכשיר 64-ביט (חיקוי של Google Pixel 2)
         prop_64 = os.path.join(out_dir, "64.properties")
         with open(prop_64, "w") as f:
-            f.write("ro.product.cpu.abi=arm64-v8a\nro.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi\n")
+            f.write("""ro.build.version.sdk=28
+ro.build.version.release=9
+ro.product.device=walleye
+ro.product.name=walleye
+ro.product.model=Pixel 2
+ro.product.manufacturer=Google
+ro.product.brand=google
+ro.build.id=PQ1A.181105.017.A1
+ro.product.cpu.abi=arm64-v8a
+ro.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi
+ro.product.locale.language=en
+ro.product.locale.region=US
+""")
             
-        # יצירת פרופיל עבור 32-ביט
+        # יצירת פרופיל מלא עבור מכשיר 32-ביט (חיקוי של Google Pixel 1)
         prop_32 = os.path.join(out_dir, "32.properties")
         with open(prop_32, "w") as f:
-            f.write("ro.product.cpu.abi=armeabi-v7a\nro.product.cpu.abilist=armeabi-v7a,armeabi\n")
+            f.write("""ro.build.version.sdk=28
+ro.build.version.release=9
+ro.product.device=sailfish
+ro.product.name=sailfish
+ro.product.model=Pixel
+ro.product.manufacturer=Google
+ro.product.brand=google
+ro.build.id=PQ1A.181105.017.A1
+ro.product.cpu.abi=armeabi-v7a
+ro.product.cpu.abilist=armeabi-v7a,armeabi
+ro.product.locale.language=en
+ro.product.locale.region=US
+""")
 
         print(f"[*] [apkeep] Fetching 64-bit splits from Google Play...")
         subprocess.run([
@@ -150,7 +174,7 @@ class ApkeepSource:
         if not all_apks:
             raise RuntimeError("Failed to collect APK splits from Google Play.")
 
-        # כעת נוצר קובץ XAPK מסודר שמכיל את כל החתיכות (64+32)
+        # יצירת ה-XAPK האוניברסלי
         xapk_path = os.path.join(out_dir, f"{package_name}_universal.xapk")
         with zipfile.ZipFile(xapk_path, 'w') as z:
             z.writestr("manifest.json", '{"package_name":"' + package_name + '"}')
@@ -158,7 +182,6 @@ class ApkeepSource:
                 z.write(apk_path, apk_name)
 
         return xapk_path
-
     def get_latest_version(self, package_name: str):
         # ---------------------------------------------------------
         # שלב 1: בדיקת הגרסה מול Google Play (סריקת רשת מהירה)
