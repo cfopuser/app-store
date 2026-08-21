@@ -7,8 +7,46 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
+AURORA_PIXEL_TEMPLATE = """[default]
+UserReadableName=Google Pixel 7a
+Build.BOOTLOADER=lynx-1.0-9716681
+Build.BRAND=google
+Build.DEVICE=lynx
+Build.FINGERPRINT=google/lynx/lynx:13/TQ2B.230505.005.A1/9808202:user/release-keys
+Build.HARDWARE=lynx
+Build.ID=TQ2A.230505.002
+Build.MANUFACTURER=Google
+Build.MODEL=Pixel 7a
+Build.PRODUCT=lynx
+Build.RADIO=g5300n-230203-230323-B-9801058,g5300n-230203-230323-B-9801058
+Build.VERSION.RELEASE=13
+Build.VERSION.SDK_INT=33
+CellOperator=310
+Client=android-google
+Features=android.hardware.sensor.proximity,android.hardware.telephony.ims.singlereg,android.hardware.sensor.accelerometer,android.software.controls,android.hardware.faketouch,android.software.telecom,android.hardware.telephony.subscription,android.hardware.telephony.euicc,android.hardware.usb.accessory,android.hardware.telephony.data,android.hardware.sensor.dynamic.head_tracker,android.software.backup,android.hardware.touchscreen,android.hardware.touchscreen.multitouch,android.software.erofs,android.software.print,android.software.activities_on_secondary_displays,android.hardware.wifi.rtt,com.google.android.feature.PIXEL_2017_EXPERIENCE,android.software.voice_recognizers,android.software.picture_in_picture,android.hardware.fingerprint,android.hardware.sensor.gyroscope,android.hardware.audio.low_latency,android.software.vulkan.deqp.level,android.software.cant_save_state,com.google.android.feature.PIXEL_2018_EXPERIENCE,android.hardware.security.model.compatible,android.hardware.telephony.messaging,com.google.android.feature.PIXEL_2019_EXPERIENCE,android.hardware.telephony.calling,android.hardware.opengles.aep,org.lineageos.livedisplay,android.hardware.bluetooth,android.software.window_magnification,android.hardware.telephony.radio.access,android.hardware.camera.autofocus,android.hardware.telephony.gsm,android.hardware.telephony.ims,android.software.incremental_delivery,android.hardware.se.omapi.ese,android.software.opengles.deqp.level,vendor.android.hardware.camera.preview-dis.front,com.google.android.feature.PIXEL_2022_MIDYEAR_EXPERIENCE,android.hardware.camera.concurrent,android.hardware.usb.host,android.hardware.audio.output,android.software.verified_boot,android.hardware.camera.flash,android.hardware.camera.front,android.hardware.sensor.hifi_sensors,android.hardware.se.omapi.uicc,android.hardware.strongbox_keystore,android.hardware.screen.portrait,android.hardware.nfc,com.nxp.mifare,com.google.android.feature.PIXEL_2021_MIDYEAR_EXPERIENCE,android.hardware.sensor.stepdetector,android.software.home_screen,android.hardware.context_hub,vendor.android.hardware.camera.preview-dis.back,android.hardware.microphone,android.software.autofill,org.lineageos.hardware,org.lineageos.globalactions,android.software.securely_removes_users,com.google.android.feature.PIXEL_EXPERIENCE,android.hardware.bluetooth_le,android.hardware.sensor.compass,android.hardware.touchscreen.multitouch.jazzhand,android.hardware.sensor.barometer,android.software.app_widgets,com.google.android.feature.PIXEL_2020_MIDYEAR_EXPERIENCE,android.hardware.telephony.carrierlock,android.software.input_methods,android.hardware.sensor.light,android.hardware.vulkan.version,android.software.companion_device_setup,android.software.device_admin,android.hardware.wifi.passpoint,android.hardware.camera,org.lineageos.trust,android.hardware.device_unique_attestation,android.hardware.screen.landscape,android.software.device_id_attestation,android.hardware.ram.normal,com.google.android.feature.PIXEL_2019_MIDYEAR_EXPERIENCE,android.software.managed_users,android.software.webview,android.hardware.sensor.stepcounter,android.hardware.camera.capability.manual_post_processing,android.hardware.camera.any,android.hardware.camera.capability.raw,android.hardware.vulkan.compute,android.hardware.touchscreen.multitouch.distinct,android.hardware.location.network,android.software.cts,android.hardware.camera.capability.manual_sensor,android.software.app_enumeration,android.hardware.camera.level.full,android.hardware.identity_credential,android.hardware.wifi.direct,android.software.live_wallpaper,com.google.android.feature.GOOGLE_EXPERIENCE,android.software.ipsec_tunnels,org.lineageos.settings,android.hardware.audio.pro,android.hardware.nfc.hcef,android.hardware.location.gps,android.software.midi,android.hardware.nfc.any,android.hardware.nfc.ese,android.hardware.nfc.hce,android.hardware.hardware_keystore,com.google.android.feature.PIXEL_2020_EXPERIENCE,android.hardware.telephony.euicc.mep,android.hardware.wifi,android.hardware.location,android.hardware.vulkan.level,com.google.android.feature.PIXEL_2021_EXPERIENCE,android.hardware.keystore.app_attest_key,android.hardware.wifi.aware,com.google.android.feature.PIXEL_2022_EXPERIENCE,android.software.secure_lock_screen,android.hardware.telephony,android.software.file_based_encryption
+GL.Extensions=GL_ANDROID_extension_pack_es31a,GL_ARM_mali_program_binary,GL_ARM_mali_shader_binary,GL_ARM_rgba8,GL_ARM_shader_framebuffer_fetch,GL_ARM_shader_framebuffer_fetch_depth_stencil,GL_ARM_texture_unnormalized_coordinates,GL_EXT_EGL_image_array,GL_EXT_YUV_target,GL_EXT_blend_minmax,GL_EXT_buffer_storage,GL_EXT_clip_control,GL_EXT_color_buffer_float,GL_EXT_color_buffer_half_float,GL_EXT_copy_image,GL_EXT_debug_marker,GL_EXT_discard_framebuffer,GL_EXT_disjoint_timer_query,GL_EXT_draw_buffers_indexed,GL_EXT_draw_elements_base_vertex,GL_EXT_external_buffer,GL_EXT_float_blend,GL_EXT_geometry_shader,GL_EXT_gpu_shader5,GL_EXT_multisampled_render_to_texture,GL_EXT_multisampled_render_to_texture2,GL_EXT_occlusion_query_boolean,GL_EXT_primitive_bounding_box,GL_EXT_protected_textures,GL_EXT_read_format_bgra,GL_EXT_robustness,GL_EXT_sRGB,GL_EXT_sRGB_write_control,GL_EXT_shader_framebuffer_fetch,GL_EXT_shader_io_blocks,GL_EXT_shader_non_constant_global_initializers,GL_EXT_shader_pixel_local_storage,GL_EXT_shadow_samplers,GL_EXT_tessellation_shader,GL_EXT_texture_border_clamp,GL_EXT_texture_buffer,GL_EXT_texture_compression_astc_decode_mode,GL_EXT_texture_compression_astc_decode_mode_rgb9e5,GL_EXT_texture_cube_map_array,GL_EXT_texture_filter_anisotropic,GL_EXT_texture_format_BGRA8888,GL_EXT_texture_rg,GL_EXT_texture_sRGB_R8,GL_EXT_texture_sRGB_RG8,GL_EXT_texture_sRGB_decode,GL_EXT_texture_storage,GL_EXT_texture_type_2_10_10_10_REV,GL_EXT_unpack_subimage,GL_KHR_blend_equation_advanced,GL_KHR_blend_equation_advanced_coherent,GL_KHR_debug,GL_KHR_robust_buffer_access_behavior,GL_KHR_robustness,GL_KHR_texture_compression_astc_hdr,GL_KHR_texture_compression_astc_ldr,GL_KHR_texture_compression_astc_sliced_3d,GL_OES_EGL_image,GL_OES_EGL_image_external,GL_OES_EGL_image_external_essl3,GL_OES_EGL_sync,GL_OES_blend_equation_separate,GL_OES_blend_func_separate,GL_OES_blend_subtract,GL_OES_byte_coordinates,GL_OES_compressed_ETC1_RGB8_texture,GL_OES_compressed_paletted_texture,GL_OES_copy_image,GL_OES_depth24,GL_OES_depth_texture,GL_OES_depth_texture_cube_map,GL_OES_draw_buffers_indexed,GL_OES_draw_elements_base_vertex,GL_OES_draw_texture,GL_OES_element_index_uint,GL_OES_extended_matrix_palette,GL_OES_fbo_render_mipmap,GL_OES_fixed_point,GL_OES_framebuffer_object,GL_OES_geometry_shader,GL_OES_get_program_binary,GL_OES_gpu_shader5,GL_OES_mapbuffer,GL_OES_matrix_get,GL_OES_matrix_palette,GL_OES_packed_depth_stencil,GL_OES_point_size_array,GL_OES_point_sprite,GL_OES_primitive_bounding_box,GL_OES_query_matrix,GL_OES_read_format,GL_OES_required_internalformat,GL_OES_rgb8_rgba8,GL_OES_sample_shading,GL_OES_sample_variables,GL_OES_shader_image_atomic,GL_OES_shader_io_blocks,GL_OES_shader_multisample_interpolation,GL_OES_single_precision,GL_OES_standard_derivatives,GL_OES_stencil8,GL_OES_stencil_wrap,GL_OES_surfaceless_context,GL_OES_tessellation_shader,GL_OES_texture_3D,GL_OES_texture_border_clamp,GL_OES_texture_buffer,GL_OES_texture_compression_astc,GL_OES_texture_cube_map,GL_OES_texture_cube_map_array,GL_OES_texture_float_linear,GL_OES_texture_mirrored_repeat,GL_OES_texture_npot,GL_OES_texture_stencil8,GL_OES_texture_storage_multisample_2d_array,GL_OES_vertex_array_object,GL_OES_vertex_half_float,GL_OVR_multiview,GL_OVR_multiview2,GL_OVR_multiview_multisampled_render_to_texture
+GL.Version=196610
+GSF.version=203615037
+HasFiveWayNavigation=false
+HasHardKeyboard=false
+Keyboard=1
+Locales=af,am,ar,as,az,be,bg,bn,bs,ca,cs,da,de,el,en,es,et,eu,fa,fi,fil,fr,gu,he,hi,hr,hu,hy,id,is,it,iw,ja,ka,kk,km,kn,ko,ky,lo,lt,lv,mk,ml,mn,mr,ms,my,nb,ne,nl,or,pa,pl,pt,ro,ru,si,sk,sl,sq,sr,sv,sw,ta,te,th,tr,uk,ur,uz,vi,zh,zu
+Navigation=1
+Platforms=arm64-v8a
+Roaming=mobile-notroaming
+Screen.Density=420
+Screen.Height=2156
+Screen.Width=1080
+ScreenLayout=2
+SharedLibraries=android.test.base,android.test.mock,android.hidl.manager-V1.0-java,google-ril,libedgetpu_client.google.so,libedgetpu_util.so,android.hidl.base-V1.0-java,com.google.android.camera.experimental2022,libOpenCL-pixel.so,com.android.location.provider,oemrilhook,android.net.ipsec.ike,com.android.future.usb.accessory,android.ext.shared,javax.obex,com.google.android.gms,lib_aion_buffer.so,libgxp.so,gxp_metrics_logger.so,android.test.runner,org.apache.http.legacy,com.android.cts.ctsshim.shared_library,com.android.nfc_extras,com.android.media.remotedisplay,com.android.mediadrm.signer,android.system.virtualmachine
+SimOperator=38
+TimeZone=UTC-10
+TouchScreen=3
+Vending.version=82201710
+Vending.versionString=22.0.17-21 [0] [PR] 332555730
+"""
+
 class LocalFileResponse:
-    """עוטף את קובץ ה-XAPK שאספנו ומעביר אותו ל-downloader"""
     def __init__(self, filepath, url):
         self.filepath = filepath
         self.status_code = 200
@@ -39,40 +77,32 @@ class ApkeepScraper:
     def get(self, url, stream=False, headers=None, allow_redirects=True):
         if url.startswith("apkeep_local:"):
             filepath = url.split("apkeep_local:")[1]
-            print(f"[*] [apkeep] Using already downloaded Universal XAPK: {os.path.basename(filepath)}")
             return LocalFileResponse(filepath, url)
         
         elif url.startswith("apkeep_dl:"):
             package_name = url.split("apkeep_dl:")[1]
             out_dir = os.path.join(os.getcwd(), "scratch", "apkeep_tmp")
-            
-            # בניית ה-XAPK מתוך פרופילים מרובים
             xapk_path = self.source._download_universal_xapk(package_name, out_dir)
             return LocalFileResponse(xapk_path, url)
         else:
-            raise ValueError(f"Unknown URL format for apkeep scraper: {url}")
+            raise ValueError(f"Unknown URL format: {url}")
 
 
 class ApkeepSource:
     def __init__(self, timeout: int = 300):
         self.timeout = timeout
-        
         self.google_email = os.getenv("GOOGLE_EMAIL", "").strip()
         self.aas_token = os.getenv("AAS_TOKEN", "").strip()
 
         if not self.google_email or not self.aas_token:
-            raise ValueError(
-                "Missing credentials for Google Play! Please set GOOGLE_EMAIL and AAS_TOKEN in environment/secrets."
-            )
+            raise ValueError("Missing GOOGLE_EMAIL or AAS_TOKEN environment variables!")
 
         self.bin_path = self._ensure_binary_exists()
         self.scraper = ApkeepScraper(self)
-        self.headers = {}
 
     def _ensure_binary_exists(self) -> str:
         bin_dir = os.path.join(os.getcwd(), "core", "bin")
         os.makedirs(bin_dir, exist_ok=True)
-
         is_win = platform.system() == "Windows"
         bin_name = "apkeep.exe" if is_win else "apkeep"
         bin_path = os.path.join(bin_dir, bin_name)
@@ -81,160 +111,68 @@ class ApkeepSource:
             return bin_path
 
         print(f"[*] [apkeep] Downloading apkeep tool for {platform.system()}...")
-        if is_win:
-            url = "https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-pc-windows-msvc.exe"
-        else:
-            url = "https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-unknown-linux-gnu"
-
+        url = "https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-pc-windows-msvc.exe" if is_win else "https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-unknown-linux-gnu"
         try:
             urllib.request.urlretrieve(url, bin_path)
             if not is_win:
                 os.chmod(bin_path, 0o755)
         except Exception as e:
-            raise RuntimeError(f"Failed to download apkeep binary: {e}")
-
+            raise RuntimeError(f"Failed to download apkeep: {e}")
         return bin_path
 
     def _download_universal_xapk(self, package_name: str, out_dir: str) -> str:
-        """מזייף בקשות עבור שני פרופילי מעבדים מלאים, אוסף את החלקים, ובונה קובץ XAPK אוניברסלי"""
         os.makedirs(out_dir, exist_ok=True)
-        
         dir_64 = os.path.join(out_dir, "64")
         dir_32 = os.path.join(out_dir, "32")
         os.makedirs(dir_64, exist_ok=True)
         os.makedirs(dir_32, exist_ok=True)
 
-        # 64-bit Profile (Galaxy S25 Ultra)
-        prop_64 = os.path.join(out_dir, "64.properties")
+        prop_64 = os.path.abspath(os.path.join(out_dir, "64.properties"))
         with open(prop_64, "w", encoding="utf-8") as f:
-            f.write("""[default]
-UserReadableName=Galaxy S25 Ultra
-Build.BOOTLOADER=S938BXXU1AYA1
-Build.BRAND=samsung
-Build.DEVICE=pa3q
-Build.FINGERPRINT=samsung/pa3qxins/pa3q\:15/AP3A.240905.015.A2/S938BXXU1AYA1_OXM1AYA1\:user/release-keys
-Build.HARDWARE=qcom
-Build.ID=AP3A.240905.015.A2
-Build.MANUFACTURER=samsung
-Build.MODEL=SM-S938B
-Build.PRODUCT=pa3qxins
-Build.RADIO=S938BXXU1AYA1,S938BXXU1AYA1
-Build.VERSION.RELEASE=15
-Build.VERSION.SDK_INT=35
-CellOperator=310
-Client=android-google
-Features=android.hardware.sensor.proximity,com.google.android.feature.CONTEXTUAL_SEARCH,com.google.android.feature.DSE_CHOICE_SCREEN,com.samsung.android.sdk.camera.processor,com.samsung.feature.aodservice_v10,com.google.android.feature.AICORE_QC_SM8750,com.sec.feature.motionrecognition_service,android.hardware.telephony.ims.singlereg,android.hardware.sensor.accelerometer,android.software.controls,android.hardware.faketouch,android.software.telecom,com.samsung.feature.audio_listenback,android.hardware.telephony.subscription,android.hardware.telephony.euicc,android.hardware.usb.accessory,android.hardware.telephony.data,android.hardware.telephony.mbms,android.software.backup,android.hardware.touchscreen,android.hardware.touchscreen.multitouch,android.software.erofs,android.software.print,android.software.activities_on_secondary_displays,com.sec.feature.nfc_authentication_cover,android.hardware.wifi.rtt,com.samsung.feature.SAMSUNG_EXPERIENCE,com.samsung.feature.nowbar,com.google.android.feature.ACCESSIBILITY_PRELOAD,com.sec.feature.nfc_authentication,android.software.voice_recognizers,android.software.picture_in_picture,android.hardware.fingerprint,com.samsung.android.knox.knoxsdk,android.hardware.sensor.gyroscope,android.hardware.audio.low_latency,samsung.hardware.uwb,android.software.vulkan.deqp.level,android.software.cant_save_state,android.hardware.security.model.compatible,android.hardware.telephony.messaging,com.samsung.feature.device_category_phone,com.samsung.android.nfc.t4temul,android.hardware.telephony.calling,android.hardware.opengles.aep,com.sec.feature.sensorhub,android.hardware.bluetooth,com.samsung.feature.audio_fast_listenback,android.software.window_magnification,android.hardware.telephony.radio.access,android.hardware.camera.autofocus,android.hardware.telephony.gsm,android.hardware.telephony.ims,com.sec.feature.cocktailpanel,android.software.incremental_delivery,android.software.sip.voip,android.hardware.se.omapi.ese,android.software.opengles.deqp.level,com.sec.feature.saccessorymanager,com.samsung.feature.samsung_experience_mobile,com.samsung.android.camerasdkservice,com.samsung.android.camera.cameraserviceworker,android.hardware.camera.concurrent,android.hardware.usb.host,android.hardware.audio.output,android.software.ipsec_tunnel_migration,android.software.verified_boot,android.hardware.camera.flash,android.hardware.camera.front,android.hardware.se.omapi.uicc,android.hardware.strongbox_keystore,android.hardware.screen.portrait,com.google.android.feature.ASI,android.hardware.nfc,android.hardware.uwb,com.google.android.feature.TURBO_PRELOAD,com.samsung.feature.ipsgeofence,com.nxp.mifare,com.samsung.feature.SAMSUNG_EXPERIENCE_AM,android.hardware.sensor.stepdetector,android.software.home_screen,android.hardware.microphone,com.samsung.feature.aremoji.v2,android.software.autofill,com.samsung.android.sdk.camera.processor.effect,android.software.securely_removes_users,android.hardware.bluetooth_le,android.hardware.sensor.compass,android.hardware.touchscreen.multitouch.jazzhand,android.hardware.sensor.barometer,android.software.app_widgets,android.software.input_methods,android.hardware.sensor.light,android.hardware.vulkan.version,android.software.companion_device_setup,com.sec.feature.wirelesscharger_authentication,android.software.device_admin,android.hardware.wifi.passpoint,android.hardware.camera,android.software.credentials,android.hardware.screen.landscape,android.software.device_id_attestation,com.google.android.feature.AER_OPTIMIZED,android.hardware.ram.normal,com.samsung.feature.samsungpositioning.snlp,com.google.android.feature.AICORE_QC,com.samsung.android.authfw,com.qualcomm.qti.feature.DCF_OFFLOAD,com.samsung.android.api.version.2402,com.samsung.android.api.version.2403,com.samsung.android.api.version.2501,com.samsung.android.api.version.2502,com.samsung.android.api.version.2601,com.samsung.android.api.version.2701,com.samsung.android.api.version.2801,com.samsung.android.api.version.2802,com.samsung.android.api.version.2803,com.samsung.android.api.version.2901,com.samsung.android.api.version.2902,com.samsung.android.api.version.2903,com.samsung.android.api.version.3001,com.samsung.android.api.version.3002,com.samsung.android.api.version.3101,com.samsung.android.api.version.3201,com.samsung.android.api.version.3301,com.samsung.android.api.version.3302,com.samsung.android.api.version.3401,com.samsung.android.api.version.3402,com.samsung.android.api.version.3501,com.sec.feature.cover,android.software.managed_users,com.sec.feature.nsflp,android.software.webview,android.hardware.sensor.stepcounter,android.hardware.camera.capability.manual_post_processing,com.sec.feature.spen_usp,android.hardware.camera.any,android.hardware.camera.capability.raw,android.hardware.vulkan.compute,com.samsung.android.oneui.version.10000,com.samsung.android.oneui.version.10100,com.samsung.android.oneui.version.10200,com.samsung.android.oneui.version.10500,com.samsung.android.oneui.version.20000,com.samsung.android.oneui.version.20100,com.samsung.android.oneui.version.20500,com.samsung.android.oneui.version.30000,com.samsung.android.oneui.version.30100,com.samsung.android.oneui.version.30101,com.samsung.android.oneui.version.40000,com.samsung.android.oneui.version.40100,com.samsung.android.oneui.version.40101,com.samsung.android.oneui.version.50000,com.samsung.android.oneui.version.50100,com.samsung.android.oneui.version.50101,com.samsung.android.oneui.version.60000,com.samsung.android.oneui.version.60100,com.samsung.android.oneui.version.60101,com.samsung.android.oneui.version.70000,android.hardware.touchscreen.multitouch.distinct,android.hardware.location.network,com.sec.android.secimaging,android.software.cts,android.software.sip,android.hardware.camera.capability.manual_sensor,android.software.app_enumeration,android.hardware.camera.level.full,com.sec.feature.usb_authentication,android.hardware.wifi.direct,android.software.live_wallpaper,com.sec.feature.pocketmode,android.software.ipsec_tunnels,samsung.software.secure_key_service,android.software.freeform_window_management,android.hardware.audio.pro,android.hardware.nfc.hcef,android.hardware.nfc.uicc,com.samsung.feature.support_repair_mode,android.hardware.location.gps,com.samsung.android.camera.deviceinjector,android.software.midi,com.samsung.feature.samsungpositioning,android.hardware.nfc.any,android.hardware.nfc.ese,android.hardware.nfc.hce,android.hardware.hardware_keystore,com.sec.feature.pocketsensitivitymode,android.hardware.telephony.euicc.mep,android.hardware.wifi,android.hardware.location,android.hardware.vulkan.level,android.hardware.keystore.app_attest_key,com.sec.feature.cover.flip,com.samsung.android.cameraxservice,com.samsung.android.knox.knoxsdk.api.level.33,com.samsung.android.knox.knoxsdk.api.level.34,com.samsung.android.knox.knoxsdk.api.level.35,com.samsung.android.knox.knoxsdk.api.level.36,com.samsung.android.knox.knoxsdk.api.level.37,com.samsung.android.knox.knoxsdk.api.level.38,android.hardware.wifi.aware,android.software.secure_lock_screen,android.hardware.biometrics.face,com.samsung.feature.EXPERIENCE_CTS,android.hardware.telephony,com.sec.android.smartface.smart_stay,android.software.file_based_encryption
-GL.Extensions=GL_AMD_compressed_ATC_texture,GL_AMD_performance_monitor,GL_ANDROID_extension_pack_es31a,GL_APPLE_texture_2D_limited_npot,GL_ARB_vertex_buffer_object,GL_ARM_shader_framebuffer_fetch_depth_stencil,GL_EXT_EGL_image_array,GL_EXT_EGL_image_external_wrap_modes,GL_EXT_EGL_image_storage,GL_EXT_EGL_image_storage_compression,GL_EXT_YUV_target,GL_EXT_blend_func_extended,GL_EXT_blit_framebuffer_params,GL_EXT_buffer_storage,GL_EXT_clip_control,GL_EXT_clip_cull_distance,GL_EXT_color_buffer_float,GL_EXT_color_buffer_half_float,GL_EXT_copy_image,GL_EXT_debug_label,GL_EXT_debug_marker,GL_EXT_depth_clamp,GL_EXT_discard_framebuffer,GL_EXT_disjoint_timer_query,GL_EXT_draw_buffers_indexed,GL_EXT_external_buffer,GL_EXT_float_blend,GL_EXT_fragment_invocation_density,GL_EXT_fragment_shading_rate,GL_EXT_fragment_shading_rate_attachment,GL_EXT_fragment_shading_rate_primitive,GL_EXT_geometry_shader,GL_EXT_gpu_shader5,GL_EXT_memory_object,GL_EXT_memory_object_fd,GL_EXT_multisampled_render_to_texture,GL_EXT_multisampled_render_to_texture2,GL_EXT_polygon_offset_clamp,GL_EXT_primitive_bounding_box,GL_EXT_protected_textures,GL_EXT_read_format_bgra,GL_EXT_render_snorm,GL_EXT_robustness,GL_EXT_sRGB,GL_EXT_sRGB_write_control,GL_EXT_shader_framebuffer_fetch,GL_EXT_shader_implicit_conversions,GL_EXT_shader_io_blocks,GL_EXT_shader_non_constant_global_initializers,GL_EXT_tessellation_shader,GL_EXT_texture_border_clamp,GL_EXT_texture_buffer,GL_EXT_texture_compression_astc_decode_mode,GL_EXT_texture_compression_bptc,GL_EXT_texture_compression_rgtc,GL_EXT_texture_compression_s3tc,GL_EXT_texture_compression_s3tc_srgb,GL_EXT_texture_cube_map_array,GL_EXT_texture_filter_anisotropic,GL_EXT_texture_format_BGRA8888,GL_EXT_texture_format_sRGB_override,GL_EXT_texture_mirror_clamp_to_edge,GL_EXT_texture_norm16,GL_EXT_texture_sRGB_R8,GL_EXT_texture_sRGB_RG8,GL_EXT_texture_sRGB_decode,GL_EXT_texture_storage_compression,GL_EXT_texture_type_2_10_10_10_REV,GL_IMG_texture_filter_cubic,GL_KHR_blend_equation_advanced,GL_KHR_blend_equation_advanced_coherent,GL_KHR_debug,GL_KHR_no_error,GL_KHR_robust_buffer_access_behavior,GL_KHR_texture_compression_astc_hdr,GL_KHR_texture_compression_astc_ldr,GL_KHR_texture_compression_astc_sliced_3d,GL_NV_shader_noperspective_interpolation,GL_OES_EGL_image,GL_OES_EGL_image_external,GL_OES_EGL_image_external_essl3,GL_OES_EGL_sync,GL_OES_blend_equation_separate,GL_OES_blend_func_separate,GL_OES_blend_subtract,GL_OES_compressed_ETC1_RGB8_texture,GL_OES_compressed_paletted_texture,GL_OES_depth24,GL_OES_depth_texture,GL_OES_depth_texture_cube_map,GL_OES_draw_texture,GL_OES_element_index_uint,GL_OES_framebuffer_object,GL_OES_get_program_binary,GL_OES_matrix_palette,GL_OES_packed_depth_stencil,GL_OES_point_size_array,GL_OES_point_sprite,GL_OES_read_format,GL_OES_rgb8_rgba8,GL_OES_sample_shading,GL_OES_sample_variables,GL_OES_shader_image_atomic,GL_OES_shader_multisample_interpolation,GL_OES_standard_derivatives,GL_OES_stencil_wrap,GL_OES_surfaceless_context,GL_OES_texture_3D,GL_OES_texture_compression_astc,GL_OES_texture_cube_map,GL_OES_texture_env_crossbar,GL_OES_texture_float,GL_OES_texture_float_linear,GL_OES_texture_half_float,GL_OES_texture_half_float_linear,GL_OES_texture_mirrored_repeat,GL_OES_texture_npot,GL_OES_texture_stencil8,GL_OES_texture_storage_multisample_2d_array,GL_OES_texture_view,GL_OES_vertex_array_object,GL_OES_vertex_half_float,GL_OVR_multiview,GL_OVR_multiview2,GL_OVR_multiview_multisampled_render_to_texture,GL_QCOM_YUV_texture_gather,GL_QCOM_alpha_test,GL_QCOM_extended_get,GL_QCOM_frame_extrapolation,GL_QCOM_motion_estimation,GL_QCOM_render_sRGB_R8_RG8,GL_QCOM_render_shared_exponent,GL_QCOM_shader_framebuffer_fetch_noncoherent,GL_QCOM_shader_framebuffer_fetch_rate,GL_QCOM_shading_rate,GL_QCOM_texture_foveated,GL_QCOM_texture_foveated2,GL_QCOM_texture_foveated_subsampled_layout,GL_QCOM_texture_lod_bias,GL_QCOM_tiled_rendering,GL_QCOM_validate_shader_binary,GL_QCOM_ycbcr_degamma
-GL.Version=196610
-GSF.version=250632035
-HasFiveWayNavigation=false
-HasHardKeyboard=false
-Keyboard=1
-Locales=af,am,am_ET,ar,ar_AE,ar_IL,ar_XB,as,as_IN,ast,az,az_AZ,be,be_BY,bg,bg_BG,bn,bn_BD,bn_IN,bs,bs_BA,ca,ca_ES,cs,cs_CZ,da,da_DK,de,de_AT,de_CH,de_DE,el,el_GR,en,en_AU,en_CA,en_DI,en_GB,en_IE,en_IN,en_NZ,en_PH,en_US,en_XA,en_XC,en_ZA,en_ZG,eo,es,es_419,es_ES,es_US,et,et_EE,eu,eu_ES,fa,fa_IR,fi,fi_FI,fil,fil_PH,fr,fr_BE,fr_CA,fr_CH,fr_FR,ga,ga_IE,gl,gl_ES,gu,gu_IN,ha,ha_GH,ha_NE,ha_NG,he,hi,hi_IN,hr,hr_HR,hu,hu_HU,hy,hy_AM,ia,ig,ig_NG,in,in_ID,is,is_IS,it,it_IT,iw,iw_IL,ja,ja_JP,ka,ka_GE,kk,kk_KZ,km,km_KH,kmr,kn,kn_IN,ko,ko_KR,ky,ky_KG,lo,lo_LA,lt,lt_LT,lv,lv_LV,mk,mk_MK,ml,ml_IN,mn,mn_MN,mr,mr_IN,ms,ms_MY,my,my_MM,my_ZG,nb,nb_NO,ne,ne_NP,nl,nl_BE,nl_NL,or,or_IN,pa,pa_IN,pl,pl_PL,pt,pt_BR,pt_PT,ro,ro_RO,ru,ru_RU,sc,si,si_LK,sk,sk_SK,sl,sl_SI,so,sq,sq_AL,sr,sr_Cyrl_RS,sr_Latn,sr_Latn_RS,sv,sv_SE,sw,sw_CD,sw_KE,sw_TZ,sw_UG,ta,ta_IN,te,te_IN,tg,tg_TJ,th,th_TH,tk,tk_TM,tr,tr_TR,uk,uk_UA,ur,ur_PK,uz,uz_UZ,vi,vi_VN,yo,yo_BJ,yo_NG,yue,zh_CN,zh_HK,zh_TW,zu
-Navigation=1
-Platforms=arm64-v8a,armeabi-v7a,armeabi
-Roaming=mobile-notroaming
-Screen.Density=560
-Screen.Height=3120
-Screen.Width=1440
-ScreenLayout=2
-SharedLibraries=libhoaeffects.qti.so,libFood.camera.samsung.so,libFacePreProcessing_jni.camera.samsung.so,lib_nativeJni.dk.samsung.so,libStride.camera.samsung.so,android.test.base,android.test.mock,sec_platform_library,libbayeraiphoto_wrapper_v1.camera.samsung.so,com.samsung.device,SemAudioThumbnail,libSDKMoireDetector.spenocr.samsung.so,libqti-perfd-client.so,libInteractiveSegmentation.camera.samsung.so,libai_tetra_super_zoom.arcsoft.so,libSR_StereoCapture.camera.samsung.so,com.sec.esecomm,vendor.qti.hardware.c2pa-V1-java,com.samsung.android.ibs.framework-v1,libFaceClustering.camera.samsung.so,libDLInterface_aidl.camera.samsung.so,android.hidl.manager-V1.0-java,libsdk-jni.vexfwk.samsung.so,libupdateprof.qti.so,libBeauty_v4.camera.samsung.so,libUltraWideDistortionCorrection.camera.samsung.so,libImageScreener.camera.samsung.so,libsecimaging.camera.samsung.so,libtetra_llzoom.arcsoft.so,qti-telephony-hidl-wrapper,com.samsung.android.semtelephonesdk.framework-v1,libPetDetector_v1.camera.samsung.so,libfastcvopt.so,libcore2nativeutil.camera.samsung.so,vendor.qti.ims.connection-V1.0-java,libSlowShutter_jni.media.samsung.so,liblistenjni.qti.so,libBayerSR10Tuning.camera.samsung.so,com.android.hotwordenrollment.common.util,libDualCamBokehCapture.camera.samsung.so,libdigital_tele_scope_rawsr.arcsoft.so,vsimmanager,libhumantracking_util.camera.samsung.so,libSDKRecognitionOCR.spenocr.samsung.so,libknox_remotedesktopclient.knox.samsung.so,libOpenCv.camera.samsung.so,libtflite2.myfilters.camera.samsung.so,libsec_camerax_util_jni.camera.samsung.so,libWideDistortionCorrection.camera.samsung.so,libOpenCL.so,libthermalclient.qti.so,libhybridHDR_wrapper.camera.samsung.so,libtensorflowlite_c.2.16.1.camera.samsung.so,libFaceRecognition.arcsoft.so,libhal.wsm.samsung.so,libFoodDetector.camera.samsung.so,libcolor_engine.camera.samsung.so,libSDKRecognitionText.spensdk.samsung.so,vendor.qti.ims.rcsuce-V1.0-java,libaudiomirroring_jni.audiomirroring.samsung.so,vendor.qti.ims.rcsuce-V1.1-java,lib_native_client.dk.samsung.so,libTetraSR10.camera.samsung.so,vendor.qti.ims.rcsuce-V1.2-java,dpmapi,libsecsuperresolution_wrapper_v1.camera.samsung.so,libSwIsp_wrapper_v1.camera.samsung.so,libMyFilterPlugin.camera.samsung.so,libdtsr_wrapper_v1.camera.samsung.so,libperfsdk.performance.samsung.so,libAIHRWrapper.camera.samsung.so,libsuper_fusion.arcsoft.so,qti-telephony-utils,com.qti.location.sdk,libbinauralrenderer_wrapper.qti.so,services.core,libmotionphoto_jni.media.samsung.so,libVideoClassifier.camera.samsung.so,libStereoWarp.camera.samsung.so,android.telephony.satellite,libAEBHDR_wrapper.camera.samsung.so,libSEF.quram.so,libdiag_system.qti.so,mcfsdk,libhumantracking.arcsoft.so,libcdsprpc.so,android.hidl.base-V1.0-java,libsume_mediabuffer_jni.media.samsung.so,libmetadata.vexfwk.samsung.so,libtetra_hybrid_mf_zoom.arcsoft.so,com.qualcomm.qmapbridge,libsrib_MQA.camera.samsung.so,libFacialStickerEngine.arcsoft.so,libtensorflowlite_c.camera.samsung.so,libruntime.vexfwk.samsung.so,libQREngine.camera.samsung.so,com.samsung.bbc,libjpegsq.media.samsung.so,vendor.qti.ims.datachannelservice-V2-java,libHprFace_GAE_jni.camera.samsung.so,libheifcapture_jni.media.samsung.so,SecureKeyBlob,libStereoSolution.camera.samsung.so,org.carconnectivity.android.digitalkey.rangingintent,com.qualcomm.qti.audiosphere,samsungkeystoreutils,libhybrid_high_dynamic_range.arcsoft.so,libLocalTM_wrapper.camera.samsung.so,lib.engmodejni.samsung.so,DesktopSystemUIKnoxLib,libportrait_controller_engine.camera.samsung.so,libRectify.camera.samsung.so,libArtifactDetector_v1.camera.samsung.so,libAIQSolution_MPI.camera.samsung.so,libadsprpc.so,libPortraitSolution.camera.samsung.so,libBayerAIPhoto.camera.samsung.so,libimagecodec.quram.so,com.android.location.provider,secimaging,worker_wrapper_compat,androidx.window.extensions,knoxsdk,semextendedformat,semmediatranscoder,vendor.qti.ims.connectionaidlservice-V1-java,libLttEngine.camera.samsung.so,lib_pet_detection.arcsoft.so,libSR_NearDetector.camera.samsung.so,libobjectcapture_jni.arcsoft.so,libsurfaceutil.camera.samsung.so,libMyFilter.camera.samsung.so,libLightObjectDetector_v1.camera.samsung.so,vendor.qti.ims.rcsuceaidlservice-V1-java,libRemasterEngine.camera.samsung.so,libsrib_humanaware_engine.camera.samsung.so,libagifencoder.quram.so,libMPISingleRGB40.camera.samsung.so,android.net.ipsec.ike,libsecjpeginterface.camera.samsung.so,com.samsung.android.nfc.mpos,libgfxgrab.gpuwatchapp.samsung.so,libFace_Landmark_API.camera.samsung.so,libfrtracking_engine.arcsoft.so,org.carconnectivity.android.digitalkey.secureelement,com.android.future.usb.accessory,libDocRectifyWrapper.camera.samsung.so,lib_vnd_client.dk.samsung.so,saiv,androidx.camera.extensions.impl,libai_fusion_high_resolution_base_v1.arcsoft.so,com.qti.dpmframework,libslljpeg.media.samsung.so,libtetra_super_shot.arcsoft.so,libsdsprpc.so,libMultiFrameProcessing30.camera.samsung.so,libcommon-jni.vexfwk.samsung.so,ztsdk,libAIDeflicker.camera.samsung.so,com.google.android.apps.aicore,android.ext.shared,libai_fusion_high_resolution_base_v2.arcsoft.so,libEventDetector.camera.samsung.so,libVirtualApertureCapture.camera.samsung.so,libAPPE_core.camera.samsung.so,libandroid.vexfwk.samsung.so,libsume_jni.media.samsung.so,libface_recognition.arcsoft.so,libveengine.arcsoft.so,libveframework.videoeditor.samsung.so,libImageCropper.camera.samsung.so,libSFEffect.fonteffect.samsung.so,org.carconnectivity.android.digitalkey.timesync,libsdk-v2-jni.vexfwk.samsung.so,com.samsung.android.uwb_extras,datachannellib,vexfwk_service_lib,javax.obex,libsemimagecrop_jni.media.samsung.so,com.google.android.gms,libStrideTensorflowLite.camera.samsung.so,libC2paDps.camera.samsung.so,libHpr_RecGAE_cvFeature_v1.0.camera.samsung.so,libjpega.camera.samsung.so,libmidas_DNNInterface.camera.samsung.so,vendor.qti.ims.rcssipaidlservice-V1-java,libLocalTM_pcc.camera.samsung.so,com.qualcomm.qti.uim.uimservicelibrary,libAIQSolution_MPISingleRGB40.camera.samsung.so,PQCKeystoreProvider,com.samsung.android.nfc.adapter,libsecbufferhandler.camera.samsung.so,libexifa.camera.samsung.so,com.sec.android.sdhmssdk.framework-v1,libImageTagger.camera.samsung.so,libai_fusion_high_resolution.arcsoft.so,libaifrcInterface.camera.samsung.so,libobjectcapture.arcsoft.so,com.samsung.android.nfc.t4t,libHprFace_GAE_api.camera.samsung.so,vendor.qti.ims.factory-V2.0-java,libsysinfo.gpuwatchapp.samsung.so,vendor.qti.ims.factory-V2.1-java,vendor.qti.ims.factory-V2.2-java,imsmanager,DesktopSystemUICoreLib,libgpustat.gpuwatchapp.samsung.so,libportrait_controller_interface_jni.camera.samsung.so,libFusionAIPhoto_wrapper.camera.samsung.so,libae_bracket_hdr.arcsoft.so,scamera_sdk_util,libAIHR_ERAW_Wrapper.camera.samsung.so,libsnap_aidl.snap.samsung.so,libsrib_CNNInterface.camera.samsung.so,libmidas_core.camera.samsung.so,libsjpegxl.media.samsung.so,libPetClustering.camera.samsung.so,FabricCryptoLib,libSR_DynamicRectifier.camera.samsung.so,com.android.extensions.appfunctions,libsmpsft.smps.samsung.so,libdvs.camera.samsung.so,libpic_best.arcsoft.so,libGenSR_saicc_core.camera.samsung.so,libhexa_deca_super_shot_er.arcsoft.so,libhexa_deca_super_shot.arcsoft.so,libSmartScan.camera.samsung.so,libsentencepiece.camera.samsung.so,EpdgManager,uibc_java,libcontextanalyzer_jni.media.samsung.so,libapex_motionphoto_utils_jni.media.samsung.so,libPersonal_capture.camera.samsung.so,android.test.runner,libsmart_cropping.camera.samsung.so,libPortraitDistortionCorrection.arcsoft.so,libWineDetector_v1.camera.samsung.so,libstartrail.camera.samsung.so,libsf_tetra_enhance.arcsoft.so,libHIDTSnapJNI.camera.samsung.so,libBayerSR10.camera.samsung.so,libface_landmark.arcsoft.so,libtetra_super_shot_er.arcsoft.so,libFusionAIPhoto.camera.samsung.so,libFaceRestoration.camera.samsung.so,libFusionAIPhotoTuning.camera.samsung.so,libamDNN.media.samsung.so,org.apache.http.legacy,libhigh_res.arcsoft.so,libFacialBasedSelfieCorrection.camera.samsung.so,vendor.qti.ims.rcssip-V1.0-java,libFace_Landmark_Engine.camera.samsung.so,libsimba.media.samsung.so,vendor.qti.ims.rcssip-V1.1-java,libSDKonnxruntime.spenocr.samsung.so,com.android.cts.ctsshim.shared_library,SmpsManager,com.android.media.remotedisplay,vendor.qti.ims.rcssip-V1.2-java,libdigital_tele_scope.arcsoft.so,scamera_sep,manager_wrapper_compat,vendor.qti.imsdatachannel,libneural.snap.samsung.so,knoxanalyticssdk,com.samsung.android.psitrackersdk.framework-v1,libsecimaging_pdk.camera.samsung.so,com.android.mediadrm.signer,libTetraSR10Tuning.camera.samsung.so,com.samsung.android.privacydashboard.framework-v1,libsce_v1.crypto.samsung.so,androidx.window.sidecar,videoeditor_sdk,libmediasndk.mediacore.samsung.so,com.qualcomm.qti.imscmservice-V2.0-java,com.qualcomm.qti.imscmservice-V2.1-java,libPortraitDistortionCorrectionCali.arcsoft.so,libFacialAttributeDetection.arcsoft.so,com.qualcomm.qti.imscmservice-V2.2-java,libmf_bayer_enhance.arcsoft.so,libimage_enhancement.arcsoft.so,vendor.qti.ims.factoryaidlservice-V1-java,rcsopenapi,com.sec.android.pmssdk.framework-v1
-""")
-            
-        # 32-bit Profile (Samsung J5 Prime)
-        prop_32 = os.path.join(out_dir, "32.properties")
+            f.write(AURORA_PIXEL_TEMPLATE)
+
+        prop_32 = os.path.abspath(os.path.join(out_dir, "32.properties"))
         with open(prop_32, "w", encoding="utf-8") as f:
-            f.write("""[default]
-UserReadableName=Samsung J5 Prime
-Build.BOOTLOADER=G570YDXS3CTG3
-Build.BRAND=samsung
-Build.DEVICE=on5xelte
-Build.FINGERPRINT=samsung/on5xeltedx/on5xelte\:10/R16NW/G570YDXS3CTG3\:user/release-keys
-Build.HARDWARE=samsungexynos7570
-Build.ID=R16NW
-Build.MANUFACTURER=samsung
-Build.MODEL=SM-G570Y
-Build.PRODUCT=on5xeltedx
-Build.RADIO=G570YDXS3CTG4,G570YDXS3CTG4
-Build.VERSION.RELEASE=10
-Build.VERSION.SDK_INT=29
-CellOperator=310
-Client=android-google
-Features=android.hardware.sensor.proximity,com.samsung.android.sdk.camera.processor,com.sec.feature.motionrecognition_service,android.hardware.sensor.accelerometer,android.hardware.faketouch,android.hardware.usb.accessory,android.software.backup,android.hardware.touchscreen,android.hardware.touchscreen.multitouch,android.software.print,android.software.activities_on_secondary_displays,com.samsung.feature.SAMSUNG_EXPERIENCE,com.google.android.feature.PIXEL_2017_EXPERIENCE,android.software.voice_recognizers,android.software.picture_in_picture,android.hardware.fingerprint,android.software.cant_save_state,com.google.android.feature.PIXEL_2018_EXPERIENCE,com.samsung.feature.device_category_phone,com.google.android.feature.PIXEL_2019_EXPERIENCE,com.sec.feature.fingerprint_manager_service,com.sec.feature.overlaymagnifier,android.hardware.bluetooth,android.hardware.camera.autofocus,com.google.android.feature.GOOGLE_BUILD,android.hardware.telephony.gsm,android.hardware.telephony.ims,com.samsung.android.bio.face,android.software.sip.voip,com.sec.feature.saccessorymanager,com.samsung.feature.samsung_experience_mobile,android.hardware.usb.host,android.hardware.audio.output,android.software.verified_boot,android.hardware.camera.flash,android.hardware.camera.front,com.samsung.feature.clockpack_v07,android.hardware.screen.portrait,com.google.android.feature.TURBO_PRELOAD,com.sec.android.mdm,com.samsung.feature.ipsgeofence,android.software.home_screen,com.sec.feature.barcode_emulator,android.hardware.microphone,android.software.autofill,com.samsung.android.sdk.camera.processor.effect,com.google.android.feature.PIXEL_EXPERIENCE,android.hardware.bluetooth_le,android.hardware.touchscreen.multitouch.jazzhand,android.software.app_widgets,com.google.android.feature.PIXEL_2020_MIDYEAR_EXPERIENCE,android.software.input_methods,android.software.companion_device_setup,android.software.device_admin,com.google.android.feature.WELLBEING,android.hardware.camera,android.hardware.screen.landscape,android.hardware.ram.normal,com.samsung.feature.samsungpositioning.snlp,com.samsung.android.authfw,com.samsung.android.api.version.2402,com.samsung.android.api.version.2403,com.samsung.android.api.version.2501,com.samsung.android.api.version.2502,com.samsung.android.api.version.2601,com.samsung.android.api.version.2701,com.samsung.android.api.version.2801,com.samsung.android.api.version.2802,com.samsung.android.api.version.2803,com.samsung.android.api.version.2901,com.sec.feature.cover,android.software.managed_users,com.sec.feature.nsflp,android.software.webview,android.hardware.camera.capability.manual_post_processing,android.hardware.camera.any,android.hardware.camera.capability.raw,android.software.connectionservice,android.hardware.touchscreen.multitouch.distinct,android.hardware.location.network,com.sec.android.secimaging,android.software.cts,android.software.sip,android.hardware.camera.capability.manual_sensor,android.hardware.camera.level.full,android.hardware.wifi.direct,android.software.live_wallpaper,com.google.android.feature.GOOGLE_EXPERIENCE,android.software.ipsec_tunnels,com.google.android.feature.EXCHANGE_6_2,android.software.freeform_window_management,android.hardware.location.gps,android.software.midi,com.samsung.feature.samsungpositioning,android.hardware.wifi,android.hardware.location,com.sec.feature.cover.flip,android.software.secure_lock_screen,android.hardware.telephony
-GL.Extensions=GL_ARM_mali_program_binary,GL_ARM_mali_shader_binary,GL_ARM_rgba8,GL_ARM_shader_framebuffer_fetch,GL_ARM_shader_framebuffer_fetch_depth_stencil,GL_EXT_EGL_image_array,GL_EXT_blend_minmax,GL_EXT_buffer_storage,GL_EXT_copy_image,GL_EXT_debug_marker,GL_EXT_discard_framebuffer,GL_EXT_disjoint_timer_query,GL_EXT_external_buffer,GL_EXT_gpu_shader5,GL_EXT_multisampled_render_to_texture,GL_EXT_multisampled_render_to_texture2,GL_EXT_occlusion_query_boolean,GL_EXT_read_format_bgra,GL_EXT_robustness,GL_EXT_sRGB,GL_EXT_sRGB_write_control,GL_EXT_shader_io_blocks,GL_EXT_shader_non_constant_global_initializers,GL_EXT_shader_pixel_local_storage,GL_EXT_shadow_samplers,GL_EXT_texture_border_clamp,GL_EXT_texture_buffer,GL_EXT_texture_cube_map_array,GL_EXT_texture_format_BGRA8888,GL_EXT_texture_rg,GL_EXT_texture_sRGB_R8,GL_EXT_texture_sRGB_RG8,GL_EXT_texture_sRGB_decode,GL_EXT_texture_storage,GL_EXT_texture_type_2_10_10_10_REV,GL_KHR_blend_equation_advanced,GL_KHR_blend_equation_advanced_coherent,GL_KHR_debug,GL_KHR_robust_buffer_access_behavior,GL_KHR_robustness,GL_KHR_texture_compression_astc_hdr,GL_KHR_texture_compression_astc_ldr,GL_KHR_texture_compression_astc_sliced_3d,GL_OES_EGL_image,GL_OES_EGL_image_external,GL_OES_EGL_image_external_essl3,GL_OES_EGL_sync,GL_OES_blend_equation_separate,GL_OES_blend_func_separate,GL_OES_blend_subtract,GL_OES_byte_coordinates,GL_OES_compressed_ETC1_RGB8_texture,GL_OES_compressed_paletted_texture,GL_OES_copy_image,GL_OES_depth24,GL_OES_depth_texture,GL_OES_depth_texture_cube_map,GL_OES_draw_texture,GL_OES_element_index_uint,GL_OES_extended_matrix_palette,GL_OES_fbo_render_mipmap,GL_OES_fixed_point,GL_OES_framebuffer_object,GL_OES_get_program_binary,GL_OES_gpu_shader5,GL_OES_mapbuffer,GL_OES_matrix_get,GL_OES_matrix_palette,GL_OES_packed_depth_stencil,GL_OES_point_size_array,GL_OES_point_sprite,GL_OES_query_matrix,GL_OES_read_format,GL_OES_required_internalformat,GL_OES_rgb8_rgba8,GL_OES_sample_shading,GL_OES_sample_variables,GL_OES_shader_image_atomic,GL_OES_shader_io_blocks,GL_OES_shader_multisample_interpolation,GL_OES_single_precision,GL_OES_standard_derivatives,GL_OES_stencil8,GL_OES_stencil_wrap,GL_OES_surfaceless_context,GL_OES_texture_3D,GL_OES_texture_border_clamp,GL_OES_texture_buffer,GL_OES_texture_compression_astc,GL_OES_texture_cube_map,GL_OES_texture_cube_map_array,GL_OES_texture_mirrored_repeat,GL_OES_texture_npot,GL_OES_texture_stencil8,GL_OES_texture_storage_multisample_2d_array,GL_OES_vertex_array_object,GL_OES_vertex_half_float
-GL.Version=196609
-GSF.version=203615037
-HasFiveWayNavigation=false
-HasHardKeyboard=false
-Keyboard=1
-Locales=af,am,ar,ar_AE,ar_IL,as,as_IN,ast,az,az_AZ,be,be_BY,bg,bg_BG,bn,bn_BD,bn_IN,bs,bs_BA,ca,ca_ES,ckb,cs,cs_CZ,da,da_DK,de,de_AT,de_CH,de_DE,el,el_GR,en,en_AU,en_CA,en_GB,en_IE,en_IN,en_NZ,en_PH,en_US,en_XC,en_ZA,en_ZG,eo,es,es_419,es_ES,es_US,et,et_EE,eu,eu_ES,fa,fa_IR,fi,fi_FI,fil,fil_PH,fr,fr_BE,fr_CA,fr_CH,fr_FR,ga,ga_IE,gl,gl_ES,gu,gu_IN,he,hi,hi_IN,hr,hr_HR,ht,hu,hu_HU,hy,hy_AM,ia,id,in,in_ID,is,is_IS,it,it_IT,iw,iw_IL,ja,ja_JP,ka,ka_GE,kab,kk,kk_KZ,km,km_KH,kmr,kn,kn_IN,ko,ko_KR,ky,ky_KG,lo,lo_LA,lt,lt_LT,lv,lv_LV,mk,mk_MK,ml,ml_IN,mn,mn_MN,mr,mr_IN,ms,ms_MY,my,my_MM,my_ZG,nb,nb_NO,ne,ne_NP,nl,nl_BE,nl_NL,or,or_IN,pa,pa_IN,pl,pl_PL,pl_SP,pt,pt_BR,pt_PT,ro,ro_RO,ru,ru_RU,sc,si,si_LK,sk,sk_SK,sl,sl_SI,so,sq,sq_AL,sr,sr_Latn,sr_RS,sv,sv_SE,sw,ta,ta_IN,te,te_IN,tg,tg_TJ,th,th_TH,tk,tk_TM,tr,tr_TR,uk,uk_UA,ur,ur_PK,uz,uz_UZ,vi,vi_VN,yue,zh_CN,zh_HK,zh_TW,zu
-Navigation=1
-Platforms=armeabi-v7a,armeabi
-Roaming=mobile-notroaming
-Screen.Density=280
-Screen.Height=1280
-Screen.Width=720
-ScreenLayout=2
-SharedLibraries=android.test.base,android.test.mock,sec_platform_library,com.samsung.device,SemAudioThumbnail,com.sec.esecomm,android.hidl.manager-V1.0-java,semcamera2,vsimmanager,android.hidl.base-V1.0-java,semsdrvideoconverter,semcamera,com.samsung.bbc,samsungkeystoreutils,com.android.location.provider,secimaging,semextendedformat,com.android.future.usb.accessory,saiv,android.ext.shared,javax.obex,com.google.android.gms,android.ext.services,com.samsung.android.knox.securetimer.sdk,imsmanager,scamera_sdk_util,com.dsi.ant.antradio_library,svemanager,org.simalliance.openmobileapi,EpdgManager,android.test.runner,com.google.android.maps,org.apache.http.legacy,com.android.media.remotedisplay,allshare,com.sec.smartcard.auth,sfeffect,com.android.mediadrm.signer,libvtmanagerjar,rcsopenapi
-SimOperator=38
-TimeZone=UTC-10
-TouchScreen=3
-Vending.version=82201710
-Vending.versionString=22.0.17-21 [0] [PR] 332555730
-""")
+            f.write(AURORA_PIXEL_TEMPLATE.replace("Platforms=arm64-v8a", "Platforms=armeabi-v7a,armeabi"))
 
-        print(f"[*] [apkeep] Fetching 64-bit splits from Google Play...")
+        print(f"[*] [apkeep] Downloading 64-bit splits (he/en) for {package_name}...")
         subprocess.run([
             self.bin_path, "-a", package_name, "-d", "google-play",
             "-e", self.google_email, "-t", self.aas_token,
-            "-o", f"device=default,split_apk=true,device_properties_file={prop_64}",
-            dir_64
+            "-o", f"locale=he_IL,split_apk=true,device=default,device_properties_file={prop_64}",
+            "--accept-tos", dir_64
         ], check=True, stdout=subprocess.DEVNULL)
 
-        print(f"[*] [apkeep] Fetching 32-bit splits from Google Play...")
+        print(f"[*] [apkeep] Downloading 32-bit splits (he/en) for {package_name}...")
         subprocess.run([
             self.bin_path, "-a", package_name, "-d", "google-play",
             "-e", self.google_email, "-t", self.aas_token,
-            "-o", f"device=default,split_apk=true,device_properties_file={prop_32}",
-            dir_32
+            "-o", f"locale=he_IL,split_apk=true,device=default,device_properties_file={prop_32}",
+            "--accept-tos", dir_32
         ], check=True, stdout=subprocess.DEVNULL)
 
-        print("[*] [apkeep] Merging downloaded splits into a Universal XAPK...")
-        
         all_apks = {}
         for d in [dir_64, dir_32]:
-            for f in os.listdir(d):
-                filepath = os.path.join(d, f)
-                if f.endswith(".apk"):
-                    all_apks[f] = filepath
-                elif f.endswith((".apks", ".xapk")):
-                    with zipfile.ZipFile(filepath, 'r') as z:
-                        for zf in z.namelist():
-                            if zf.endswith(".apk"):
-                                ext_path = os.path.join(d, zf)
-                                if not os.path.exists(ext_path):
-                                    z.extract(zf, d)
-                                all_apks[zf] = ext_path
+            for root, _, files in os.walk(d):
+                for f in files:
+                    if f.endswith(".apk"):
+                        all_apks[f] = os.path.join(root, f)
 
         if not all_apks:
-            raise RuntimeError("Failed to collect APK splits from Google Play.")
+            raise RuntimeError("No APK splits found after download.")
 
         xapk_path = os.path.join(out_dir, f"{package_name}_universal.xapk")
         with zipfile.ZipFile(xapk_path, 'w') as z:
-            z.writestr("manifest.json", '{"package_name":"' + package_name + '"}')
+            z.writestr("manifest.json", f'{{"package_name":"{package_name}"}}')
             for apk_name, apk_path in all_apks.items():
                 z.write(apk_path, apk_name)
 
         return xapk_path
 
     def get_latest_version(self, package_name: str):
-        # ---------------------------------------------------------
-        # שלב 1: בדיקת הגרסה מול Google Play (סריקת רשת מהירה)
-        # ---------------------------------------------------------
         print(f"[*] [apkeep] Checking Play Store web page for {package_name}...")
         url = f"https://play.google.com/store/apps/details?id={package_name}&hl=en"
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-        
         try:
             req = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(req, timeout=10) as resp:
@@ -243,7 +181,6 @@ Vending.versionString=22.0.17-21 [0] [PR] 332555730
             version_match = re.search(r'\[\[\["(\d+(?:\.\d+)+)"\]\]', html)
             if not version_match:
                 version_match = re.search(r'\["(\d+\.\d+\.\d+(?:\.\d+)?)"\]', html)
-
             if version_match:
                 version = version_match.group(1)
                 print(f"[+] [apkeep] Found Google Play version: {version}")
@@ -251,24 +188,16 @@ Vending.versionString=22.0.17-21 [0] [PR] 332555730
         except Exception as e:
             print(f"[-] [apkeep] Web scrape failed: {e}")
 
-        # ---------------------------------------------------------
-        # שלב 2: אם גוגל מסתירה את הגרסה, מורידים את הפרופילים ומרכיבים XAPK כדי לגלות
-        # ---------------------------------------------------------
-        print(f"[!] [apkeep] Version hidden. Building Universal APK from splits to extract real version...")
-        
+        print(f"[!] [apkeep] Version hidden. Extracting from Universal build...")
         out_dir = os.path.join(os.getcwd(), "scratch", "apkeep_tmp")
-        os.makedirs(out_dir, exist_ok=True)
-        
         try:
             xapk_path = self._download_universal_xapk(package_name, out_dir)
         except Exception as e:
-            print(f"[-] [apkeep] Universal build failed: {e}")
+            print(f"[-] [apkeep] Download failed: {e}")
             return None, None, None
 
-        print(f"[*] [apkeep] Extracting versionName directly from Universal XAPK...")
         decode_dir = os.path.join(out_dir, f"{package_name}_meta")
         apktool_cmd = ["apktool", "d", "-s", "-f", "-o", decode_dir, xapk_path]
-        
         version = "latest"
         try:
             subprocess.run(apktool_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -278,19 +207,15 @@ Vending.versionString=22.0.17-21 [0] [PR] 332555730
                     match = re.search(r"versionName:\s*['\"]?([^'\">\r\n]+)", f.read())
                     if match:
                         version = match.group(1).strip()
-            print(f"[+] [apkeep] Real Version extracted: {version}")
+            print(f"[+] [apkeep] Real Google Play Version extracted: {version}")
         except Exception as e:
             print(f"[-] [apkeep] Failed to extract exact version: {e}")
 
         return version, f"local:{xapk_path}", package_name
 
-
     def get_download_url(self, release_url: str):
         if release_url.startswith("local:"):
-            filepath = release_url.split("local:")[1]
-            return f"apkeep_local:{filepath}"
+            return f"apkeep_local:{release_url.split('local:')[1]}"
         elif release_url.startswith("dl:"):
-            package_name = release_url.split("dl:")[1]
-            return f"apkeep_dl:{package_name}"
-            
+            return f"apkeep_dl:{release_url.split('dl:')[1]}"
         return None
