@@ -197,11 +197,26 @@ class ApkeepSource:
             return None, None, None
 
         decode_dir = os.path.join(out_dir, f"{package_name}_meta")
-        apktool_cmd = ["apktool", "d", "-s", "-f", "-o", decode_dir, xapk_path]
+        os.makedirs(decode_dir, exist_ok=True)
+        base_apk_path = os.path.join(decode_dir, "base.apk")
+        
         version = "latest"
         try:
+            # 1. חילוץ קובץ הבסיס (Base APK) מתוך ה-XAPK
+            with zipfile.ZipFile(xapk_path, 'r') as z:
+                # מחפשים את קובץ ה-APK שאין לו את המילה config בשם
+                base_apk_name = next((n for n in z.namelist() if n.endswith(".apk") and "config" not in n), None)
+                if base_apk_name:
+                    with open(base_apk_path, 'wb') as f:
+                        f.write(z.read(base_apk_name))
+                else:
+                    raise FileNotFoundError("Base APK not found inside XAPK")
+
+            # 2. הפעלת apktool על קובץ הבסיס בלבד!
+            apktool_cmd = ["apktool", "d", "-s", "-f", "-o", os.path.join(decode_dir, "decoded"), base_apk_path]
             subprocess.run(apktool_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            yml_path = os.path.join(decode_dir, "apktool.yml")
+            
+            yml_path = os.path.join(decode_dir, "decoded", "apktool.yml")
             if os.path.exists(yml_path):
                 with open(yml_path, "r", encoding="utf-8") as f:
                     match = re.search(r"versionName:\s*['\"]?([^'\">\r\n]+)", f.read())
