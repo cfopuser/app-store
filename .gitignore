@@ -30,4 +30,6 @@ backup
 metadata_fetcher.py
 
 # Agent files
+
+CONTRIBUTING.md
 DESIGN.md
