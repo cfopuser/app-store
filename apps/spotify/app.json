@@ -2,7 +2,7 @@
   "metadata": {
     "id": "spotify",
     "name": "Spotify: Music and Podcasts",
-    "name_he": "Spotify Music",
+    "name_he": "ספוטיפי",
     "package_name": "com.spotify.music",
     "description": "audio player - patched vers to remove all videos and images. (without premium)",
     "description_he": "נגן מוזיקה - גרסה ערוכה לחסימת כלל תמונות וסרטונים (ללא פרימיום).",
