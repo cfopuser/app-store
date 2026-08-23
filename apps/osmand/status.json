@@ -1,4 +1,1 @@
-{
-  "status": "ok",
-  "last_updated": "2026-08-23T02:15:00Z"
-}
+{"success": false, "failed_version": "unknown", "error_message": "[OsmAnd+] No results found on github.", "updated_at": "Sun Aug 23 02:38:43 UTC 2026"}
