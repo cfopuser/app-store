@@ -46,7 +46,11 @@ body:
       label: APK Source
       description: Where can the APK be downloaded from?
       options:
+        - Google Play
+        - F-Droid
+        - Huawei AppGallery
         - APKMirror
+        - APKPure
         - Aptoide
         - GitHub
         - Other (describe below)

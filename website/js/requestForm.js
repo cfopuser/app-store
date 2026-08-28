@@ -150,8 +150,11 @@ function renderStep1() {
     </div>`;
 }
 
-const SOURCES = ['APKMirror', 'APKPure', 'Aptoide', 'GitHub', 'Other'];
+const SOURCES = ['Google Play', 'F-Droid', 'Huawei AppGallery', 'APKMirror', 'APKPure', 'Aptoide', 'GitHub', 'Other'];
 const SOURCE_ICONS = { 
+    'Google Play': 'play',
+    'F-Droid': 'box',
+    'Huawei AppGallery': 'smartphone',
     APKMirror: 'globe', 
     APKPure: 'smartphone', 
     Aptoide: 'shopping-bag', 
@@ -159,6 +162,9 @@ const SOURCE_ICONS = {
     Other: 'more-horizontal' 
 };
 const SOURCE_LABEL_KEYS = { 
+    'Google Play': 'formSourceGooglePlay',
+    'F-Droid': 'formSourceFDroid',
+    'Huawei AppGallery': 'formSourceHuawei',
     APKMirror: 'formSourceAPKMirror', 
     APKPure: 'formSourceAPKPure', 
     Aptoide: 'formSourceAptoide', 
@@ -171,11 +177,11 @@ function renderStep2() {
         const isSelected = state.source === src;
         return `
         <button type="button" data-source="${src}"
-            class="source-card flex flex-col items-center gap-2 p-4 rounded-xl border transition-all cursor-pointer text-center focus:outline-none ${isSelected
+            class="source-card flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border transition-all cursor-pointer text-center focus:outline-none ${isSelected
                 ? 'border-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-950/30 dark:border-fuchsia-500 ring-2 ring-fuchsia-400/30 text-fuchsia-700 dark:text-fuchsia-300'
                 : 'border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600 hover:bg-white dark:hover:bg-zinc-800'}">
             <i data-lucide="${SOURCE_ICONS[src]}" class="w-5 h-5"></i>
-            <span class="text-sm font-bold"><bdi>${t(SOURCE_LABEL_KEYS[src])}</bdi></span>
+            <span class="text-xs sm:text-sm font-bold truncate max-w-full"><bdi>${t(SOURCE_LABEL_KEYS[src])}</bdi></span>
         </button>`;
     }).join('');
 
@@ -183,7 +189,7 @@ function renderStep2() {
     <div class="space-y-5 animate-fade-in">
         <div class="space-y-1.5">
             <label class="block text-sm font-semibold text-zinc-800 dark:text-zinc-200"><bdi>${t('formFieldSource')}</bdi> <span class="text-rose-500">*</span></label>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${sourceCards}</div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">${sourceCards}</div>
             ${errors.source ? `<p class="text-xs text-rose-500 flex items-center gap-1 mt-1"><i data-lucide="alert-circle" class="w-3 h-3 flex-shrink-0"></i><bdi>${errors.source}</bdi></p>` : ''}
         </div>
         ${fieldGroup('source_url', `<bdi>${t('formFieldSourceUrl')}</bdi>`, null,
