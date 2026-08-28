@@ -151,16 +151,63 @@ function renderStep1() {
 }
 
 const SOURCES = ['Google Play', 'F-Droid', 'Huawei AppGallery', 'APKMirror', 'APKPure', 'Aptoide', 'GitHub', 'Other'];
+
 const SOURCE_ICONS = { 
-    'Google Play': 'play',
-    'F-Droid': 'box',
-    'Huawei AppGallery': 'smartphone',
-    APKMirror: 'globe', 
-    APKPure: 'smartphone', 
-    Aptoide: 'shopping-bag', 
-    GitHub: 'code-2', 
-    Other: 'more-horizontal' 
+    'Google Play': `
+        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
+            <path d="M3.25 1.5C3.08 1.88 3 2.33 3 2.87v18.26c0 .54.08.99.25 1.37L13.12 12 3.25 1.5z" fill="#00D1FF"/>
+            <path d="M17.06 8.06L13.12 12l3.94 3.94 3.86-2.21c1.36-.78 1.36-2.04 0-2.82l-3.86-2.85z" fill="#FFD400"/>
+            <path d="M3.25 22.5c.89.33 1.95.22 2.85-.3l10.96-6.26L13.12 12 3.25 22.5z" fill="#FF334B"/>
+            <path d="M3.25 1.5L13.12 12l3.94-3.94L6.1 1.8C5.2 1.28 4.14 1.17 3.25 1.5z" fill="#00E676"/>
+        </svg>`,
+
+    'F-Droid': `
+        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
+            <rect width="24" height="24" rx="5.5" fill="#1976D2"/>
+            <path d="M7 6.5l-1.5-2m11.5 2l1.5-2M6 8h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="9" cy="11.5" r="1.1" fill="#FFFFFF"/>
+            <circle cx="15" cy="11.5" r="1.1" fill="#FFFFFF"/>
+            <path d="M6 17h12a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1z" fill="#FFFFFF"/>
+        </svg>`,
+
+    'Huawei AppGallery': `
+        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
+            <rect width="24" height="24" rx="5.5" fill="#CF0A2C"/>
+            <path d="M12 4.5a3.5 3.5 0 0 0-3.5 3.5v1h7v-1A3.5 3.5 0 0 0 12 4.5zm-5 4.5a1 1 0 0 0-1 1v7.5a2.5 2.5 0 0 0 2.5 2.5h7a2.5 2.5 0 0 0 2.5-2.5V10a1 1 0 0 0-1-1H7zm5 3a2 2 0 1 1 0 4 2 2 0 0 1 0-4z" fill="#FFFFFF" fill-rule="evenodd"/>
+        </svg>`,
+
+    'APKMirror': `
+        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
+            <rect width="24" height="24" rx="5.5" fill="#F47B20"/>
+            <path d="M6.5 17.5V6.5l5.5 5.5-5.5 5.5zm11 0V6.5l-5.5 5.5 5.5 5.5z" fill="#FFFFFF"/>
+            <circle cx="12" cy="12" r="1.8" fill="#FFFFFF"/>
+        </svg>`,
+
+    'APKPure': `
+        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
+            <rect width="24" height="24" rx="5.5" fill="#24B064"/>
+            <path d="M8 7.5h5a3.5 3.5 0 0 1 3.5 3.5c0 1.93-1.57 3.5-3.5 3.5H10.5V17H8V7.5zm2.5 4.5H13a1 1 0 0 0 1-1 1 1 0 0 0-1-1h-2.5v2z" fill="#FFFFFF"/>
+        </svg>`,
+
+    'Aptoide': `
+        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
+            <rect width="24" height="24" rx="5.5" fill="#FF6700"/>
+            <path d="M12 4l7 5v5.5c0 3.8-3 6.8-7 7.5-4-.7-7-3.7-7-7.5V9l7-5zm0 4.5L7.8 13h2.7v4.2h3V13h2.7L12 8.5z" fill="#FFFFFF"/>
+        </svg>`,
+
+    'GitHub': `
+        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0 fill-zinc-900 dark:fill-white">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/>
+        </svg>`,
+
+    'Other': `
+        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0 text-zinc-500 dark:text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="1"/>
+            <circle cx="19" cy="12" r="1"/>
+            <circle cx="5" cy="12" r="1"/>
+        </svg>`
 };
+
 const SOURCE_LABEL_KEYS = { 
     'Google Play': 'formSourceGooglePlay',
     'F-Droid': 'formSourceFDroid',
@@ -177,19 +224,26 @@ function renderStep2() {
         const isSelected = state.source === src;
         return `
         <button type="button" data-source="${src}"
-            class="source-card flex flex-col items-center gap-2 p-3 sm:p-4 rounded-xl border transition-all cursor-pointer text-center focus:outline-none ${isSelected
-                ? 'border-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-950/30 dark:border-fuchsia-500 ring-2 ring-fuchsia-400/30 text-fuchsia-700 dark:text-fuchsia-300'
-                : 'border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-600 hover:bg-white dark:hover:bg-zinc-800'}">
-            <i data-lucide="${SOURCE_ICONS[src]}" class="w-5 h-5"></i>
-            <span class="text-xs sm:text-sm font-bold truncate max-w-full"><bdi>${t(SOURCE_LABEL_KEYS[src])}</bdi></span>
+            class="source-card flex items-center gap-3 p-3 rounded-2xl border transition-all duration-200 cursor-pointer text-start focus:outline-none ${isSelected
+                ? 'border-fuchsia-500 bg-fuchsia-50/80 dark:bg-fuchsia-950/40 dark:border-fuchsia-500 ring-2 ring-fuchsia-400/30 text-zinc-900 dark:text-white shadow-sm'
+                : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/60 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-white dark:hover:bg-zinc-800/80'}">
+            <div class="flex-shrink-0 flex items-center justify-center">
+                ${SOURCE_ICONS[src]}
+            </div>
+            <div class="flex-1 min-w-0">
+                <span class="block text-xs sm:text-sm font-semibold tracking-tight text-zinc-800 dark:text-zinc-200 leading-snug whitespace-nowrap overflow-hidden text-ellipsis"><bdi>${t(SOURCE_LABEL_KEYS[src])}</bdi></span>
+            </div>
+            <div class="w-4 h-4 rounded-full flex-shrink-0 border flex items-center justify-center transition-colors ${isSelected ? 'border-fuchsia-500 bg-fuchsia-500 text-white' : 'border-zinc-300 dark:border-zinc-700 bg-transparent'}">
+                ${isSelected ? '<svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+            </div>
         </button>`;
     }).join('');
 
     return `
     <div class="space-y-5 animate-fade-in">
-        <div class="space-y-1.5">
+        <div class="space-y-2">
             <label class="block text-sm font-semibold text-zinc-800 dark:text-zinc-200"><bdi>${t('formFieldSource')}</bdi> <span class="text-rose-500">*</span></label>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">${sourceCards}</div>
+            <div class="grid grid-cols-2 gap-2.5">${sourceCards}</div>
             ${errors.source ? `<p class="text-xs text-rose-500 flex items-center gap-1 mt-1"><i data-lucide="alert-circle" class="w-3 h-3 flex-shrink-0"></i><bdi>${errors.source}</bdi></p>` : ''}
         </div>
         ${fieldGroup('source_url', `<bdi>${t('formFieldSourceUrl')}</bdi>`, null,
