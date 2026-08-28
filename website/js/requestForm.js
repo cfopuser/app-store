@@ -164,35 +164,48 @@ const SOURCE_ICONS = {
     'F-Droid': `
         <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
             <rect width="24" height="24" rx="5.5" fill="#1976D2"/>
-            <path d="M7 6.5l-1.5-2m11.5 2l1.5-2M6 8h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
-            <circle cx="9" cy="11.5" r="1.1" fill="#FFFFFF"/>
-            <circle cx="15" cy="11.5" r="1.1" fill="#FFFFFF"/>
-            <path d="M6 17h12a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1z" fill="#FFFFFF"/>
+            <path d="M6 3.8L4.5 1.8M18 3.8L19.5 1.8" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>
+            <rect x="3.5" y="4.5" width="17" height="7.5" rx="2" fill="#FFFFFF"/>
+            <circle cx="8" cy="8.2" r="1.3" fill="#1976D2"/>
+            <circle cx="16" cy="8.2" r="1.3" fill="#1976D2"/>
+            <rect x="3.5" y="13.5" width="17" height="6.5" rx="2" fill="#FFFFFF"/>
+            <rect x="5.5" y="15.5" width="13" height="2.5" rx="1" fill="#1976D2" fill-opacity="0.35"/>
         </svg>`,
 
     'Huawei AppGallery': `
         <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
-            <rect width="24" height="24" rx="5.5" fill="#CF0A2C"/>
-            <path d="M12 4.5a3.5 3.5 0 0 0-3.5 3.5v1h7v-1A3.5 3.5 0 0 0 12 4.5zm-5 4.5a1 1 0 0 0-1 1v7.5a2.5 2.5 0 0 0 2.5 2.5h7a2.5 2.5 0 0 0 2.5-2.5V10a1 1 0 0 0-1-1H7zm5 3a2 2 0 1 1 0 4 2 2 0 0 1 0-4z" fill="#FFFFFF" fill-rule="evenodd"/>
+            <rect width="24" height="24" rx="5.5" fill="#D81E06"/>
+            <!-- AppGallery Shopping Bag Handle -->
+            <path d="M8.5 4.5C8.5 3.67 9.17 3 10 3h4c.83 0 1.5.67 1.5 1.5V5.5h-7V4.5z" stroke="#FFFFFF" stroke-width="1.3" fill="none"/>
+            <!-- AppGallery 4-point Star Emblem -->
+            <path d="M12 7.2l1.2 3.3 3.3 1.2-3.3 1.2-1.2 3.3-1.2-3.3-3.3-1.2 3.3-1.2 1.2-3.3z" fill="#FFFFFF"/>
+            <circle cx="12" cy="11.7" r="1" fill="#D81E06"/>
         </svg>`,
 
     'APKMirror': `
         <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
             <rect width="24" height="24" rx="5.5" fill="#F47B20"/>
-            <path d="M6.5 17.5V6.5l5.5 5.5-5.5 5.5zm11 0V6.5l-5.5 5.5 5.5 5.5z" fill="#FFFFFF"/>
-            <circle cx="12" cy="12" r="1.8" fill="#FFFFFF"/>
+            <!-- APKMirror Official Dual Mirror Chevrons -->
+            <path d="M5.5 17V7l6.5 5-6.5 5z" fill="#FFFFFF"/>
+            <path d="M18.5 17V7l-6.5 5 6.5 5z" fill="#FFFFFF"/>
+            <circle cx="12" cy="12" r="1.6" fill="#FFFFFF"/>
         </svg>`,
 
     'APKPure': `
         <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
             <rect width="24" height="24" rx="5.5" fill="#24B064"/>
-            <path d="M8 7.5h5a3.5 3.5 0 0 1 3.5 3.5c0 1.93-1.57 3.5-3.5 3.5H10.5V17H8V7.5zm2.5 4.5H13a1 1 0 0 0 1-1 1 1 0 0 0-1-1h-2.5v2z" fill="#FFFFFF"/>
+            <!-- APKPure Official Ribbon P Mark -->
+            <path d="M6.5 6h6.5a4.5 4.5 0 0 1 4.5 4.5c0 2.48-2.02 4.5-4.5 4.5H10.5V18H6.5V6z" fill="#FFFFFF"/>
+            <path d="M10.5 9.5h2.5a1.5 1.5 0 0 1 1.5 1.5 1.5 1.5 0 0 1-1.5 1.5H10.5V9.5z" fill="#24B064"/>
+            <path d="M13 6l4.5 4.5-4.5 4.5V6z" fill="#FFFFFF" fill-opacity="0.3"/>
         </svg>`,
 
     'Aptoide': `
         <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
-            <rect width="24" height="24" rx="5.5" fill="#FF6700"/>
-            <path d="M12 4l7 5v5.5c0 3.8-3 6.8-7 7.5-4-.7-7-3.7-7-7.5V9l7-5zm0 4.5L7.8 13h2.7v4.2h3V13h2.7L12 8.5z" fill="#FFFFFF"/>
+            <rect width="24" height="24" rx="5.5" fill="#FD7522"/>
+            <!-- Aptoide Official Down Arrow in Shield -->
+            <path d="M12 4L5.5 8.5v5.5c0 4 2.8 7 6.5 8 3.7-1 6.5-4 6.5-8V8.5L12 4z" fill="#FD7522"/>
+            <path d="M12 7l-4.5 4.5h2.8V16h3.4v-4.5H16.5L12 7z" fill="#FFFFFF"/>
         </svg>`,
 
     'GitHub': `
@@ -202,9 +215,9 @@ const SOURCE_ICONS = {
 
     'Other': `
         <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0 text-zinc-500 dark:text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="1"/>
-            <circle cx="19" cy="12" r="1"/>
-            <circle cx="5" cy="12" r="1"/>
+            <circle cx="12" cy="12" r="1.2"/>
+            <circle cx="19" cy="12" r="1.2"/>
+            <circle cx="5" cy="12" r="1.2"/>
         </svg>`
 };
 
