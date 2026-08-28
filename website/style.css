@@ -11,7 +11,7 @@
 
 /* Custom Scrollbar for Modal Content */
 .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -19,21 +19,21 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgba(156, 163, 175, 0.4);
+    background-color: rgba(156, 163, 175, 0.35);
     border-radius: 20px;
     transition: background-color 0.2s ease;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(156, 163, 175, 0.7);
+    background-color: rgba(156, 163, 175, 0.6);
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgba(75, 85, 99, 0.5);
+    background-color: rgba(75, 85, 99, 0.4);
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(75, 85, 99, 0.8);
+    background-color: rgba(75, 85, 99, 0.7);
 }
 
 /* Tap Highlight Removal for Mobile */
@@ -52,7 +52,7 @@ html {
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(8px);
     }
     to {
         opacity: 1;
@@ -61,32 +61,154 @@ html {
 }
 
 .animate-fade-in {
-    animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     will-change: transform, opacity;
 }
 
-/* ─── Request Form ─────────────────────────────────────── */
-
-/* Peer-checked visibility for custom checkbox */
-#ack:checked ~ div > #ackCheck {
-    opacity: 1 !important;
+@keyframes popIn {
+    0% {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
-#ack:checked ~ div {
-    background-color: rgb(168 85 247) !important; /* fuchsia-500 */
-    border-color: rgb(168 85 247) !important;
+.animate-pop {
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Source card focus ring */
+@keyframes shakeField {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+}
+
+.animate-shake {
+    animation: shakeField 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ─── Request Form Styling ─────────────────────────────────────── */
+
+/* Source card styles & transitions */
+.source-card {
+    position: relative;
+    transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.source-card:hover {
+    transform: translateY(-1px);
+}
+
+.source-card:active {
+    transform: scale(0.98);
+}
+
 .source-card:focus-visible {
-    outline: 2px solid rgb(168 85 247);
+    outline: 2px solid rgb(217, 70, 239);
     outline-offset: 2px;
 }
 
-/* Smooth step transition */
-#rfBody > div {
-    animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.source-card.is-selected {
+    border-color: rgb(217 70 239) !important;
+    background-color: rgba(217, 70, 239, 0.06) !important;
 }
+
+.dark .source-card.is-selected {
+    border-color: rgb(217 70 239) !important;
+    background-color: rgba(217, 70, 239, 0.12) !important;
+}
+
+/* Preset Pill Chip */
+.preset-chip {
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.preset-chip:active {
+    transform: scale(0.97);
+}
+
+.preset-chip.is-active {
+    background-color: rgba(217, 70, 239, 0.08);
+    border-color: rgb(217, 70, 239);
+    color: rgb(192, 38, 211);
+}
+
+.dark .preset-chip.is-active {
+    background-color: rgba(217, 70, 239, 0.14);
+    border-color: rgb(217, 70, 239);
+    color: rgb(240, 171, 252);
+}
+
+/* Smooth step slide transitions */
+.step-slide-forward {
+    animation: stepInForward 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.step-slide-backward {
+    animation: stepInBackward 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes stepInForward {
+    from {
+        opacity: 0;
+        transform: translateX(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes stepInBackward {
+    from {
+        opacity: 0;
+        transform: translateX(-18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* RTL Step animations */
+[dir="rtl"] .step-slide-forward {
+    animation-name: stepInForwardRTL;
+}
+
+[dir="rtl"] .step-slide-backward {
+    animation-name: stepInBackwardRTL;
+}
+
+@keyframes stepInForwardRTL {
+    from {
+        opacity: 0;
+        transform: translateX(-18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes stepInBackwardRTL {
+    from {
+        opacity: 0;
+        transform: translateX(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 
 
 
