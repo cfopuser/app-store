@@ -162,51 +162,19 @@ const SOURCE_ICONS = {
         </svg>`,
 
     'F-Droid': `
-        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
-            <rect width="24" height="24" rx="5.5" fill="#1976D2"/>
-            <path d="M6 3.8L4.5 1.8M18 3.8L19.5 1.8" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>
-            <rect x="3.5" y="4.5" width="17" height="7.5" rx="2" fill="#FFFFFF"/>
-            <circle cx="8" cy="8.2" r="1.3" fill="#1976D2"/>
-            <circle cx="16" cy="8.2" r="1.3" fill="#1976D2"/>
-            <rect x="3.5" y="13.5" width="17" height="6.5" rx="2" fill="#FFFFFF"/>
-            <rect x="5.5" y="15.5" width="13" height="2.5" rx="1" fill="#1976D2" fill-opacity="0.35"/>
-        </svg>`,
+        <img src="website/images/sources/fdroid.png" alt="F-Droid" class="w-6 h-6 object-contain rounded-md flex-shrink-0">`,
 
     'Huawei AppGallery': `
-        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
-            <rect width="24" height="24" rx="5.5" fill="#D81E06"/>
-            <!-- AppGallery Shopping Bag Handle -->
-            <path d="M8.5 4.5C8.5 3.67 9.17 3 10 3h4c.83 0 1.5.67 1.5 1.5V5.5h-7V4.5z" stroke="#FFFFFF" stroke-width="1.3" fill="none"/>
-            <!-- AppGallery 4-point Star Emblem -->
-            <path d="M12 7.2l1.2 3.3 3.3 1.2-3.3 1.2-1.2 3.3-1.2-3.3-3.3-1.2 3.3-1.2 1.2-3.3z" fill="#FFFFFF"/>
-            <circle cx="12" cy="11.7" r="1" fill="#D81E06"/>
-        </svg>`,
+        <img src="website/images/sources/huawei.png" alt="Huawei AppGallery" class="w-6 h-6 object-contain rounded-md flex-shrink-0">`,
 
     'APKMirror': `
-        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
-            <rect width="24" height="24" rx="5.5" fill="#F47B20"/>
-            <!-- APKMirror Official Dual Mirror Chevrons -->
-            <path d="M5.5 17V7l6.5 5-6.5 5z" fill="#FFFFFF"/>
-            <path d="M18.5 17V7l-6.5 5 6.5 5z" fill="#FFFFFF"/>
-            <circle cx="12" cy="12" r="1.6" fill="#FFFFFF"/>
-        </svg>`,
+        <img src="website/images/sources/apkmirror.png" alt="APKMirror" class="w-6 h-6 object-contain rounded-md flex-shrink-0">`,
 
     'APKPure': `
-        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
-            <rect width="24" height="24" rx="5.5" fill="#24B064"/>
-            <!-- APKPure Official Ribbon P Mark -->
-            <path d="M6.5 6h6.5a4.5 4.5 0 0 1 4.5 4.5c0 2.48-2.02 4.5-4.5 4.5H10.5V18H6.5V6z" fill="#FFFFFF"/>
-            <path d="M10.5 9.5h2.5a1.5 1.5 0 0 1 1.5 1.5 1.5 1.5 0 0 1-1.5 1.5H10.5V9.5z" fill="#24B064"/>
-            <path d="M13 6l4.5 4.5-4.5 4.5V6z" fill="#FFFFFF" fill-opacity="0.3"/>
-        </svg>`,
+        <img src="website/images/sources/apkpure.png" alt="APKPure" class="w-6 h-6 object-contain rounded-md flex-shrink-0">`,
 
     'Aptoide': `
-        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none">
-            <rect width="24" height="24" rx="5.5" fill="#FD7522"/>
-            <!-- Aptoide Official Down Arrow in Shield -->
-            <path d="M12 4L5.5 8.5v5.5c0 4 2.8 7 6.5 8 3.7-1 6.5-4 6.5-8V8.5L12 4z" fill="#FD7522"/>
-            <path d="M12 7l-4.5 4.5h2.8V16h3.4v-4.5H16.5L12 7z" fill="#FFFFFF"/>
-        </svg>`,
+        <img src="website/images/sources/aptoide.svg" alt="Aptoide" class="w-6 h-6 object-contain rounded-md flex-shrink-0">`,
 
     'GitHub': `
         <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0 fill-zinc-900 dark:fill-white">
