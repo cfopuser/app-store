@@ -90,7 +90,7 @@ def ensure_gadget_binary(abi: str, version: str = DEFAULT_FRIDA_VERSION, cache_d
 def detect_target_abis(decompiled_dir: str) -> list[str]:
     """
     Detect native ABIs present in decompiled_dir/lib/.
-    If no native libraries exist, defaults to ['arm64-v8a', 'armeabi-v7a'].
+    If no native libraries exist, defaults to all 4 supported ABIs.
     """
     lib_dir = os.path.join(decompiled_dir, "lib")
     if os.path.isdir(lib_dir):
@@ -414,11 +414,13 @@ def inject_frida_gadget(
     # Frida Gadget config: use "path" (not "source" — that key is invalid and causes
     # 'Invalid interaction specified' SIGABRT crash). The path is relative to libgadget.so,
     # so "./libgadget.script.so" resolves to the JS file we place next to it.
+    # on_load: "resume" prevents Frida from pausing process execution waiting for client.
     gadget_config_dict = {
         "interaction": {
             "type": "script",
             "path": "./libgadget.script.so",
-            "on_change": "ignore"
+            "on_change": "ignore",
+            "on_load": "resume"
         }
     }
     gadget_config_json = json.dumps(gadget_config_dict, indent=2)
