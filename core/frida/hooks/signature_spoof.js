@@ -26,6 +26,26 @@ Java.perform(function () {
         return null;
     }
 
+    // Hook SigningInfo class methods directly if present (API 28+)
+    try {
+        var SigningInfo = Java.use('android.content.pm.SigningInfo');
+        var mockSig = createMockSignature();
+        if (mockSig !== null) {
+            var sigArray = Java.array('android.content.pm.Signature', [mockSig]);
+            try {
+                SigningInfo.getApkContentsSigners.implementation = function () {
+                    return sigArray;
+                };
+            } catch (sErr1) {}
+            try {
+                SigningInfo.getSigningCertificateHistory.implementation = function () {
+                    return sigArray;
+                };
+            } catch (sErr2) {}
+            console.log("[+] [Frida] SigningInfo getters hooked with mock certificate");
+        }
+    } catch (siErr) {}
+
     try {
         var AppPkgMgr = Java.use('android.app.ApplicationPackageManager');
 
@@ -33,24 +53,12 @@ Java.perform(function () {
         try {
             AppPkgMgr.getPackageInfo.overload('java.lang.String', 'int').implementation = function (pkgName, flags) {
                 var pkgInfo = this.getPackageInfo.overload('java.lang.String', 'int').call(this, pkgName, flags);
-                if (pkgInfo !== null && ((flags & GET_SIGNATURES) !== 0 || (flags & GET_SIGNING_CERTIFICATES) !== 0)) {
+                if (pkgInfo !== null) {
                     var mockSig = createMockSignature();
                     if (mockSig !== null) {
                         var sigArray = Java.array('android.content.pm.Signature', [mockSig]);
-                        if ((flags & GET_SIGNATURES) !== 0) {
+                        if ((flags & GET_SIGNATURES) !== 0 || pkgInfo.signatures.value !== null) {
                             pkgInfo.signatures.value = sigArray;
-                        }
-                        if ((flags & GET_SIGNING_CERTIFICATES) !== 0 && pkgInfo.signingInfo.value !== null) {
-                            try {
-                                var SigningInfo = Java.use('android.content.pm.SigningInfo');
-                                var signingInfo = pkgInfo.signingInfo.value;
-                                signingInfo.getApkContentsSigners.implementation = function () {
-                                    return sigArray;
-                                };
-                                signingInfo.getSigningCertificateHistory.implementation = function () {
-                                    return sigArray;
-                                };
-                            } catch (sErr) {}
                         }
                     }
                 }

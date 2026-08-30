@@ -48,35 +48,26 @@ Java.perform(function () {
 
     function showBlockedToast(context) {
         try {
-            var ActivityThread = Java.use('android.app.ActivityThread');
-            var Handler = Java.use('android.os.Handler');
-            var Looper = Java.use('android.os.Looper');
-            var Toast = Java.use('android.widget.Toast');
-            var StringCls = Java.use('java.lang.String');
+            Java.scheduleOnMainThread(function () {
+                try {
+                    var ActivityThread = Java.use('android.app.ActivityThread');
+                    var Toast = Java.use('android.widget.Toast');
+                    var StringCls = Java.use('java.lang.String');
 
-            var currentApp = ActivityThread.currentApplication();
-            var ctx = context || currentApp.getApplicationContext();
+                    var currentApp = ActivityThread.currentApplication();
+                    var ctx = context || (currentApp ? currentApp.getApplicationContext() : null);
 
-            if (ctx) {
-                var mainHandler = Handler.$new(Looper.getMainLooper());
-                var Runnable = Java.registerClass({
-                    name: 'com.frida.ToastRunnable' + Math.floor(Math.random() * 100000),
-                    implements: [Java.use('java.lang.Runnable')],
-                    methods: {
-                        run: function () {
-                            try {
-                                var msg = StringCls.$new(BLOCKED_MESSAGE);
-                                Toast.makeText(ctx, msg, Toast.LENGTH_SHORT.value).show();
-                            } catch (tErr) {}
-                        }
+                    if (ctx) {
+                        var msg = StringCls.$new(BLOCKED_MESSAGE);
+                        Toast.makeText(ctx, msg, Toast.LENGTH_SHORT.value).show();
                     }
-                });
-                mainHandler.post(Runnable.$new());
-            }
+                } catch (tErr) {}
+            });
         } catch (e) {
             console.log("[-] [Frida] Could not display blocked toast: " + e);
         }
     }
+
 
     try {
         var WebViewClient = Java.use('android.webkit.WebViewClient');

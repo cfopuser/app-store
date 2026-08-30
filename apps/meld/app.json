@@ -18,6 +18,16 @@
   },
   "patching": {
     "inject_updater": false,
+    "frida": {
+      "webview_firewall": {
+        "allowed_domains": [
+          "accounts.spotify.com",
+          "open.spotify.com",
+          "accounts.google.com",
+          "appleid.apple.com"
+        ]
+      }
+    },
     "hotfixes": {
       "0.6.2": ".1"
     }

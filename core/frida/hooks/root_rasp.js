@@ -118,10 +118,13 @@ Java.perform(function () {
     // 4. Runtime.exec & ProcessBuilder Command Inspection Bypass
     try {
         var Runtime = Java.use('java.lang.Runtime');
+        var rootCmdRegex = /(?:^|[\/\s])(?:su|magisk|busybox|daemonsu)(?:[\/\s]|$)/i;
+        var whichRootRegex = /(?:^|\s)which\s+(?:su|magisk|busybox)/i;
+
         Runtime.exec.overload('java.lang.String').implementation = function (cmd) {
-            if (cmd && (cmd.indexOf('su') !== -1 || cmd.indexOf('which') !== -1 || cmd.indexOf('magisk') !== -1)) {
-                var IOException = Java.use('java.io.IOException');
-                throw IOException.$new('Command blocked or not found');
+            if (cmd && (rootCmdRegex.test(cmd) || whichRootRegex.test(cmd))) {
+                // Redirect to non-existent / exit 1 command instead of crashing
+                return this.exec.overload('java.lang.String').call(this, 'echo not_found');
             }
             return this.exec.overload('java.lang.String').call(this, cmd);
         };
@@ -129,14 +132,14 @@ Java.perform(function () {
         Runtime.exec.overload('[Ljava.lang.String;').implementation = function (cmdArray) {
             if (cmdArray && cmdArray.length > 0) {
                 var cmdStr = cmdArray.join(' ');
-                if (cmdStr.indexOf('su') !== -1 || cmdStr.indexOf('which') !== -1 || cmdStr.indexOf('magisk') !== -1) {
-                    var IOException = Java.use('java.io.IOException');
-                    throw IOException.$new('Command blocked or not found');
+                if (rootCmdRegex.test(cmdStr) || whichRootRegex.test(cmdStr)) {
+                    var safeCmd = Java.array('java.lang.String', ['echo', 'not_found']);
+                    return this.exec.overload('[Ljava.lang.String;').call(this, safeCmd);
                 }
             }
             return this.exec.overload('[Ljava.lang.String;').call(this, cmdArray);
         };
-        console.log("[+] [Frida] Runtime.exec SU commands blocked");
+        console.log("[+] [Frida] Runtime.exec SU commands safely neutralized");
     } catch (e) {}
 
     // 5. Build Properties Spoofing

@@ -181,6 +181,14 @@ def _get_target_loader_class(decompiled_dir: str) -> tuple[str | None, str]:
                     target_act_name = alias.get(f"{{{ns['android']}}}targetActivity")
                     break
 
+        # Check any activity as fallback
+        if not target_act_name:
+            for act in root.iter("activity"):
+                cand_name = act.get(f"{{{ns['android']}}}name")
+                if cand_name:
+                    target_act_name = cand_name
+                    break
+
         if target_act_name:
             if target_act_name.startswith("."):
                 target_act_name = pkg + target_act_name
@@ -199,7 +207,8 @@ def _get_target_loader_class(decompiled_dir: str) -> tuple[str | None, str]:
 
 def inject_smali_loader(smali_file_path: str) -> bool:
     """
-    Inject `System.loadLibrary("gadget")` into the static constructor <clinit>()V of a smali class.
+    Inject `System.loadLibrary("gadget")` into the static constructor <clinit>()V of a smali class,
+    safely wrapped in a try-catch block to prevent ExceptionInInitializerError crashes.
     """
     if not os.path.isfile(smali_file_path):
         print(f"[-] [Frida] Smali file not found: {smali_file_path}")
@@ -214,9 +223,16 @@ def inject_smali_loader(smali_file_path: str) -> bool:
         return True
 
     injection_code = (
-        "\n    # --- START INJECTION (Frida Gadget Loader) ---\n"
+        "\n    # --- START INJECTION (Frida Gadget Loader Protected) ---\n"
+        "    :try_start_gadget\n"
         "    const-string v0, \"gadget\"\n"
         "    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V\n"
+        "    :try_end_gadget\n"
+        "    .catch Ljava/lang/Throwable; {:try_start_gadget .. :try_end_gadget} :catch_gadget\n"
+        "    goto :after_gadget\n"
+        "    :catch_gadget\n"
+        "    move-exception v0\n"
+        "    :after_gadget\n"
         "    # --- END INJECTION ---\n"
     )
 
@@ -263,7 +279,7 @@ def inject_smali_loader(smali_file_path: str) -> bool:
     with open(smali_file_path, "w", encoding="utf-8") as f:
         f.write(new_content)
 
-    print(f"[+] [Frida] Injected System.loadLibrary('gadget') into {os.path.basename(smali_file_path)}")
+    print(f"[+] [Frida] Injected System.loadLibrary('gadget') with try-catch into {os.path.basename(smali_file_path)}")
     return True
 
 
