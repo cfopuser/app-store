@@ -57,7 +57,13 @@ def build_gadget_script(config: dict[str, Any] | None = None, app_id: str = "") 
         "/* ========================================================================= */",
         f"/* Generated Frida Gadget Payload for [{app_id or 'default'}] */",
         "/* ========================================================================= */\n",
-        "console.log('[*] [Frida] Initializing Frida Gadget runtime...');\n"
+        "(function () {",
+        "    console.log('[*] [Frida] Initializing Frida Gadget runtime...');\n",
+        "    function runPayload() {",
+        "        if (typeof Java === 'undefined' || !Java.available) {",
+        "            setTimeout(runPayload, 50);",
+        "            return;",
+        "        }\n"
     ]
 
     # 1. SSL Unpinning
@@ -132,6 +138,10 @@ def build_gadget_script(config: dict[str, Any] | None = None, app_id: str = "") 
         bundled_sections.extend(custom_hooks_content)
         bundled_sections.append("")
 
-    bundled_sections.append("console.log('[+] [Frida] All configured modules loaded successfully.');\n")
+    bundled_sections.append("        console.log('[+] [Frida] All configured modules loaded successfully.');")
+    bundled_sections.append("    }")
+    bundled_sections.append("")
+    bundled_sections.append("    setTimeout(runPayload, 20);")
+    bundled_sections.append("})();\n")
 
     return "\n".join(bundled_sections)
