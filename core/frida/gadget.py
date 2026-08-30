@@ -411,10 +411,14 @@ def inject_frida_gadget(
     target_abis = detect_target_abis(decompiled_dir)
     print(f"[*] [Frida] Target ABIs: {', '.join(target_abis)}")
 
+    # Frida Gadget config: use "path" (not "source" — that key is invalid and causes
+    # 'Invalid interaction specified' SIGABRT crash). The path is relative to libgadget.so,
+    # so "./libgadget.script.so" resolves to the JS file we place next to it.
     gadget_config_dict = {
         "interaction": {
             "type": "script",
-            "source": script_content
+            "path": "./libgadget.script.so",
+            "on_change": "ignore"
         }
     }
     gadget_config_json = json.dumps(gadget_config_dict, indent=2)
