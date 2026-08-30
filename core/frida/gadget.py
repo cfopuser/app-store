@@ -277,13 +277,36 @@ def ensure_extract_native_libs(decompiled_dir: str):
         with open(manifest_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        if '<application' in content and 'android:extractNativeLibs' not in content:
+        if 'android:extractNativeLibs="false"' in content:
+            content = content.replace('android:extractNativeLibs="false"', 'android:extractNativeLibs="true"')
+            with open(manifest_path, "w", encoding="utf-8") as f:
+                f.write(content)
+            print("[+] [Frida] Changed android:extractNativeLibs='false' to 'true'")
+        elif '<application' in content and 'android:extractNativeLibs' not in content:
             content = re.sub(r'<application(\s+)', r'<application\1android:extractNativeLibs="true"\1', content, count=1)
             with open(manifest_path, "w", encoding="utf-8") as f:
                 f.write(content)
             print("[+] [Frida] Added android:extractNativeLibs='true' to AndroidManifest.xml")
     except Exception as exc:
         print(f"[-] [Frida] Failed to set extractNativeLibs: {exc}")
+
+
+def ensure_compressed_native_libs(decompiled_dir: str):
+    """Ensure .so is removed from doNotCompress in apktool.yml so Android extracts libs."""
+    yml_path = os.path.join(decompiled_dir, "apktool.yml")
+    if not os.path.isfile(yml_path):
+        return
+    try:
+        with open(yml_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        new_content = re.sub(r'^\s*-\s*[\'"]?\.?so[\'"]?\s*$', '', content, flags=re.MULTILINE)
+        if new_content != content:
+            with open(yml_path, "w", encoding="utf-8") as f:
+                f.write(new_content)
+            print("[+] [Frida] Removed .so from apktool.yml doNotCompress to force native lib extraction")
+    except Exception as exc:
+        print(f"[-] [Frida] Failed to update apktool.yml doNotCompress: {exc}")
 
 
 def inject_frida_gadget(
@@ -361,6 +384,7 @@ def inject_frida_gadget(
 
     # 4. Ensure native libs extraction
     ensure_extract_native_libs(decompiled_dir)
+    ensure_compressed_native_libs(decompiled_dir)
 
     # 5. Inject Smali Loader
     target_smali_file, class_name = _get_target_loader_class(decompiled_dir)
