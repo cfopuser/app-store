@@ -308,19 +308,64 @@ def ensure_extract_native_libs(decompiled_dir: str):
 
 
 def ensure_compressed_native_libs(decompiled_dir: str):
-    """Ensure .so is removed from doNotCompress in apktool.yml so Android extracts libs."""
+    """
+    Ensure Frida companion files (libgadget.config.so, libgadget.script.so) are stored
+    UNCOMPRESSED in the APK by adding them to doNotCompress in apktool.yml.
+
+    Android's PackageManager only extracts native libraries that are stored uncompressed
+    in the APK zip. libgadget.config.so and libgadget.script.so are plain-text JSON/JS
+    files (not ELF binaries), so apktool compresses them by default. When compressed,
+    Android skips extracting them to disk, and Frida Gadget cannot open its config at
+    startup — causing an abort() / SIGABRT crash on launch.
+
+    Fix: ensure these two filenames are listed in apktool.yml's doNotCompress section so
+    apktool stores them with ZIP method=stored (uncompressed), making them extractable.
+    """
     yml_path = os.path.join(decompiled_dir, "apktool.yml")
     if not os.path.isfile(yml_path):
         return
+
+    # Frida companion files that MUST be stored uncompressed for Android to extract them
+    FRIDA_UNCOMPRESSED_FILES = [
+        "libgadget.config.so",
+        "libgadget.script.so",
+    ]
+
     try:
         with open(yml_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        new_content = re.sub(r'^\s*-\s*[\'"]?\.?so[\'"]?\s*$', '', content, flags=re.MULTILINE)
-        if new_content != content:
+        modified = False
+        for fname in FRIDA_UNCOMPRESSED_FILES:
+            # Check if this filename is already present in doNotCompress
+            if fname not in content:
+                # Find the doNotCompress block and append the entry
+                # apktool.yml doNotCompress section looks like:
+                #   doNotCompress:
+                #   - .so
+                #   - arsc
+                do_not_compress_pattern = re.compile(
+                    r"(doNotCompress:(?:\s*\n(?:\s+-[^\n]*\n)*)?)", re.MULTILINE
+                )
+                block_match = do_not_compress_pattern.search(content)
+                if block_match:
+                    # Append the new entry right after the block header/last entry
+                    insert_pos = block_match.end()
+                    content = content[:insert_pos] + f"- {fname}\n" + content[insert_pos:]
+                    modified = True
+                    print(f"[+] [Frida] Added '{fname}' to apktool.yml doNotCompress (uncompressed storage)")
+                else:
+                    # No doNotCompress block at all — append it
+                    content += f"\ndoNotCompress:\n- {fname}\n"
+                    modified = True
+                    print(f"[+] [Frida] Created doNotCompress block with '{fname}' in apktool.yml")
+
+        if modified:
             with open(yml_path, "w", encoding="utf-8") as f:
-                f.write(new_content)
-            print("[+] [Frida] Removed .so from apktool.yml doNotCompress to force native lib extraction")
+                f.write(content)
+        else:
+            print("[i] [Frida] apktool.yml doNotCompress already contains Frida companion files — no changes needed")
+
     except Exception as exc:
         print(f"[-] [Frida] Failed to update apktool.yml doNotCompress: {exc}")
 
