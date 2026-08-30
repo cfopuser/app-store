@@ -35,9 +35,9 @@ class TestFridaGadget(unittest.TestCase):
         self.assertEqual(abis, ["arm64-v8a", "x86_64"])
 
     def test_detect_target_abis_pure_java(self):
-        """Defaults to arm64-v8a and armeabi-v7a if no lib/ folder exists."""
+        """Defaults to all 4 supported ABIs if no lib/ folder exists for max compatibility."""
         abis = detect_target_abis(self.test_dir)
-        self.assertEqual(abis, ["arm64-v8a", "armeabi-v7a"])
+        self.assertEqual(abis, ["arm64-v8a", "armeabi-v7a", "x86_64", "x86"])
 
     def test_inject_smali_loader_existing_clinit(self):
         """Injects System.loadLibrary into existing <clinit> method."""
@@ -174,8 +174,8 @@ class TestFridaGadget(unittest.TestCase):
         success = inject_frida_gadget(self.test_dir, config=config, app_id="test_app")
         self.assertTrue(success)
 
-        # Check arm64-v8a and armeabi-v7a files placed
-        for abi in ["arm64-v8a", "armeabi-v7a"]:
+        # Check all ABIs placed for pure Java
+        for abi in ["arm64-v8a", "armeabi-v7a", "x86_64", "x86"]:
             gadget_so = os.path.join(self.test_dir, "lib", abi, "libgadget.so")
             config_so = os.path.join(self.test_dir, "lib", abi, "libgadget.config.so")
             script_so = os.path.join(self.test_dir, "lib", abi, "libgadget.script.so")
@@ -185,7 +185,7 @@ class TestFridaGadget(unittest.TestCase):
             self.assertTrue(os.path.isfile(script_so))
 
             with open(config_so, "r", encoding="utf-8") as f:
-                self.assertIn('"path": "libgadget.script.so"', f.read())
+                self.assertIn('"source":', f.read())
 
             with open(script_so, "r", encoding="utf-8") as f:
                 self.assertIn("example.com", f.read())

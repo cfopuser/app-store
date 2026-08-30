@@ -101,8 +101,8 @@ def detect_target_abis(decompiled_dir: str) -> list[str]:
         if found_abis:
             return sorted(found_abis)
 
-    # Pure Java/Kotlin app without native libs -> provide standard ARM targets
-    return ["arm64-v8a", "armeabi-v7a"]
+    # Pure Java/Kotlin app without native libs -> provide all 4 ABIs for maximum device and emulator compatibility
+    return ["arm64-v8a", "armeabi-v7a", "x86_64", "x86"]
 
 
 def _find_class_smali_file(decompiled_dir: str, class_name: str) -> str | None:
@@ -330,8 +330,8 @@ def inject_frida_gadget(
     gadget_config_dict = {
         "interaction": {
             "type": "script",
-            "path": "libgadget.script.so",
-            "on_change": "resend"
+            "source": script_content,
+            "on_change": "ignore"
         }
     }
     gadget_config_json = json.dumps(gadget_config_dict, indent=2)
