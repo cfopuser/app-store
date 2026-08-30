@@ -185,8 +185,12 @@ jobs:
           git add apps/${{ matrix.app }}/version.txt apps/${{ matrix.app }}/status.json
           git commit -m "[${{ matrix.app }}] Update to ${{ steps.check_version.outputs.new_version || 'status update' }}" || echo "No changes to commit"
           
-          git pull origin ${{ github.ref_name }} --rebase -X theirs
-          git push origin HEAD:${{ github.ref_name }}
+          for i in {1..5}; do
+            git pull origin ${{ github.ref_name }} --rebase -X theirs && git push origin HEAD:${{ github.ref_name }} && break || {
+              echo "Push failed, retrying in 3s (attempt $i/5)..."
+              sleep 3
+            }
+          done
 
       # ── Tag & Release ──
       - name: Create tag
@@ -243,7 +247,9 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add apps.json download_stats.json releases.json
-          git commit -m "update apps.json, stats and releases index [skip ci]" || echo "No changes to commit"
-          
-          git pull origin ${{ github.ref_name }} --rebase -X theirs
-          git push origin HEAD:${{ github.ref_name }}
+          for i in {1..5}; do
+            git pull origin ${{ github.ref_name }} --rebase -X theirs && git push origin HEAD:${{ github.ref_name }} && break || {
+              echo "Push failed, retrying in 3s (attempt $i/5)..."
+              sleep 3
+            }
+          done
