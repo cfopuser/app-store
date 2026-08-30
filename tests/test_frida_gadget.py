@@ -185,7 +185,7 @@ class TestFridaGadget(unittest.TestCase):
             self.assertTrue(os.path.isfile(script_so))
 
             with open(config_so, "r", encoding="utf-8") as f:
-                self.assertIn('"source":', f.read())
+                self.assertIn('"path": "libgadget.script.so"', f.read())
 
             with open(script_so, "r", encoding="utf-8") as f:
                 self.assertIn("example.com", f.read())

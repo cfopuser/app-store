@@ -353,7 +353,7 @@ def inject_frida_gadget(
     gadget_config_dict = {
         "interaction": {
             "type": "script",
-            "source": script_content,
+            "path": "libgadget.script.so",
             "on_change": "ignore"
         }
     }
