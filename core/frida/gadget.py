@@ -205,10 +205,12 @@ def _get_target_loader_class(decompiled_dir: str) -> tuple[str | None, str]:
     return None, ""
 
 
-def inject_smali_loader(smali_file_path: str) -> bool:
+def inject_smali_loader(smali_file_path: str, is_arm_only: bool = False) -> bool:
     """
     Inject `System.loadLibrary("gadget")` into the static constructor <clinit>()V of a smali class,
     safely wrapped in a try-catch block to prevent ExceptionInInitializerError crashes.
+    When is_arm_only is True, adds a runtime ABI check to skip loading on x86/x86_64 emulators
+    running under libndk_translation / libhoudini where Gum JIT memory allocation crashes.
     """
     if not os.path.isfile(smali_file_path):
         print(f"[-] [Frida] Smali file not found: {smali_file_path}")
@@ -222,19 +224,49 @@ def inject_smali_loader(smali_file_path: str) -> bool:
         print(f"[i] [Frida] Gadget loader already present in {os.path.basename(smali_file_path)}")
         return True
 
-    injection_code = (
-        "\n    # --- START INJECTION (Frida Gadget Loader Protected) ---\n"
-        "    :try_start_gadget\n"
-        "    const-string v0, \"gadget\"\n"
-        "    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V\n"
-        "    :try_end_gadget\n"
-        "    .catch Ljava/lang/Throwable; {:try_start_gadget .. :try_end_gadget} :catch_gadget\n"
-        "    goto :after_gadget\n"
-        "    :catch_gadget\n"
-        "    move-exception v0\n"
-        "    :after_gadget\n"
-        "    # --- END INJECTION ---\n"
-    )
+    if is_arm_only:
+        injection_code = (
+            "\n    # --- START INJECTION (Frida Gadget Loader Protected) ---\n"
+            "    :try_start_gadget\n"
+            "    sget-object v0, Landroid/os/Build;->SUPPORTED_ABIS:[Ljava/lang/String;\n"
+            "    if-eqz v0, :load_gadget_direct\n"
+            "    array-length v1, v0\n"
+            "    if-lez v1, :load_gadget_direct\n"
+            "    const/4 v1, 0x0\n"
+            "    aget-object v0, v0, v1\n"
+            "    if-eqz v0, :load_gadget_direct\n"
+            "    const-string v1, \"x86\"\n"
+            "    invoke-virtual {v0, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z\n"
+            "    move-result v0\n"
+            "    if-eqz v0, :skip_gadget_emulator\n"
+            "    :load_gadget_direct\n"
+            "    const-string v0, \"gadget\"\n"
+            "    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V\n"
+            "    :skip_gadget_emulator\n"
+            "    :try_end_gadget\n"
+            "    .catch Ljava/lang/Throwable; {:try_start_gadget .. :try_end_gadget} :catch_gadget\n"
+            "    goto :after_gadget\n"
+            "    :catch_gadget\n"
+            "    move-exception v0\n"
+            "    :after_gadget\n"
+            "    # --- END INJECTION ---\n"
+        )
+        min_locals = 2
+    else:
+        injection_code = (
+            "\n    # --- START INJECTION (Frida Gadget Loader Protected) ---\n"
+            "    :try_start_gadget\n"
+            "    const-string v0, \"gadget\"\n"
+            "    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V\n"
+            "    :try_end_gadget\n"
+            "    .catch Ljava/lang/Throwable; {:try_start_gadget .. :try_end_gadget} :catch_gadget\n"
+            "    goto :after_gadget\n"
+            "    :catch_gadget\n"
+            "    move-exception v0\n"
+            "    :after_gadget\n"
+            "    # --- END INJECTION ---\n"
+        )
+        min_locals = 1
 
     # Check if <clinit>()V already exists
     clinit_pattern = re.compile(r"(\.method\s+(?:public\s+|private\s+|protected\s+)?static\s+constructor\s+<clinit>\(\)V)(.*?)(\.end\s+method)", re.DOTALL)
@@ -249,19 +281,19 @@ def inject_smali_loader(smali_file_path: str) -> bool:
         locals_match = re.search(r"(\.locals\s+)(\d+)", body)
         if locals_match:
             count = int(locals_match.group(2))
-            if count < 1:
-                body = body.replace(locals_match.group(0), f"{locals_match.group(1)}1", 1)
+            if count < min_locals:
+                body = body.replace(locals_match.group(0), f"{locals_match.group(1)}{min_locals}", 1)
             # Insert after locals line
             body = re.sub(r"(\.locals\s+\d+[\r\n]+)", r"\1" + injection_code, body, count=1)
         else:
             registers_match = re.search(r"(\.registers\s+)(\d+)", body)
             if registers_match:
                 count = int(registers_match.group(2))
-                if count < 1:
-                    body = body.replace(registers_match.group(0), f"{registers_match.group(1)}1", 1)
+                if count < min_locals:
+                    body = body.replace(registers_match.group(0), f"{registers_match.group(1)}{min_locals}", 1)
                 body = re.sub(r"(\.registers\s+\d+[\r\n]+)", r"\1" + injection_code, body, count=1)
             else:
-                body = "\n    .locals 1" + injection_code + body
+                body = f"\n    .locals {min_locals}" + injection_code + body
 
         new_method = header + body + footer
         new_content = content[:match.start()] + new_method + content[match.end():]
@@ -269,7 +301,7 @@ def inject_smali_loader(smali_file_path: str) -> bool:
         # Append <clinit>()V at end of class
         new_clinit = (
             "\n.method static constructor <clinit>()V\n"
-            "    .locals 1\n"
+            f"    .locals {min_locals}\n"
             + injection_code +
             "\n    return-void\n"
             ".end method\n"
@@ -459,7 +491,8 @@ def inject_frida_gadget(
         return False
 
     print(f"[*] [Frida] Target loader class: {class_name} ({target_smali_file})")
-    if not inject_smali_loader(target_smali_file):
+    is_arm_only = not any(abi in ("x86", "x86_64") for abi in target_abis)
+    if not inject_smali_loader(target_smali_file, is_arm_only=is_arm_only):
         return False
 
     print("[+] [Frida] Frida Gadget injection completed successfully!")
