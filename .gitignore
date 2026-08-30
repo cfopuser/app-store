@@ -3,6 +3,8 @@
 *.apk
 *.xapk
 *.jar
+*.so
+core/frida/bin/
 
 # Cache & temp files
 
