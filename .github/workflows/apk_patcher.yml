@@ -26,6 +26,11 @@ on:
           - 'waze'
           - 'whatsapp'
           - 'yahav'
+      force_build:
+        description: 'Force re-download and re-patch even if version has not changed'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   # ──────────────────────────────────────────────
@@ -112,7 +117,8 @@ jobs:
         env:
           GOOGLE_EMAIL: ${{ secrets.GOOGLE_EMAIL }}
           AAS_TOKEN: ${{ secrets.AAS_TOKEN }}
-        run: python run.py --app ${{ matrix.app }} --step download
+          FORCE_BUILD: ${{ inputs.force_build }}
+        run: python run.py --app ${{ matrix.app }} --step download ${{ inputs.force_build && '--force' || '' }}
 
       # ── Single-Pass Decompile ──
       - name: Decompile APK (Single-Pass)
@@ -148,6 +154,14 @@ jobs:
 
           mkdir -p release
           mv patched_unsigned-aligned-signed.apk release/${{ matrix.app }}-patched-${{ steps.check_version.outputs.new_version }}.apk
+
+      - name: Upload Patched APK Artifact
+        if: steps.check_version.outputs.update_needed == 'true' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.app }}-patched-apk
+          path: release/*.apk
+          if-no-files-found: warn
 
       - name: Update version file
         if: steps.check_version.outputs.update_needed == 'true' && success()

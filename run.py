@@ -34,13 +34,15 @@ from core.pre_patcher import run_pre_patch
 from core.patcher import run_patch
 
 
-def process_app(app_id: str, step: str = "all", no_mitm: bool = False) -> bool:
+def process_app(app_id: str, step: str = "all", no_mitm: bool = False, force: bool = False) -> bool:
     """
-    Run the pipeline for a single app.
+    Process a single app through the specified pipeline step(s).
 
     Args:
         app_id: The app identifier (subfolder name under apps/).
         step: Which step to run — 'download', 'patch', or 'all'.
+        no_mitm: (Deprecated) Maintained for CLI compatibility.
+        force: Force download and build even if versions match.
 
     Returns:
         True if the step(s) completed successfully.
@@ -64,7 +66,7 @@ def process_app(app_id: str, step: str = "all", no_mitm: bool = False) -> bool:
     output_filename = "latest.apk"
     if step in ("download", "all"):
         try:
-            update_needed, new_version = download_app(config, output_filename=output_filename)
+            update_needed, new_version = download_app(config, output_filename=output_filename, force=force)
         except DownloadError as e:
             print(f"[-] [{app_id}] {e}")
             update_status(
@@ -196,6 +198,11 @@ Examples:
         help="Skip running apk-mitm on the downloaded APK",
     )
     parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force download and build even if versions match",
+    )
+    parser.add_argument(
         "--update-stats",
         action="store_true",
         help="Fetch download counts from GitHub and exit",
@@ -236,7 +243,7 @@ Examples:
     # Process each app
     results = {}
     for app_id in app_ids:
-        success = process_app(app_id, step=args.step, no_mitm=args.no_mitm)
+        success = process_app(app_id, step=args.step, no_mitm=args.no_mitm, force=args.force)
         results[app_id] = success
 
     # Summary

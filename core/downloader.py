@@ -120,28 +120,29 @@ def _normalize_downloaded_file(download_path: str, output_filename: str):
     raise RuntimeError("Downloaded file is neither a valid APK nor a convertible XAPK.")
 
 
-def download_app(app_config: dict, output_filename: str = "latest.apk") -> tuple:
+def download_app(app_config: dict, output_filename: str = "latest.apk", force: bool = False) -> tuple[bool, str | None]:
     """
-    Check configured source for updates and download if a newer version exists.
-
-    Args:
-        app_config: Parsed app.json dict.
-        output_filename: Where to save the downloaded APK.
+    Check for updates and download the latest package.
+    If force is True, proceeds with downloading even if versions match.
 
     Returns:
-        (update_needed: bool, new_version: str | None)
+        (update_needed, new_version) tuple.
     """
-    version_file = app_config["version_file"]
-    app_name = app_config["name"]
-    source_name = app_config.get("source", "apkmirror")
+    if not force:
+        force = os.environ.get("FORCE_BUILD", "").lower() in ("true", "1", "yes")
 
-    # 1. Initialize source from registry.
+    app_name = app_config.get("name", "Unknown App")
+    source_name = app_config.get("source")
+    version_file = app_config.get("version_file")
+
+    if not source_name:
+        raise DownloadError(f"[{app_name}] Missing 'source' configuration.")
+
+    # 1. Resolve source adapter.
     try:
         source_name, source, lookup_value = create_source(source_name, app_config)
     except Exception as e:
         raise DownloadError(f"[{app_name}] Source configuration error: {e}") from e
-
-    print(f"[*] [{app_name}] Using source: {source_name}")
 
     # 2. Get local version.
     local_version = get_local_version(version_file)
@@ -174,11 +175,14 @@ def download_app(app_config: dict, output_filename: str = "latest.apk") -> tuple
     print(f"[*] [{app_name}] Latest release: {title}")
     print(f"[*] [{app_name}] Remote version: {remote_version}")
     # 4. Compare versions.
-    if remote_version == local_version:
+    if remote_version == local_version and not force:
         print(f"[i] [{app_name}] Versions match. No update needed.")
         return False, None
 
-    print(f"[!] [{app_name}] Update detected! ({local_version} -> {remote_version})")
+    if force and remote_version == local_version:
+        print(f"[!] [{app_name}] Force build requested! Proceeding with {remote_version}...")
+    else:
+        print(f"[!] [{app_name}] Update detected! ({local_version} -> {remote_version})")
 
     # 5. Resolve final download link and download package.
     try:
