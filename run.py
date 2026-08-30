@@ -12,6 +12,12 @@ Usage:
 import argparse
 import sys
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 from core.utils import (
     discover_apps,
     generate_apps_listing,
@@ -88,13 +94,6 @@ def process_app(app_id: str, step: str = "all", no_mitm: bool = False) -> bool:
         if not update_needed:
             print(f"[i] [{app_id}] No update needed. Done.")
             return True
-
-        if not no_mitm and not config.get("skip_mitm", False):
-            # Run MITM and check success
-            mitm_success = run_apk_mitm(output_filename)
-            if not mitm_success:
-                print(f"[-] [{app_id}] apk-mitm failed. Aborting to prevent bad patch.")
-                return False
 
         pre_patch_success = run_pre_patch(app_id, output_filename)
         if not pre_patch_success:

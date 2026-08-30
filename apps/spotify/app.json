@@ -38,11 +38,10 @@
     "name_play": "Spotify: Music and Podcasts"
   },
   "patching": {
+    "inject_updater": true,
     "hotfixes": {
       "9.1.72.1891": ".1"
-    },
-    "skip_mitm": true
-    
+    }
   },
   "paths": {
     "version_file": "apps/spotify/version.txt",

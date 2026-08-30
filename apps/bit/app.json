@@ -38,6 +38,9 @@
     "source": "apkeep",
     "name_play": "bit ביט"
   },
+  "patching": {
+    "inject_updater": true
+  },
   "paths": {
     "version_file": "apps/bit/version.txt",
     "status_file": "apps/bit/status.json"

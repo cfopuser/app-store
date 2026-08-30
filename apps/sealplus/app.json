@@ -17,6 +17,9 @@
     "repo": "MaheshTechnicals/Sealplus",
     "github_asset_regex": ".*universal.*\\.apk"
   },
+  "patching": {
+    "inject_updater": false
+  },
   "paths": {
     "version_file": "apps/sealplus/version.txt",
     "status_file": "apps/sealplus/status.json"

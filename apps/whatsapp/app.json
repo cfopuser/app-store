@@ -39,7 +39,6 @@
     "version_code_overrides": {
       "2.26.29.73": "263000110"
     },
-    "skip_mitm": true,
     "inject_updater": true,
     "updater_target_smali": "com/whatsapp/home/ui/HomeActivity.smali",
     "hotfixes": {

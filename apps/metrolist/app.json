@@ -26,7 +26,25 @@
     "repo": "MetrolistGroup/Metrolist"
   },
   "patching": {
-    "skip_mitm": true,
+    "inject_updater": false,
+    "frida": {
+      "webview_firewall": {
+        "allowed_domains": [
+          "accounts.google.com",
+          "accounts.youtube.com",
+          "music.youtube.com"
+        ]
+      }
+    },
+    "string_replacements": [
+      {
+        "key": "stands_with_palestine",
+        "values": {
+          "he": "🇮🇱 !!!עם ישראל חי 🇮🇱",
+          "default": "🇮🇱 Am Yisrael Chai!!! 🇮🇱"
+        }
+      }
+    ],
     "hotfixes": {
       "13.6.3": ".3"
     }

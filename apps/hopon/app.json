@@ -34,6 +34,9 @@
     "source": "apkeep",
     "name_play": "Rav-Pass by HopOn הופאון רב-פס"
   },
+  "patching": {
+    "inject_updater": true
+  },
   "paths": {
     "version_file": "apps/hopon/version.txt",
     "status_file": "apps/hopon/status.json"

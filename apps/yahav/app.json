@@ -32,6 +32,9 @@
     "source": "aptoide",
     "name_play": "בנק יהב - ניהול חשבון"
   },
+  "patching": {
+    "inject_updater": true
+  },
   "paths": {
     "version_file": "apps/yahav/version.txt",
     "status_file": "apps/yahav/status.json"

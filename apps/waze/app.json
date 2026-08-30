@@ -39,7 +39,7 @@
     "name_play": "Waze Navigation & Live Traffic"
   },
   "patching": {
-    "skip_mitm": true
+    "inject_updater": true
   },
   "paths": {
     "version_file": "apps/waze/version.txt",

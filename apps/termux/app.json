@@ -31,6 +31,9 @@
     "repo": "termux/termux-app",
     "github_asset_regex": ".*universal.*\\.apk"
   },
+  "patching": {
+    "inject_updater": false
+  },
   "paths": {
     "version_file": "apps/termux/version.txt",
     "status_file": "apps/termux/status.json"

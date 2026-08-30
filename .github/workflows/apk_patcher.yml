@@ -53,7 +53,7 @@ jobs:
           echo "Discovered apps: $APPS"
           
   # ──────────────────────────────────────────────
-  # Job 2: Build each app in parallel
+  # Job 2: Build each app in parallel (Single-Pass Pipeline)
   # ──────────────────────────────────────────────
   build:
     needs: discover
@@ -80,24 +80,33 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Cache Tools & Gadgets
+        id: cache-tools
+        uses: actions/cache@v4
         with:
-          node-version: '20'
+          path: |
+            /usr/local/bin/apktool.jar
+            /usr/local/bin/ubersigner.jar
+            core/frida/bin/
+          key: tools-${{ runner.os }}-v2
 
-      - name: Install System Dependencies
+      - name: Setup System Dependencies & Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y zipalign apksigner
           pip install -r requirements.txt
-          git clone https://github.com/cfopuser/apk-mitm.git
-          cd apk-mitm && npm install && npm run build && sudo npm install -g . && cd ..
-          APKTOOL_URL=$(curl -s https://api.github.com/repos/iBotPeaches/Apktool/releases/latest | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
-          sudo wget -q "$APKTOOL_URL" -O /usr/local/bin/apktool.jar
-          echo -e '#!/bin/bash\njava -jar /usr/local/bin/apktool.jar "$@"' | sudo tee /usr/local/bin/apktool
-          sudo chmod +x /usr/local/bin/apktool
-      # ── Download & Pre-Patch ──
-      # The pre-patch logic (like Schwartzblat for WhatsApp) is now inside run.py
+
+          if [ ! -f /usr/local/bin/apktool.jar ]; then
+            APKTOOL_URL=$(curl -s https://api.github.com/repos/iBotPeaches/Apktool/releases/latest | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
+            sudo wget -q "$APKTOOL_URL" -O /usr/local/bin/apktool.jar
+          fi
+
+          if [ ! -f /usr/local/bin/ubersigner.jar ]; then
+            UBER_URL=$(curl -s https://api.github.com/repos/patrickfav/uber-apk-signer/releases/latest | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
+            sudo wget -q "$UBER_URL" -O /usr/local/bin/ubersigner.jar
+          fi
+
+      # ── Download & Check Upstream ──
       - name: Check for updates & download
         id: check_version
         env:
@@ -105,41 +114,32 @@ jobs:
           AAS_TOKEN: ${{ secrets.AAS_TOKEN }}
         run: python run.py --app ${{ matrix.app }} --step download
 
-      # ── Tools (Dynamic Download) ──
-      - name: Download Latest Apktool & UberSigner
+      # ── Single-Pass Decompile ──
+      - name: Decompile APK (Single-Pass)
         if: steps.check_version.outputs.update_needed == 'true'
-        run: |
-          APKTOOL_URL=$(curl -s https://api.github.com/repos/iBotPeaches/Apktool/releases/latest | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
-          wget -q "$APKTOOL_URL" -O apktool.jar
-          UBER_URL=$(curl -s https://api.github.com/repos/patrickfav/uber-apk-signer/releases/latest | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
-          wget -q "$UBER_URL" -O ubersigner.jar
+        run: java -jar /usr/local/bin/apktool.jar d -f latest.apk -o build_output
 
-      # ── Decode ──
-      - name: Decode APK
-        if: steps.check_version.outputs.update_needed == 'true'
-        run: java -jar apktool.jar d -f latest.apk -o build_output
-
-      # ── Patch ──
-      - name: Apply patch
+      # ── Single-Pass Patch (Frida Gadget + Static Transforms) ──
+      - name: Apply Frida & Static Patches
         if: steps.check_version.outputs.update_needed == 'true'
         run: python run.py --app ${{ matrix.app }} --step patch
 
-      # ── Repack ──
-      - name: Repack APK
+      # ── Single-Pass Repack ──
+      - name: Repack APK (Single-Pass)
         if: steps.check_version.outputs.update_needed == 'true'
-        run: java -jar apktool.jar b build_output -o patched_unsigned.apk
+        run: java -jar /usr/local/bin/apktool.jar b build_output -o patched_unsigned.apk
 
-      # ── Sign ──
+      # ── Sign with UberApkSigner ──
       - name: Decode Keystore
         if: steps.check_version.outputs.update_needed == 'true'
         env:
           RELEASE_KEYSTORE: ${{ secrets.RELEASE_KEYSTORE }}
         run: echo "$RELEASE_KEYSTORE" | base64 --decode > my_keystore.jks
 
-      - name: Sign with UberApkSigner
+      - name: Sign APK
         if: steps.check_version.outputs.update_needed == 'true'
         run: |
-          java -jar ubersigner.jar \
+          java -jar /usr/local/bin/ubersigner.jar \
             -a patched_unsigned.apk \
             --ks my_keystore.jks \
             --ksAlias ${{ secrets.KEY_ALIAS }} \
@@ -171,14 +171,14 @@ jobs:
           git add apps/${{ matrix.app }}/version.txt apps/${{ matrix.app }}/status.json
           git commit -m "[${{ matrix.app }}] Update to ${{ steps.check_version.outputs.new_version || 'status update' }}" || echo "No changes to commit"
           
-          git pull origin main --rebase -X theirs
-          git push origin HEAD:main
+          git pull origin ${{ github.ref_name }} --rebase -X theirs
+          git push origin HEAD:${{ github.ref_name }}
 
       # ── Tag & Release ──
       - name: Create tag
         if: steps.check_version.outputs.update_needed == 'true' && success()
         run: |
-          git pull origin main --rebase -X theirs
+          git pull origin ${{ github.ref_name }} --rebase -X theirs
           git tag -f ${{ matrix.app }}-v${{ steps.check_version.outputs.new_version }}
           git push -f origin refs/tags/${{ matrix.app }}-v${{ steps.check_version.outputs.new_version }}
 
@@ -231,5 +231,5 @@ jobs:
           git add apps.json download_stats.json releases.json
           git commit -m "update apps.json, stats and releases index [skip ci]" || echo "No changes to commit"
           
-          git pull origin main --rebase -X theirs
-          git push origin HEAD:main
+          git pull origin ${{ github.ref_name }} --rebase -X theirs
+          git push origin HEAD:${{ github.ref_name }}

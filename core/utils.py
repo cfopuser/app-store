@@ -75,7 +75,7 @@ def save_app_config(app_id: str, config: dict):
                      "full_description", "full_description_he", "category", "category_he"],
         "assets": ["icon_url", "screenshots", "screenshots_he"],
         "source": ["source", "repo", "github_asset_regex", "name_play"],
-        "patching": ["skip_mitm", "inject_updater", "updater_target_smali", "hotfixes", "version_overrides", "version_code_overrides", "clone_config"],
+        "patching": ["skip_mitm", "inject_frida", "frida", "inject_updater", "updater_target_smali", "hotfixes", "version_overrides", "version_code_overrides", "clone_config", "string_replacements"],
         "paths": ["version_file", "status_file"],
         "maintenance": ["maintainer"]
     }
