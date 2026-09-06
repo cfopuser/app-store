@@ -238,7 +238,7 @@ def inject_smali_loader(smali_file_path: str, is_arm_only: bool = False) -> bool
             "    const-string v1, \"x86\"\n"
             "    invoke-virtual {v0, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z\n"
             "    move-result v0\n"
-            "    if-eqz v0, :skip_gadget_emulator\n"
+            "    if-nez v0, :skip_gadget_emulator\n"
             "    :load_gadget_direct\n"
             "    const-string v0, \"gadget\"\n"
             "    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V\n"
