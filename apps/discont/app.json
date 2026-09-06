@@ -1,0 +1,78 @@
+{
+  "metadata": {
+    "id": "discont",
+    "name": "דיסקונט",
+    "name_he": "דיסקונט",
+    "package_name": "com.ideomobile.discount",
+    "description": "Discount Bank app – patched for sideloading, NetFree, and webview restrictions.",
+    "description_he": "אפליקציית בנק דיסקונט - ערוכה להתקנה מקובץ, לשימוש בנטפרי וחסימת דפדפן פנימי.",
+    "full_description": "אפליקציית דיסקונט מאפשרת לך לנהל את החשבון בצורה נוחה, מהירה ובטוחה מכל מקום ובכל זמן.",
+    "full_description_he": "אפליקציית דיסקונט מאפשרת לך לנהל את החשבון בצורה נוחה, מהירה ובטוחה מכל מקום ובכל זמן.",
+    "category": "Finance",
+    "category_he": "פיננסיים"
+  },
+  "assets": {
+    "icon_url": "apps/discont/icon.png",
+    "screenshots": [
+      "apps/discont/screenshots/screen_1.png",
+      "apps/discont/screenshots/screen_2.png",
+      "apps/discont/screenshots/screen_3.png",
+      "apps/discont/screenshots/screen_4.png",
+      "apps/discont/screenshots/screen_5.png",
+      "apps/discont/screenshots/screen_6.png",
+      "apps/discont/screenshots/screen_7.png",
+      "apps/discont/screenshots/screen_8.png",
+      "apps/discont/screenshots/screen_9.png",
+      "apps/discont/screenshots/screen_10.png",
+      "apps/discont/screenshots/screen_11.png",
+      "apps/discont/screenshots/screen_12.png",
+      "apps/discont/screenshots/screen_13.png",
+      "apps/discont/screenshots/screen_14.png",
+      "apps/discont/screenshots/screen_15.png"
+    ],
+    "screenshots_he": [
+      "apps/discont/screenshots_he/screen_1.png",
+      "apps/discont/screenshots_he/screen_2.png",
+      "apps/discont/screenshots_he/screen_3.png",
+      "apps/discont/screenshots_he/screen_4.png",
+      "apps/discont/screenshots_he/screen_5.png",
+      "apps/discont/screenshots_he/screen_6.png",
+      "apps/discont/screenshots_he/screen_7.png",
+      "apps/discont/screenshots_he/screen_8.png",
+      "apps/discont/screenshots_he/screen_9.png",
+      "apps/discont/screenshots_he/screen_10.png",
+      "apps/discont/screenshots_he/screen_11.png",
+      "apps/discont/screenshots_he/screen_12.png",
+      "apps/discont/screenshots_he/screen_13.png",
+      "apps/discont/screenshots_he/screen_14.png",
+      "apps/discont/screenshots_he/screen_15.png"
+    ]
+  },
+  "source": {
+    "source": "apkeep",
+    "name_play": "דיסקונט"
+  },
+  "patching": {
+    "frida": {
+      "ssl_unpin": true,
+      "root_rasp": true,
+      "installer_pair": true,
+      "webview_firewall": {
+        "allowed_domains": [
+          "discountbank.co.il",
+          "telebank.co.il",
+          "cal-online.co.il"
+        ],
+        "blocked_message": "הגישה לקישור זה נחסמה"
+      }
+    },
+    "inject_updater": false
+  },
+  "paths": {
+    "version_file": "apps/discont/version.txt",
+    "status_file": "apps/discont/status.json"
+  },
+  "maintenance": {
+    "maintainer": "cfopuser"
+  }
+}
