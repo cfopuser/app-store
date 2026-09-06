@@ -14,6 +14,7 @@ on:
           - 'all'
           - 'bezeq'
           - 'bit'
+          - 'discont'
           - 'egg'
           - 'hopon'
           - 'meld'
@@ -194,14 +195,14 @@ jobs:
 
       # ── Tag & Release ──
       - name: Create tag
-        if: steps.check_version.outputs.update_needed == 'true' && success()
+        if: steps.check_version.outputs.update_needed == 'true' && success() && github.ref_name == 'main'
         run: |
           git pull origin ${{ github.ref_name }} --rebase -X theirs
           git tag -f ${{ matrix.app }}-v${{ steps.check_version.outputs.new_version }}
           git push -f origin refs/tags/${{ matrix.app }}-v${{ steps.check_version.outputs.new_version }}
 
       - name: Create GitHub Release
-        if: steps.check_version.outputs.update_needed == 'true' && success()
+        if: steps.check_version.outputs.update_needed == 'true' && success() && github.ref_name == 'main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ matrix.app }}-v${{ steps.check_version.outputs.new_version }}
