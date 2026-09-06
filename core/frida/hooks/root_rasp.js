@@ -1,6 +1,6 @@
 /**
  * Universal Root & RASP Bypass Hook Module
- * Covers RootBeer, FreeRASP / Talsec, Magisk / SU file checks, Build props, and command execution.
+ * Covers RootBeer, FreeRASP / Talsec (TALSEC_INFO Intent & method channel), Magisk / SU file checks, Build props, and command execution.
  */
 
 Java.perform(function () {
@@ -39,49 +39,76 @@ Java.perform(function () {
         console.log("[+] [Frida] RootBeer checks disarmed");
     } catch (e) {}
 
-    // 2. Talsec / FreeRASP Library Bypass
+    // 2. Talsec / FreeRASP Library Bypass (Fireshell Security Team tested Intent Hook)
     try {
-        var Talsec = Java.use('com.aheadtec.talsec.security.Talsec');
+        var Intent = Java.use("android.content.Intent");
+        Intent.getStringExtra.overload("java.lang.String").implementation = function (str) {
+            var extra = this.getStringExtra(str);
+            var action = this.getAction();
+
+            if (action === "TALSEC_INFO") {
+                console.log("[+] [Frida] Hooking getStringExtra(\"" + str + "\") from " + action);
+                console.log("\t Bypassing " + extra + " detection");
+                return "";
+            }
+            return extra;
+        };
+        console.log("[+] [Frida] Talsec TALSEC_INFO Intent broadcast hook installed");
+    } catch (e) {}
+
+    // Talsec SDK direct class hooks (Java / Kotlin & Flutter plugin)
+    var talsecCoreClasses = [
+        'com.aheaditec.talsec.security.Talsec',
+        'com.aheadtec.talsec.security.Talsec'
+    ];
+    talsecCoreClasses.forEach(function (clsName) {
         try {
-            Talsec.start.implementation = function () {
-                console.log("[+] [Frida] Talsec.start() suppressed");
-                return;
-            };
+            var Talsec = Java.use(clsName);
+            if (Talsec.start) {
+                Talsec.start.implementation = function () {
+                    console.log("[+] [Frida] " + clsName + ".start() suppressed");
+                    return;
+                };
+            }
         } catch (err) {}
-    } catch (e) {}
+    });
 
-    // FreeRASP Flutter / Bridge Method Call Bypass
-    try {
-        var flutterClasses = [
-            'com.aheadtec.talsec.security.TalsecPlugin',
-            'com.aheadtec.talsec.security.c'
-        ];
-        flutterClasses.forEach(function (clsName) {
-            try {
-                var Cls = Java.use(clsName);
-                if (Cls.onMethodCall) {
-                    Cls.onMethodCall.implementation = function (call, result) {
-                        var method = call.method.value || (call.method ? call.method.toString() : '');
-                        var ArrayList = Java.use('java.util.ArrayList');
-                        var BooleanCls = Java.use('java.lang.Boolean');
+    // FreeRASP Flutter Plugin & Bridge Method Call Bypass
+    var flutterClasses = [
+        'com.aheaditec.talsec_security.TalsecSecurityPlugin',
+        'com.aheaditec.talsec_security.c',
+        'com.aheaditec.talsec_security.b',
+        'com.aheadtec.talsec.security.TalsecPlugin',
+        'com.aheadtec.talsec.security.c'
+    ];
+    flutterClasses.forEach(function (clsName) {
+        try {
+            var Cls = Java.use(clsName);
+            if (Cls.onMethodCall) {
+                Cls.onMethodCall.implementation = function (call, result) {
+                    var method = call.method.value || (call.method ? call.method.toString() : '');
+                    var ArrayList = Java.use('java.util.ArrayList');
+                    var BooleanCls = Java.use('java.lang.Boolean');
 
-                        if (method === 'checkForIssues') {
-                            result.success(ArrayList.$new());
-                            return;
-                        } else if (method === 'isRealDevice') {
-                            result.success(BooleanCls.TRUE.value);
-                            return;
-                        } else if (method === 'isJailBroken' || method === 'isRooted') {
-                            result.success(BooleanCls.FALSE.value);
-                            return;
-                        }
-                        return this.onMethodCall(call, result);
-                    };
-                    console.log("[+] [Frida] FreeRASP plugin bridge hooked on " + clsName);
-                }
-            } catch (err) {}
-        });
-    } catch (e) {}
+                    if (method === 'checkForIssues') {
+                        console.log("[+] [Frida] FreeRASP " + clsName + ".checkForIssues -> empty list");
+                        result.success(ArrayList.$new());
+                        return;
+                    } else if (method === 'isRealDevice') {
+                        console.log("[+] [Frida] FreeRASP " + clsName + ".isRealDevice -> true");
+                        result.success(BooleanCls.TRUE.value);
+                        return;
+                    } else if (method === 'isJailBroken' || method === 'isRooted' || method === 'isEmulator' || method === 'isTampered') {
+                        console.log("[+] [Frida] FreeRASP " + clsName + "." + method + " -> false");
+                        result.success(BooleanCls.FALSE.value);
+                        return;
+                    }
+                    return this.onMethodCall(call, result);
+                };
+                console.log("[+] [Frida] FreeRASP plugin bridge hooked on " + clsName);
+            }
+        } catch (err) {}
+    });
 
     // 3. SU / Magisk File Checks Bypass
     try {
@@ -123,7 +150,6 @@ Java.perform(function () {
 
         Runtime.exec.overload('java.lang.String').implementation = function (cmd) {
             if (cmd && (rootCmdRegex.test(cmd) || whichRootRegex.test(cmd))) {
-                // Redirect to non-existent / exit 1 command instead of crashing
                 return this.exec.overload('java.lang.String').call(this, 'echo not_found');
             }
             return this.exec.overload('java.lang.String').call(this, cmd);

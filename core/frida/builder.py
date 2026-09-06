@@ -61,7 +61,7 @@ def build_gadget_script(config: dict[str, Any] | None = None, app_id: str = "") 
         "    console.log('[*] [Frida] Initializing Frida Gadget runtime...');\n",
         "    function runPayload() {",
         "        if (typeof Java === 'undefined' || !Java.available) {",
-        "            setTimeout(runPayload, 50);",
+        "            setTimeout(runPayload, 5);",
         "            return;",
         "        }\n"
     ]
@@ -141,7 +141,7 @@ def build_gadget_script(config: dict[str, Any] | None = None, app_id: str = "") 
     bundled_sections.append("        console.log('[+] [Frida] All configured modules loaded successfully.');")
     bundled_sections.append("    }")
     bundled_sections.append("")
-    bundled_sections.append("    setTimeout(runPayload, 20);")
+    bundled_sections.append("    runPayload();")
     bundled_sections.append("})();\n")
 
     return "\n".join(bundled_sections)
