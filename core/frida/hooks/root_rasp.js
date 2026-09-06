@@ -39,6 +39,28 @@ Java.perform(function () {
         console.log("[+] [Frida] RootBeer checks disarmed");
     } catch (e) {}
 
+    // Process & System.exit Neutralization (Anti-Kill RASP defense)
+    try {
+        var System = Java.use('java.lang.System');
+        System.exit.implementation = function (code) {
+            console.log('[!] [Frida] System.exit(' + code + ') BLOCKED');
+            var Log = Java.use('android.util.Log');
+            var Exception = Java.use('java.lang.Exception');
+            Log.e('FridaRASP', 'BLOCKED System.exit from stack:', Exception.$new());
+            return;
+        };
+        console.log('[+] [Frida] System.exit anti-kill hook installed');
+    } catch (e) {}
+
+    try {
+        var Process = Java.use('android.os.Process');
+        Process.killProcess.implementation = function (pid) {
+            console.log('[!] [Frida] Process.killProcess(' + pid + ') BLOCKED');
+            return;
+        };
+        console.log('[+] [Frida] Process.killProcess anti-kill hook installed');
+    } catch (e) {}
+
     // 2. Talsec / FreeRASP Library Bypass (Fireshell Security Team tested Intent Hook)
     try {
         var Intent = Java.use("android.content.Intent");
