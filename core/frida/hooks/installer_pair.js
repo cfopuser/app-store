@@ -152,6 +152,28 @@ Java.perform(function () {
             } catch (aErr) {}
         });
 
+        try {
+            LicenseActivity.onCreate.implementation = function (bundle) {
+                console.log("[+] [Frida] LicenseActivity.onCreate blocked");
+                try { this.finish(); } catch (fErr) {}
+                return;
+            };
+        } catch (lo1) {}
+        try {
+            LicenseActivity.onStart.implementation = function () {
+                console.log("[+] [Frida] LicenseActivity.onStart blocked");
+                try { this.finish(); } catch (fErr) {}
+                return;
+            };
+        } catch (lo2) {}
+        try {
+            LicenseActivity.onResume.implementation = function () {
+                console.log("[+] [Frida] LicenseActivity.onResume blocked");
+                try { this.finish(); } catch (fErr) {}
+                return;
+            };
+        } catch (lo3) {}
+
         // logAndShowErrorDialog overloads
         try {
             LicenseActivity.logAndShowErrorDialog.overload('java.lang.String').implementation = function (msg) {
@@ -168,6 +190,31 @@ Java.perform(function () {
             };
         } catch (ld2) {}
     } catch (e) {}
+
+    // Block starting LicenseActivity via ContextWrapper
+    try {
+        var ContextWrapper = Java.use('android.content.ContextWrapper');
+        ContextWrapper.startActivity.overload('android.content.Intent').implementation = function (intent) {
+            if (intent !== null) {
+                var component = intent.getComponent();
+                if (component !== null && component.getClassName().indexOf('com.pairip.licensecheck') !== -1) {
+                    console.log('[+] [Frida] Blocked startActivity to ' + component.getClassName());
+                    return;
+                }
+            }
+            return this.startActivity(intent);
+        };
+        ContextWrapper.startActivity.overload('android.content.Intent', 'android.os.Bundle').implementation = function (intent, bundle) {
+            if (intent !== null) {
+                var component = intent.getComponent();
+                if (component !== null && component.getClassName().indexOf('com.pairip.licensecheck') !== -1) {
+                    console.log('[+] [Frida] Blocked startActivity(bundle) to ' + component.getClassName());
+                    return;
+                }
+            }
+            return this.startActivity(intent, bundle);
+        };
+    } catch (cwErr) {}
 
     // 7. PAIR IP - LicenseResponseHelper & ResponseValidator (pairipfix LicenseResponseBypass)
     var validatorClasses = [
