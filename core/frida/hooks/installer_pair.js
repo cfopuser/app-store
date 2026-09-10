@@ -1,15 +1,18 @@
 /**
  * installer_pair.js
  * 
- * Core Frida Module: Google Play Installer Spoofing & PAIR License Bypass.
+ * Core Frida Module: Google Play Installer Spoofing & PAIR License Bypass (pairipfix).
  * Stage: Java (Dalvik/ART runtime)
  * 
  * Incorporates:
+ * - Play Store Intent Navigation Firewall (drops market:// and Play Store redirect intents)
  * - ApplicationPackageManager.getInstallerPackageName -> com.android.vending
- * - PackageManager.getInstallSourceInfo (API 30+) getters spoofing
- * - PAIR IP SignatureCheck & LicenseClient bypass (pairipfix)
+ * - ApplicationPackageManager.getInstallSourceInfo (API 30+) mock & getters spoofing
+ * - IPackageManager IPC proxy spoofing
+ * - Full PAIR IP (com.pairip.*) SignatureCheck, LicenseClient, LicenseClientV3 bypass
  * - PAIR IP LicenseActivity suppression
  * - Kotlin ArraysKt & CollectionsKt installer array bypass
+ * - Anti-exit guard for PAIR lifecycle routines
  */
 
 (function (root) {
@@ -18,29 +21,161 @@
     const MODULE_NAME = 'installer_pair';
     const DEFAULT_PLAY_STORE_PKG = 'com.android.vending';
 
+    function isPlayStoreRedirectIntent(intent) {
+        if (!intent) return false;
+        try {
+            const data = intent.getData();
+            const dataStr = data ? data.toString() : '';
+            const pkg = intent.getPackage();
+            const component = intent.getComponent();
+            const compStr = component ? component.flattenToString() : '';
+
+            if (dataStr.indexOf('market://') !== -1 || dataStr.indexOf('play.google.com') !== -1) {
+                return true;
+            }
+            if (pkg === 'com.android.vending') {
+                return true;
+            }
+            if (compStr.indexOf('com.pairip.licensecheck') !== -1 || 
+                compStr.indexOf('LicenseActivity') !== -1 || 
+                compStr.indexOf('com.android.vending') !== -1) {
+                return true;
+            }
+        } catch (_) {}
+        return false;
+    }
+
+    function setupIntentFirewall(logger, safeUtils) {
+        // 1. Hook Activity.startActivity
+        safeUtils.safeJavaUse('android.app.Activity', function (Activity) {
+            ['startActivity', 'startActivityForResult'].forEach(methodName => {
+                try {
+                    const overloads = Activity[methodName].overloads;
+                    for (let i = 0; i < overloads.length; i++) {
+                        overloads[i].implementation = function () {
+                            const args = Array.prototype.slice.call(arguments);
+                            for (let j = 0; j < args.length; j++) {
+                                if (args[j] && isPlayStoreRedirectIntent(args[j])) {
+                                    logger.info(`[IntentFirewall] Blocked Play Store redirect via Activity.${methodName}`);
+                                    return;
+                                }
+                            }
+                            return overloads[i].apply(this, args);
+                        };
+                    }
+                } catch (_) {}
+            });
+            logger.debug('Activity startActivity intent firewall active');
+        }, logger);
+
+        // 2. Hook ContextWrapper.startActivity
+        safeUtils.safeJavaUse('android.content.ContextWrapper', function (ContextWrapper) {
+            try {
+                const overloads = ContextWrapper.startActivity.overloads;
+                for (let i = 0; i < overloads.length; i++) {
+                    overloads[i].implementation = function () {
+                        const args = Array.prototype.slice.call(arguments);
+                        for (let j = 0; j < args.length; j++) {
+                            if (args[j] && isPlayStoreRedirectIntent(args[j])) {
+                                logger.info('[IntentFirewall] Blocked Play Store redirect via ContextWrapper.startActivity');
+                                return;
+                            }
+                        }
+                        return overloads[i].apply(this, args);
+                    };
+                }
+            } catch (_) {}
+        }, logger);
+
+        // 3. Hook Instrumentation.execStartActivity
+        safeUtils.safeJavaUse('android.app.Instrumentation', function (Instrumentation) {
+            try {
+                const overloads = Instrumentation.execStartActivity.overloads;
+                for (let i = 0; i < overloads.length; i++) {
+                    overloads[i].implementation = function () {
+                        const args = Array.prototype.slice.call(arguments);
+                        for (let j = 0; j < args.length; j++) {
+                            if (args[j] && isPlayStoreRedirectIntent(args[j])) {
+                                logger.info('[IntentFirewall] Blocked Play Store redirect via Instrumentation.execStartActivity');
+                                try {
+                                    const ActivityResult = Java.use('android.app.Instrumentation$ActivityResult');
+                                    return ActivityResult.$new(0, null);
+                                } catch (_) {
+                                    return null;
+                                }
+                            }
+                        }
+                        return overloads[i].apply(this, args);
+                    };
+                }
+            } catch (_) {}
+        }, logger);
+    }
+
     function setupInstallerSpoofing(pkgName, logger, safeUtils) {
-        // 1. ApplicationPackageManager.getInstallerPackageName
+        // 1. ApplicationPackageManager
         safeUtils.safeJavaUse('android.app.ApplicationPackageManager', function (AppPkgMgr) {
+            // getInstallerPackageName(String)
             try {
                 AppPkgMgr.getInstallerPackageName.overload('java.lang.String').implementation = function () {
                     return pkgName;
                 };
                 logger.debug(`ApplicationPackageManager.getInstallerPackageName hooked -> ${pkgName}`);
             } catch (_) {}
+
+            // getInstallSourceInfo(String) (API 30+)
+            try {
+                AppPkgMgr.getInstallSourceInfo.overload('java.lang.String').implementation = function (targetPkg) {
+                    try {
+                        const res = this.getInstallSourceInfo.overload('java.lang.String').call(this, targetPkg);
+                        if (res !== null) {
+                            return res;
+                        }
+                    } catch (_) {}
+
+                    try {
+                        const InstallSourceInfo = Java.use('android.content.pm.InstallSourceInfo');
+                        return InstallSourceInfo.$new(pkgName, null, null, pkgName);
+                    } catch (_) {
+                        return null;
+                    }
+                };
+                logger.debug(`ApplicationPackageManager.getInstallSourceInfo hooked -> ${pkgName}`);
+            } catch (_) {}
         }, logger);
 
-        // 2. InstallSourceInfo (Android 11+ / API 30+)
+        // 2. InstallSourceInfo Getters (Android 11+ / API 30+)
         safeUtils.safeJavaUse('android.content.pm.InstallSourceInfo', function (InstallSourceInfo) {
+            const getters = [
+                'getInstallingPackageName',
+                'getInitiatingPackageName',
+                'getOriginatingPackageName',
+                'getUpdateOwnerPackageName'
+            ];
+            getters.forEach(getter => {
+                try {
+                    if (InstallSourceInfo[getter]) {
+                        InstallSourceInfo[getter].implementation = function () { return pkgName; };
+                    }
+                } catch (_) {}
+            });
+
             try {
-                InstallSourceInfo.getInstallingPackageName.implementation = function () { return pkgName; };
+                if (InstallSourceInfo.getPackageSource) {
+                    InstallSourceInfo.getPackageSource.implementation = function () { return 1; }; // PACKAGE_SOURCE_STORE
+                }
             } catch (_) {}
-            try {
-                InstallSourceInfo.getInitiatingPackageName.implementation = function () { return pkgName; };
-            } catch (_) {}
-            try {
-                InstallSourceInfo.getOriginatingPackageName.implementation = function () { return pkgName; };
-            } catch (_) {}
+
             logger.debug(`InstallSourceInfo getters hooked -> ${pkgName}`);
+        }, logger);
+
+        // 3. IPackageManager Proxy
+        safeUtils.safeJavaUse('android.content.pm.IPackageManager$Stub$Proxy', function (IPkgProxy) {
+            try {
+                if (IPkgProxy.getInstallerPackageName) {
+                    IPkgProxy.getInstallerPackageName.implementation = function () { return pkgName; };
+                }
+            } catch (_) {}
         }, logger);
     }
 
@@ -72,21 +207,31 @@
             } catch (_) {}
 
             try {
-                LicenseClient.checkLicense.overload('android.content.Context').implementation = function () {};
+                LicenseClient.checkLicense.overload('android.content.Context').implementation = function () {
+                    logger.debug('PAIR LicenseClient.checkLicense(Context) neutralized');
+                };
             } catch (_) {}
 
             try {
                 LicenseClient.checkLicense.overload(
                     'android.content.Context', 'com.pairip.licensecheck.LicenseClient$LicenseListener'
                 ).implementation = function (ctx, listener) {
+                    logger.debug('PAIR LicenseClient.checkLicense with listener -> triggering onLicenseValid');
                     if (listener) {
                         try { listener.onLicenseValid(); } catch (_) {}
                     }
                 };
             } catch (_) {}
 
-            try { LicenseClient.startPaywallActivity.implementation = function () {}; } catch (_) {}
-            try { LicenseClient.startErrorDialogActivity.implementation = function () {}; } catch (_) {}
+            ['startPaywallActivity', 'startErrorDialogActivity', 'showErrorDialog', 'closeApp', 'exitApp'].forEach(m => {
+                try {
+                    if (LicenseClient[m]) {
+                        LicenseClient[m].implementation = function () {
+                            logger.debug(`PAIR LicenseClient.${m} suppressed`);
+                        };
+                    }
+                } catch (_) {}
+            });
         }, logger);
 
         // 3. LicenseClientV3
@@ -98,21 +243,13 @@
 
         // 4. LicenseActivity suppression
         safeUtils.safeJavaUse('com.pairip.licensecheck.LicenseActivity', function (LicenseActivity) {
-            ['closeApp', 'exitApp', 'showErrorDialog', 'showPaywallAndCloseApp'].forEach(method => {
+            ['closeApp', 'exitApp', 'showErrorDialog', 'showPaywallAndCloseApp', 'onCreate', 'onStart', 'onResume'].forEach(method => {
                 try {
                     if (LicenseActivity[method]) {
                         LicenseActivity[method].implementation = function () {
                             try { this.finish(); } catch (_) {}
                         };
                     }
-                } catch (_) {}
-            });
-
-            ['onCreate', 'onStart', 'onResume'].forEach(method => {
-                try {
-                    LicenseActivity[method].implementation = function () {
-                        try { this.finish(); } catch (_) {}
-                    };
                 } catch (_) {}
             });
         }, logger);
@@ -128,7 +265,9 @@
 
         // 6. LicenseContentProvider
         safeUtils.safeJavaUse('com.pairip.licensecheck.LicenseContentProvider', function (Provider) {
-            Provider.onCreate.implementation = function () { return true; };
+            try {
+                Provider.onCreate.implementation = function () { return true; };
+            } catch (_) {}
         }, logger);
     }
 
@@ -182,6 +321,7 @@
             const targetPkg = config.installer_package || DEFAULT_PLAY_STORE_PKG;
 
             logger.info(`Initializing Installer Spoofing (target: ${targetPkg})...`);
+            setupIntentFirewall(logger, safeUtils);
             setupInstallerSpoofing(targetPkg, logger, safeUtils);
 
             if (config.bypass_pair_license !== false) {
