@@ -35,7 +35,8 @@
     "name_play": "בזק Bezeq"
   },
   "patching": {
-    "inject_updater": false
+    "inject_updater": false,
+    "inject_frida": true
   },
   "paths": {
     "version_file": "apps/bezeq/version.txt",
