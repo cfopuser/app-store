@@ -223,6 +223,16 @@
                 };
             } catch (_) {}
 
+            ['isLicenseValid', 'isCheckPassed', 'isLicensed', 'performLocalInstallerCheck'].forEach(m => {
+                try {
+                    if (LicenseClient[m]) {
+                        LicenseClient[m].implementation = function () {
+                            return true;
+                        };
+                    }
+                } catch (_) {}
+            });
+
             ['startPaywallActivity', 'startErrorDialogActivity', 'showErrorDialog', 'closeApp', 'exitApp'].forEach(m => {
                 try {
                     if (LicenseClient[m]) {
@@ -239,11 +249,30 @@
             try {
                 LicenseClientV3.processResponse.overload('int', 'android.os.Bundle').implementation = function () {};
             } catch (_) {}
+            ['checkLicense', 'requestLicense', 'startPaywallActivity', 'startErrorDialogActivity', 'closeApp', 'exitApp'].forEach(m => {
+                try {
+                    if (LicenseClientV3[m]) {
+                        LicenseClientV3[m].implementation = function () {
+                            logger.debug(`PAIR LicenseClientV3.${m} suppressed`);
+                        };
+                    }
+                } catch (_) {}
+            });
         }, logger);
 
         // 4. LicenseActivity suppression
         safeUtils.safeJavaUse('com.pairip.licensecheck.LicenseActivity', function (LicenseActivity) {
-            ['closeApp', 'exitApp', 'showErrorDialog', 'showPaywallAndCloseApp', 'onCreate', 'onStart', 'onResume'].forEach(method => {
+            ['closeApp', 'exitApp', 'showErrorDialog', 'showPaywallAndCloseApp'].forEach(method => {
+                try {
+                    if (LicenseActivity[method]) {
+                        LicenseActivity[method].implementation = function () {
+                            logger.debug(`PAIR LicenseActivity.${method} suppressed`);
+                        };
+                    }
+                } catch (_) {}
+            });
+
+            ['onCreate', 'onStart', 'onResume'].forEach(method => {
                 try {
                     if (LicenseActivity[method]) {
                         LicenseActivity[method].implementation = function () {

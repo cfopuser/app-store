@@ -293,6 +293,34 @@
                 }
             }, logger);
         });
+
+        // 6. Native Anti-Kill (exit, _exit, _Exit, kill self)
+        ['exit', '_exit', '_Exit'].forEach(fn => {
+            safeUtils.safeAttachNative('libc.so', fn, {
+                onEnter: function (args) {
+                    const code = args[0].toInt32();
+                    logger.warn(`[AntiKill Native] Intercepted libc.${fn}(${code})`);
+                    // Sleep calling thread to prevent terminating the entire process
+                    Thread.sleep(60000);
+                }
+            }, logger);
+        });
+
+        safeUtils.safeAttachNative('libc.so', 'kill', {
+            onEnter: function (args) {
+                this.blocked = false;
+                const targetPid = args[0].toInt32();
+                if (targetPid === Process.id || targetPid === 0 || targetPid === -1) {
+                    logger.warn(`[AntiKill Native] Suppressed libc.kill(${targetPid}, ${args[1].toInt32()}) on self`);
+                    this.blocked = true;
+                }
+            },
+            onLeave: function (retval) {
+                if (this.blocked) {
+                    retval.replace(ptr(0));
+                }
+            }
+        }, logger);
     }
 
     function setupXamarinBypass(logger) {
@@ -435,16 +463,56 @@
     }
 
     function setupAntiKillDefenses(logger, safeUtils) {
+        // 1. System.exit
         safeUtils.safeJavaUse('java.lang.System', function (System) {
-            System.exit.implementation = function (code) {
-                logger.warn(`[AntiKill] Blocked System.exit(${code}) invocation.`);
-            };
+            try {
+                System.exit.implementation = function (code) {
+                    logger.warn(`[AntiKill] Blocked System.exit(${code}) invocation.`);
+                };
+            } catch (_) {}
         }, logger);
 
+        // 2. Runtime.exit & Runtime.halt
+        safeUtils.safeJavaUse('java.lang.Runtime', function (Runtime) {
+            try {
+                Runtime.exit.overload('int').implementation = function (code) {
+                    logger.warn(`[AntiKill] Blocked Runtime.exit(${code}) invocation.`);
+                };
+            } catch (_) {}
+            try {
+                Runtime.halt.overload('int').implementation = function (code) {
+                    logger.warn(`[AntiKill] Blocked Runtime.halt(${code}) invocation.`);
+                };
+            } catch (_) {}
+        }, logger);
+
+        // 3. Process.killProcess & Process.sendSignal
         safeUtils.safeJavaUse('android.os.Process', function (ProcessCls) {
-            ProcessCls.killProcess.implementation = function (pid) {
-                logger.warn(`[AntiKill] Blocked Process.killProcess(${pid}) invocation.`);
-            };
+            try {
+                ProcessCls.killProcess.implementation = function (pid) {
+                    logger.warn(`[AntiKill] Blocked Process.killProcess(${pid}) invocation.`);
+                };
+            } catch (_) {}
+            try {
+                ProcessCls.sendSignal.implementation = function (pid, sig) {
+                    logger.warn(`[AntiKill] Blocked Process.sendSignal(${pid}, ${sig}) invocation.`);
+                };
+            } catch (_) {}
+        }, logger);
+
+        // 4. Activity finishAffinity & finishAndRemoveTask
+        safeUtils.safeJavaUse('android.app.Activity', function (Activity) {
+            try {
+                Activity.finishAffinity.implementation = function () {
+                    logger.warn('[AntiKill] Blocked Activity.finishAffinity() invocation.');
+                };
+            } catch (_) {}
+            try {
+                Activity.finishAndRemoveTask.implementation = function () {
+                    logger.warn('[AntiKill] Blocked Activity.finishAndRemoveTask() invocation.');
+                    return true;
+                };
+            } catch (_) {}
         }, logger);
     }
 
