@@ -1,108 +1,128 @@
 /**
- * Strict WebView Domain Whitelist Firewall Hook Module
- * Intercepts WebViewClient navigation, validates destination URLs against allowed_domains,
- * and blocks unauthorized external URLs while displaying a native Toast.
+ * webview_firewall.js
+ * 
+ * Core Frida Module: Strict WebView Domain Whitelist Firewall.
+ * Stage: Java (Dalvik/ART runtime)
+ * 
+ * Intercepts WebViewClient.shouldOverrideUrlLoading, validates destination URLs against
+ * allowed_domains, and blocks unauthorized external URLs while displaying a native Toast.
  */
 
-Java.perform(function () {
-    console.log("[*] [Frida] Injecting WebView Domain Firewall...");
+(function (root) {
+    'use strict';
 
-    var ALLOWED_DOMAINS = /*__ALLOWED_DOMAINS__*/ [];
-    var BLOCKED_MESSAGE = /*__BLOCKED_MESSAGE__*/ "הגישה לקישור זה נחסמה";
+    const MODULE_NAME = 'webview_firewall';
+    const DEFAULT_BLOCKED_MESSAGE = 'הגישה לקישור זה נחסמה';
 
-    if (!ALLOWED_DOMAINS || ALLOWED_DOMAINS.length === 0) {
-        console.log("[i] [Frida] No WebView allowed_domains configured. Firewall passive.");
-        return;
-    }
+    function setupWebViewFirewall(config, logger, safeUtils) {
+        const allowedDomains = config.allowed_domains || /*__ALLOWED_DOMAINS__*/ [];
+        const blockedMessage = config.blocked_message || /*__BLOCKED_MESSAGE__*/ DEFAULT_BLOCKED_MESSAGE;
 
-    console.log("[+] [Frida] WebView Firewall active. Allowed domains: " + JSON.stringify(ALLOWED_DOMAINS));
+        if (!allowedDomains || !allowedDomains.length) {
+            logger.debug('No allowed_domains configured; WebView firewall passive.');
+            return;
+        }
 
-    function isUrlAllowed(urlStr) {
-        if (!urlStr) return true;
-        try {
-            var urlLower = urlStr.toLowerCase().trim();
-            if (urlLower.startsWith("about:") || urlLower.startsWith("data:") || urlLower.startsWith("blob:") || urlLower.startsWith("file:")) {
-                return true;
-            }
+        logger.info(`WebView Firewall active. Whitelisted domains: [${allowedDomains.join(', ')}]`);
 
-            var Uri = Java.use('android.net.Uri');
-            var parsed = Uri.parse(urlStr);
-            var host = parsed.getHost();
-            if (!host) return true;
-
-            var hostStr = host.toLowerCase().trim();
-
-            for (var i = 0; i < ALLOWED_DOMAINS.length; i++) {
-                var allowed = ALLOWED_DOMAINS[i].toLowerCase().trim();
-                if (hostStr === allowed || hostStr.endsWith("." + allowed)) {
+        function isUrlAllowed(urlStr) {
+            if (!urlStr) return true;
+            try {
+                const urlLower = urlStr.toLowerCase().trim();
+                if (urlLower.startsWith('about:') || urlLower.startsWith('data:') || urlLower.startsWith('blob:') || urlLower.startsWith('file:')) {
                     return true;
                 }
+
+                const Uri = Java.use('android.net.Uri');
+                const parsed = Uri.parse(urlStr);
+                const host = parsed.getHost();
+                if (!host) return true;
+
+                const hostStr = host.toLowerCase().trim();
+                for (let i = 0; i < allowedDomains.length; i++) {
+                    const allowed = allowedDomains[i].toLowerCase().trim();
+                    if (hostStr === allowed || hostStr.endsWith('.' + allowed)) {
+                        return true;
+                    }
+                }
+                return false;
+            } catch (e) {
+                logger.warn(`Error parsing URL '${urlStr}': ${e.message}`);
+                return true;
             }
-
-            return false;
-        } catch (e) {
-            console.log("[-] [Frida] Error parsing URL in firewall: " + e);
-            return true;
         }
-    }
 
-    function showBlockedToast(context) {
-        try {
-            Java.scheduleOnMainThread(function () {
-                try {
-                    var ActivityThread = Java.use('android.app.ActivityThread');
-                    var Toast = Java.use('android.widget.Toast');
-                    var StringCls = Java.use('java.lang.String');
+        function showBlockedToast(context) {
+            try {
+                Java.scheduleOnMainThread(function () {
+                    try {
+                        const ActivityThread = Java.use('android.app.ActivityThread');
+                        const Toast = Java.use('android.widget.Toast');
+                        const StringCls = Java.use('java.lang.String');
 
-                    var currentApp = ActivityThread.currentApplication();
-                    var ctx = context || (currentApp ? currentApp.getApplicationContext() : null);
+                        const currentApp = ActivityThread.currentApplication();
+                        const ctx = context || (currentApp ? currentApp.getApplicationContext() : null);
 
-                    if (ctx) {
-                        var msg = StringCls.$new(BLOCKED_MESSAGE);
-                        Toast.makeText(ctx, msg, Toast.LENGTH_SHORT.value).show();
-                    }
-                } catch (tErr) {}
-            });
-        } catch (e) {
-            console.log("[-] [Frida] Could not display blocked toast: " + e);
+                        if (ctx) {
+                            const msg = StringCls.$new(blockedMessage);
+                            Toast.makeText(ctx, msg, Toast.LENGTH_SHORT.value).show();
+                        }
+                    } catch (_) {}
+                });
+            } catch (_) {}
         }
-    }
 
-
-    try {
-        var WebViewClient = Java.use('android.webkit.WebViewClient');
-
-        // Overload 1: shouldOverrideUrlLoading(WebView, String) (Deprecated in API 24)
-        try {
-            WebViewClient.shouldOverrideUrlLoading.overload('android.webkit.WebView', 'java.lang.String').implementation = function (view, url) {
-                if (!isUrlAllowed(url)) {
-                    console.log("[!] [Frida] Blocked navigation to URL: " + url);
-                    var ctx = view ? view.getContext() : null;
-                    showBlockedToast(ctx);
-                    return true; // Cancel navigation
-                }
-                return this.shouldOverrideUrlLoading.overload('android.webkit.WebView', 'java.lang.String').call(this, view, url);
-            };
-            console.log("[+] [Frida] WebViewClient.shouldOverrideUrlLoading(WebView, String) hooked");
-        } catch (e1) {}
-
-        // Overload 2: shouldOverrideUrlLoading(WebView, WebResourceRequest) (API 24+)
-        try {
-            WebViewClient.shouldOverrideUrlLoading.overload('android.webkit.WebView', 'android.webkit.WebResourceRequest').implementation = function (view, request) {
-                if (request !== null) {
-                    var uri = request.getUrl();
-                    var url = uri ? uri.toString() : null;
-                    if (url && !isUrlAllowed(url)) {
-                        console.log("[!] [Frida] Blocked navigation to URL: " + url);
-                        var ctx = view ? view.getContext() : null;
+        safeUtils.safeJavaUse('android.webkit.WebViewClient', function (WebViewClient) {
+            // Overload 1: shouldOverrideUrlLoading(WebView, String) (API < 24)
+            try {
+                WebViewClient.shouldOverrideUrlLoading.overload('android.webkit.WebView', 'java.lang.String').implementation = function (view, url) {
+                    if (!isUrlAllowed(url)) {
+                        logger.warn(`Blocked navigation to unauthorized URL: ${url}`);
+                        const ctx = view ? view.getContext() : null;
                         showBlockedToast(ctx);
-                        return true; // Cancel navigation
+                        return true;
                     }
-                }
-                return this.shouldOverrideUrlLoading.overload('android.webkit.WebView', 'android.webkit.WebResourceRequest').call(this, view, request);
-            };
-            console.log("[+] [Frida] WebViewClient.shouldOverrideUrlLoading(WebView, WebResourceRequest) hooked");
-        } catch (e2) {}
+                    return this.shouldOverrideUrlLoading.overload('android.webkit.WebView', 'java.lang.String').call(this, view, url);
+                };
+            } catch (_) {}
 
-    } catch (e) {}
-});
+            // Overload 2: shouldOverrideUrlLoading(WebView, WebResourceRequest) (API 24+)
+            try {
+                WebViewClient.shouldOverrideUrlLoading.overload('android.webkit.WebView', 'android.webkit.WebResourceRequest').implementation = function (view, request) {
+                    if (request !== null) {
+                        const uri = request.getUrl();
+                        const url = uri ? uri.toString() : null;
+                        if (url && !isUrlAllowed(url)) {
+                            logger.warn(`Blocked navigation to unauthorized URL: ${url}`);
+                            const ctx = view ? view.getContext() : null;
+                            showBlockedToast(ctx);
+                            return true;
+                        }
+                    }
+                    return this.shouldOverrideUrlLoading.overload('android.webkit.WebView', 'android.webkit.WebResourceRequest').call(this, view, request);
+                };
+            } catch (_) {}
+
+            logger.info('WebViewClient navigation interceptors hooked.');
+        }, logger);
+    }
+
+    // --- MODULE DEFINITION ---
+    const HookModule = {
+        name: MODULE_NAME,
+        description: 'Strict WebView Domain Whitelist Firewall',
+        stage: 'java',
+        defaultEnabled: false,
+
+        initJava: function (config, context) {
+            const logger = context.logger || console;
+            const safeUtils = context.safeUtils;
+            setupWebViewFirewall(config, logger, safeUtils);
+        }
+    };
+
+    if (root.__FRIDA_CORE__) {
+        root.__FRIDA_CORE__.register(HookModule);
+    }
+
+})(typeof globalThis !== 'undefined' ? globalThis : this);

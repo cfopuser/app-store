@@ -1,26 +1,22 @@
 /**
  * anti_frida.js
  * 
- * Production-grade Anti-Frida & Anti-Debugging Bypass.
- * Covers:
+ * Core Frida Module: Anti-Frida & Anti-Debugging Bypass.
+ * Stage: Native (Runs synchronously during initial process load)
+ * 
+ * Capabilities:
  * 1. ptrace anti-debugging (PTRACE_TRACEME, PT_DENY_ATTACH)
- * 2. Port scanning interception (Frida server ports 27042, 27047)
+ * 2. Port scanning interception (Frida server ports 27042, 27047, or custom)
  * 3. /proc/self/maps and /proc/self/status inspection tampering (virtualized stream filtering)
  * 4. Thread enumeration and name masking (gmain, gdbus, gum-js-loop)
  */
 
-(function (root, factory) {
-    if (typeof module === 'object' && module.exports) {
-        module.exports = factory();
-    } else {
-        root.AntiFrida = factory();
-    }
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+(function (root) {
     'use strict';
 
-    const MODULE_NAME = 'AntiFrida';
+    const MODULE_NAME = 'anti_frida';
 
-    const FRIDA_PORTS = [27042, 27047];
+    const DEFAULT_PORTS = [27042, 27047];
     const FRIDA_KEYWORDS = [
         'frida-agent',
         'frida-gadget',
@@ -32,78 +28,58 @@
         'gdbus'
     ];
 
-    function setupPtraceBypass(logger) {
-        const ptracePtr = Module.findExportByName('libc.so', 'ptrace');
-        if (!ptracePtr) {
-            logger.debug('ptrace export not found in libc.so');
-            return;
-        }
-
-        try {
-            Interceptor.attach(ptracePtr, {
-                onEnter: function (args) {
-                    const request = args[0].toInt32();
-                    // PTRACE_TRACEME = 0
-                    if (request === 0) {
-                        this.isTraceme = true;
-                        logger.debug('[ptrace] Neutralizing PTRACE_TRACEME (0)');
-                    }
-                },
-                onLeave: function (retval) {
-                    if (this.isTraceme) {
-                        retval.replace(ptr(0)); // Return success (0)
-                    }
+    function setupPtraceBypass(logger, safeUtils) {
+        safeUtils.safeAttachNative('libc.so', 'ptrace', {
+            onEnter: function (args) {
+                const request = args[0].toInt32();
+                // PTRACE_TRACEME = 0
+                if (request === 0) {
+                    this.isTraceme = true;
+                    logger.debug('[ptrace] Neutralizing PTRACE_TRACEME (0)');
                 }
-            });
-            logger.debug('Hooked native libc.so!ptrace');
-        } catch (e) {
-            logger.debug(`Failed to hook ptrace: ${e.message}`);
-        }
+            },
+            onLeave: function (retval) {
+                if (this.isTraceme) {
+                    retval.replace(ptr(0)); // Return success (0)
+                }
+            }
+        }, logger);
     }
 
-    function setupPortBypass(logger) {
-        // Intercept connect() socket calls
-        const connectPtr = Module.findExportByName('libc.so', 'connect');
-        if (!connectPtr) return;
+    function setupPortBypass(ports, logger, safeUtils) {
+        const portList = Array.isArray(ports) ? ports : DEFAULT_PORTS;
+        safeUtils.safeAttachNative('libc.so', 'connect', {
+            onEnter: function (args) {
+                this.blocked = false;
+                const sockaddrPtr = args[1];
+                if (sockaddrPtr.isNull()) return;
 
-        try {
-            Interceptor.attach(connectPtr, {
-                onEnter: function (args) {
-                    this.blocked = false;
-                    const sockaddrPtr = args[1];
-                    if (sockaddrPtr.isNull()) return;
+                try {
+                    const family = sockaddrPtr.readU16();
+                    // AF_INET = 2
+                    if (family === 2) {
+                        // Port is in network byte order (big endian) at offset 2
+                        const portHigh = sockaddrPtr.add(2).readU8();
+                        const portLow = sockaddrPtr.add(3).readU8();
+                        const port = (portHigh << 8) | portLow;
 
-                    try {
-                        const family = sockaddrPtr.readU16();
-                        // AF_INET = 2
-                        if (family === 2) {
-                            // Port is in network byte order (big endian) at offset 2
-                            const portHigh = sockaddrPtr.add(2).readU8();
-                            const portLow = sockaddrPtr.add(3).readU8();
-                            const port = (portHigh << 8) | portLow;
-
-                            if (FRIDA_PORTS.indexOf(port) !== -1) {
-                                logger.debug(`[connect] Intercepted port probe on Frida port ${port}`);
-                                this.blocked = true;
-                            }
+                        if (portList.indexOf(port) !== -1) {
+                            logger.debug(`[connect] Intercepted port probe on Frida port ${port}`);
+                            this.blocked = true;
                         }
-                    } catch (_) {}
-                },
-                onLeave: function (retval) {
-                    if (this.blocked) {
-                        // Return -1 with ECONNREFUSED (111)
-                        retval.replace(ptr(-1));
                     }
+                } catch (_) {}
+            },
+            onLeave: function (retval) {
+                if (this.blocked) {
+                    // Return -1 with ECONNREFUSED (111)
+                    retval.replace(ptr(-1));
                 }
-            });
-            logger.debug('Hooked native libc.so!connect (Frida port cloak)');
-        } catch (e) {
-            logger.debug(`Failed to hook connect: ${e.message}`);
-        }
+            }
+        }, logger);
     }
 
     function setupProcMapsBypass(logger) {
-        // Track open file descriptors pointing to /proc/*/maps or status
         const trackedFds = new Map(); // fd -> 'maps' | 'status'
         const trackedFp = new Map();  // FILE* -> 'maps' | 'status'
 
@@ -122,7 +98,6 @@
             return null;
         }
 
-        // 1. open(path, flags, mode)
         if (openPtr) {
             try {
                 Interceptor.attach(openPtr, {
@@ -145,7 +120,6 @@
             } catch (_) {}
         }
 
-        // 2. openat(dirfd, path, flags, mode)
         if (openatPtr) {
             try {
                 Interceptor.attach(openatPtr, {
@@ -168,7 +142,6 @@
             } catch (_) {}
         }
 
-        // 3. fopen(path, mode)
         if (fopenPtr) {
             try {
                 Interceptor.attach(fopenPtr, {
@@ -190,7 +163,6 @@
             } catch (_) {}
         }
 
-        // 4. close & fclose cleanup
         if (closePtr) {
             try {
                 Interceptor.attach(closePtr, {
@@ -217,7 +189,6 @@
             } catch (_) {}
         }
 
-        // 5. read(fd, buf, count)
         if (readPtr) {
             try {
                 Interceptor.attach(readPtr, {
@@ -234,14 +205,12 @@
                                 if (!content) return;
 
                                 if (this.type === 'status') {
-                                    // Replace TracerPid: <pid> with TracerPid:\t0
                                     const sanitized = content.replace(/TracerPid:\s*\d+/g, 'TracerPid:\t0');
                                     if (sanitized !== content) {
                                         this.buf.writeUtf8String(sanitized);
                                         logger.debug('[read] Concealed TracerPid in /proc/self/status');
                                     }
                                 } else if (this.type === 'maps') {
-                                    // Sanitize Frida lines from maps
                                     const lines = content.split('\n');
                                     let modified = false;
                                     const filtered = lines.filter(line => {
@@ -268,7 +237,6 @@
             } catch (_) {}
         }
 
-        // 6. fgets(buf, size, fp)
         if (fgetsPtr) {
             try {
                 Interceptor.attach(fgetsPtr, {
@@ -291,7 +259,6 @@
                                 } else if (this.type === 'maps') {
                                     for (let i = 0; i < FRIDA_KEYWORDS.length; i++) {
                                         if (line.includes(FRIDA_KEYWORDS[i])) {
-                                            // Empty line or replace with benign libc mapping
                                             this.buf.writeUtf8String('\n');
                                             logger.debug(`[fgets] Masked line containing ${FRIDA_KEYWORDS[i]}`);
                                             break;
@@ -308,71 +275,63 @@
         logger.debug('Configured /proc/self/maps & status stream cloaking');
     }
 
-    function setupThreadMasking(logger) {
-        // Intercept pthread_getname_np(pthread_t thread, char *name, size_t len)
-        const getnamePtr = Module.findExportByName('libc.so', 'pthread_getname_np');
-        if (getnamePtr) {
-            try {
-                Interceptor.attach(getnamePtr, {
-                    onEnter: function (args) {
-                        this.namePtr = args[1];
-                        this.len = args[2].toInt32();
-                    },
-                    onLeave: function (retval) {
-                        if (retval.toInt32() === 0 && !this.namePtr.isNull()) {
-                            try {
-                                const threadName = this.namePtr.readUtf8String();
-                                for (let i = 0; i < FRIDA_KEYWORDS.length; i++) {
-                                    if (threadName && threadName.includes(FRIDA_KEYWORDS[i])) {
-                                        this.namePtr.writeUtf8String('pool-thread');
-                                        logger.debug(`[pthread_getname_np] Masked thread name: ${threadName} -> pool-thread`);
-                                        break;
-                                    }
-                                }
-                            } catch (_) {}
+    function setupThreadMasking(logger, safeUtils) {
+        safeUtils.safeAttachNative('libc.so', 'pthread_getname_np', {
+            onEnter: function (args) {
+                this.namePtr = args[1];
+                this.len = args[2].toInt32();
+            },
+            onLeave: function (retval) {
+                if (retval.toInt32() === 0 && !this.namePtr.isNull()) {
+                    try {
+                        const threadName = this.namePtr.readUtf8String();
+                        for (let i = 0; i < FRIDA_KEYWORDS.length; i++) {
+                            if (threadName && threadName.includes(FRIDA_KEYWORDS[i])) {
+                                this.namePtr.writeUtf8String('pool-thread');
+                                logger.debug(`[pthread_getname_np] Masked thread name: ${threadName} -> pool-thread`);
+                                break;
+                            }
                         }
-                    }
-                });
-                logger.debug('Hooked native libc.so!pthread_getname_np');
-            } catch (e) {
-                logger.debug(`Failed to hook pthread_getname_np: ${e.message}`);
+                    } catch (_) {}
+                }
             }
-        }
+        }, logger);
     }
 
-    return {
+    const HookModule = {
         name: MODULE_NAME,
-        init: function (options, logger) {
-            options = options || {};
-            logger = logger || console;
+        description: 'Anti-Frida & Anti-Debugging native cloaking',
+        stage: 'native',
+        defaultEnabled: true,
 
-            logger.info(`[${MODULE_NAME}] Initializing Anti-Frida & Anti-Debug bypasses...`);
+        initNative: function (config, context) {
+            const logger = context.logger || console;
+            const safeUtils = context.safeUtils;
 
-            try {
-                setupPtraceBypass(logger);
-            } catch (e) {
-                logger.error(`[${MODULE_NAME}] ptrace bypass error: ${e.message}`);
+            logger.info('Initializing Anti-Frida & Anti-Debug native bypasses...');
+
+            if (config.bypass_ptrace !== false) {
+                setupPtraceBypass(logger, safeUtils);
             }
 
-            try {
-                setupPortBypass(logger);
-            } catch (e) {
-                logger.error(`[${MODULE_NAME}] Port bypass error: ${e.message}`);
+            if (config.cloak_ports !== false) {
+                setupPortBypass(config.block_ports, logger, safeUtils);
             }
 
-            try {
+            if (config.cloak_proc_maps !== false) {
                 setupProcMapsBypass(logger);
-            } catch (e) {
-                logger.error(`[${MODULE_NAME}] /proc maps & status cloak error: ${e.message}`);
             }
 
-            try {
-                setupThreadMasking(logger);
-            } catch (e) {
-                logger.error(`[${MODULE_NAME}] Thread masking error: ${e.message}`);
+            if (config.mask_threads !== false) {
+                setupThreadMasking(logger, safeUtils);
             }
 
-            logger.info(`[${MODULE_NAME}] Anti-Frida protection layers active.`);
+            logger.info('Anti-Frida protection layers active.');
         }
     };
-});
+
+    if (root.__FRIDA_CORE__) {
+        root.__FRIDA_CORE__.register(HookModule);
+    }
+
+})(typeof globalThis !== 'undefined' ? globalThis : this);
