@@ -36,6 +36,8 @@ The repository runs one consistent patching flow:
 
 ## App Config Keys
 
+See the full documentation in [App Configuration Reference](app-config-reference.md).
+
 - Required:
   - `id`, `name`, `package_name`, `source`, `version_file`, `status_file`
 - Optional behavior:
@@ -43,3 +45,5 @@ The repository runs one consistent patching flow:
   - `inject_updater` (bool, default `true`)
   - `updater_target_smali` (str)
   - `clone_config` (`old_pkg`, `new_pkg`, optional `app_name_suffix`)
+  - `frida` (Frida Core Hooks Engine configuration and modules)
+  - `string_replacements`, `hotfixes`, `version_overrides`, `version_code_overrides`
