@@ -205,6 +205,47 @@ def _get_target_loader_class(decompiled_dir: str) -> tuple[str | None, str]:
     return None, ""
 
 
+def _find_early_bootstrap_classes(decompiled_dir: str) -> list[str]:
+    """
+    Find smali files for early bootstrap providers like LicenseContentProvider
+    or other declared ContentProviders in AndroidManifest.xml to ensure Frida
+    Gadget initializes before provider onCreate() calls.
+    """
+    early_files: list[str] = []
+    
+    # 1. Check for LicenseContentProvider specifically
+    for root, _, files in os.walk(decompiled_dir):
+        if "LicenseContentProvider.smali" in files:
+            full_path = os.path.join(root, "LicenseContentProvider.smali")
+            if full_path not in early_files:
+                early_files.append(full_path)
+                
+    # 2. Check AndroidManifest.xml providers
+    manifest_path = os.path.join(decompiled_dir, "AndroidManifest.xml")
+    if os.path.isfile(manifest_path):
+        try:
+            tree = ET.parse(manifest_path)
+            m_root = tree.getroot()
+            pkg = m_root.get("package") or ""
+            ns = {"android": ANDROID_NS}
+            
+            for provider in m_root.iter("provider"):
+                prov_name = provider.get(f"{{{ns['android']}}}name")
+                if prov_name:
+                    if prov_name.startswith("."):
+                        prov_name = pkg + prov_name
+                    elif "." not in prov_name:
+                        prov_name = f"{pkg}.{prov_name}"
+                    
+                    smali_path = _find_class_smali_file(decompiled_dir, prov_name)
+                    if smali_path and os.path.isfile(smali_path) and smali_path not in early_files:
+                        early_files.append(smali_path)
+        except Exception:
+            pass
+            
+    return early_files
+
+
 def inject_smali_loader(smali_file_path: str, is_arm_only: bool = False) -> bool:
     """
     Inject `System.loadLibrary("gadget")` into the static constructor <clinit>()V of a smali class,
@@ -485,15 +526,24 @@ def inject_frida_gadget(
     ensure_compressed_native_libs(decompiled_dir)
 
     # 5. Inject Smali Loader
+    is_arm_only = not any(abi in ("x86", "x86_64") for abi in target_abis)
+
+    # 5a. Early Bootstrap Providers (e.g. LicenseContentProvider)
+    early_providers = _find_early_bootstrap_classes(decompiled_dir)
+    for early_smali in early_providers:
+        print(f"[*] [Frida] Injecting early bootstrap loader into: {os.path.basename(early_smali)}")
+        inject_smali_loader(early_smali, is_arm_only=is_arm_only)
+
+    # 5b. Application or Launcher Activity
     target_smali_file, class_name = _get_target_loader_class(decompiled_dir)
-    if not target_smali_file:
-        print("[-] [Frida] CRITICAL: Could not find Application or Launcher Activity smali file to inject loader.")
+    if not target_smali_file and not early_providers:
+        print("[-] [Frida] CRITICAL: Could not find Application, Provider, or Launcher Activity smali file to inject loader.")
         return False
 
-    print(f"[*] [Frida] Target loader class: {class_name} ({target_smali_file})")
-    is_arm_only = not any(abi in ("x86", "x86_64") for abi in target_abis)
-    if not inject_smali_loader(target_smali_file, is_arm_only=is_arm_only):
-        return False
+    if target_smali_file:
+        print(f"[*] [Frida] Target loader class: {class_name} ({target_smali_file})")
+        if not inject_smali_loader(target_smali_file, is_arm_only=is_arm_only):
+            return False
 
     print("[+] [Frida] Frida Gadget injection completed successfully!")
     return True

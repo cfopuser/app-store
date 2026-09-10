@@ -300,8 +300,6 @@
                 onEnter: function (args) {
                     const code = args[0].toInt32();
                     logger.warn(`[AntiKill Native] Intercepted libc.${fn}(${code})`);
-                    // Sleep calling thread to prevent terminating the entire process
-                    Thread.sleep(60000);
                 }
             }, logger);
         });
