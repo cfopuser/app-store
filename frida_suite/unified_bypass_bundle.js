@@ -313,14 +313,26 @@
             '/data/local/xbin/su', '/data/local/bin/su', '/system/sd/xbin/su', '/system/bin/failsafe/su',
             '/data/local/su', '/su/bin/su', '/system/etc/init.d/99SuperSUDaemon',
             '/system/xbin/daemonsu', '/system/xbin/busybox', '/system/bin/magisk', '/sbin/magisk',
-            '/data/adb/magisk', '/data/adb/magisk.db'
+            '/data/adb/magisk', '/data/adb/magisk.db', '/data/adb/modules', '/data/adb/.boot_count',
+            '/proc/net/unix'
         ];
         const ROOT_PACKAGES = [
-            'com.noshufou.android.su', 'eu.chainfire.supersu', 'com.koushikdutta.superuser',
-            'com.thirdparty.superuser', 'com.yellowes.su', 'com.koushikdutta.rommanager',
-            'com.dimonvideo.luckypatcher', 'com.chelpus.lackypatch', 'com.ramdroid.appquarantine',
-            'com.devadvance.rootcloak', 'de.robv.android.xposed.installer', 'com.saurik.substrate',
-            'com.topjohnwu.magisk', 'me.weishu.kernelsu'
+            'com.noshufou.android.su', 'com.noshufou.android.su.elite', 'eu.chainfire.supersu',
+            'com.koushikdutta.superuser', 'com.thirdparty.superuser', 'com.yellowes.su',
+            'com.topjohnwu.magisk', 'com.kingroot.kinguser', 'com.kingo.root',
+            'com.smedialink.oneclickroot', 'com.zhiqupk.root.global', 'com.alephzain.framaroot',
+            'me.weishu.kernelsu', 'com.koushikdutta.rommanager', 'com.koushikdutta.rommanager.license',
+            'com.dimonvideo.luckypatcher', 'com.chelpus.lackypatch', 'com.chelpus.luckypatcher',
+            'com.ramdroid.appquarantine', 'com.ramdroid.appquarantinepro',
+            'com.android.vending.billing.InAppBillingService.COIN', 'com.android.vending.billing.InAppBillingService.LUCK',
+            'com.blackmartalpha', 'org.blackmart.market', 'com.allinone.free', 'com.repodroid.app',
+            'org.creeplays.hack', 'com.baseappfull.fwd', 'com.zmapp', 'com.dv.marketmod.installer',
+            'org.mobilism.android', 'com.android.wp.net.log', 'com.android.camera.update',
+            'cc.madkite.freedom', 'com.solohsu.android.edxp.manager', 'org.meowcat.edxposed.manager',
+            'com.xmodgame', 'com.cih.game_cih', 'com.charles.lpoqasert', 'catch_.me_.if_.you_.can_',
+            'com.devadvance.rootcloak', 'com.devadvance.rootcloakplus', 'de.robv.android.xposed.installer',
+            'com.saurik.substrate', 'com.zachspong.temprootremovejb', 'com.amphoras.hidemyroot',
+            'com.amphoras.hidemyrootadfree', 'com.formyhm.hiderootPremium', 'com.formyhm.hideroot'
         ];
         const EMULATOR_FILES = [
             '/dev/socket/qemud', '/dev/qemu_pipe', '/system/lib/libc_malloc_debug_qemu.so',
@@ -328,10 +340,18 @@
         ];
         const SPOOFED_PROPS = {
             'ro.build.tags': 'release-keys', 'ro.build.type': 'user', 'ro.debuggable': '0',
-            'ro.secure': '1', 'ro.hardware': 'qcom', 'ro.product.model': 'Pixel 7',
+            'ro.secure': '1', 'ro.build.selinux': '1', 'ro.hardware': 'qcom', 'ro.product.model': 'Pixel 7',
             'ro.product.brand': 'google', 'ro.product.manufacturer': 'Google',
             'ro.kernel.qemu': '0', 'ro.kernel.android.qemud': '0'
         };
+
+        function isSensitive(p) {
+            if (!p || typeof p !== 'string') return false;
+            if (ROOT_PATHS.indexOf(p) !== -1 || EMULATOR_FILES.indexOf(p) !== -1) return true;
+            if (/(^|\/)(su|busybox|magisk|daemonsu|supersu)$/i.test(p)) return true;
+            if (p.includes('/proc/net/unix') || p.includes('/data/adb/.boot_count')) return true;
+            return false;
+        }
 
         function bypassJava(logger, opts) {
             try {
@@ -339,7 +359,7 @@
                 const origExists = File.exists;
                 File.exists.implementation = function () {
                     const p = this.getAbsolutePath();
-                    if (ROOT_PATHS.indexOf(p) !== -1 || EMULATOR_FILES.indexOf(p) !== -1 || p.endsWith('/su') || p.endsWith('/magisk')) {
+                    if (isSensitive(p)) {
                         logger.debug(`[File.exists] Denied: ${p}`);
                         return false;
                     }
@@ -352,9 +372,7 @@
                 const origCheckAccess = UnixFileSystem.checkAccess;
                 UnixFileSystem.checkAccess.implementation = function (file, access) {
                     const p = file.getAbsolutePath();
-                    if (ROOT_PATHS.indexOf(p) !== -1 || p.endsWith('/su') || p.endsWith('/magisk')) {
-                        return false;
-                    }
+                    if (isSensitive(p)) return false;
                     return origCheckAccess.call(this, file, access);
                 };
             } catch (_) {}
@@ -367,24 +385,30 @@
                     if (ROOT_PACKAGES.indexOf(pkg) !== -1) throw NameNotFoundException.$new(pkg);
                     return origGetPkg.overload('java.lang.String', 'int').call(this, pkg, flags);
                 };
+                try {
+                    const PackageInfoFlags = Java.use('android.content.pm.PackageManager$PackageInfoFlags');
+                    origGetPkg.overload('java.lang.String', 'android.content.pm.PackageManager$PackageInfoFlags').implementation = function (pkg, flags) {
+                        if (ROOT_PACKAGES.indexOf(pkg) !== -1) throw NameNotFoundException.$new(pkg);
+                        return origGetPkg.overload('java.lang.String', 'android.content.pm.PackageManager$PackageInfoFlags').call(this, pkg, flags);
+                    };
+                } catch (_) {}
             } catch (_) {}
 
             try {
                 const ProcessImpl = Java.use('java.lang.ProcessImpl');
                 ProcessImpl.start.implementation = function (cmdarray, env, dir, redirects, redirectErrorStream) {
                     if (cmdarray && cmdarray.length > 0) {
+                        const cmd = cmdarray[0] ? cmdarray[0].toString() : '';
                         const full = Array.from(cmdarray).map(c => (c ? c.toString() : '')).join(' ');
-                        for (let b of ROOT_BINARIES) {
-                            if (full.includes(b)) {
-                                logger.debug(`[ProcessImpl.start] Neutralized root cmd: ${full}`);
-                                const StringClass = Java.use('java.lang.String');
-                                const fake = Java.array('java.lang.String', [
-                                    StringClass.$new('/system/bin/sh'),
-                                    StringClass.$new('-c'),
-                                    StringClass.$new('exit 1')
-                                ]);
-                                return ProcessImpl.start.call(this, fake, env, dir, redirects, redirectErrorStream);
-                            }
+                        if (/(^|\/)(su|magisk|busybox|daemonsu)$/i.test(cmd) || full.includes('which su')) {
+                            logger.debug(`[ProcessImpl.start] Neutralized root cmd: ${full}`);
+                            const StringClass = Java.use('java.lang.String');
+                            const fake = Java.array('java.lang.String', [
+                                StringClass.$new('/system/bin/sh'),
+                                StringClass.$new('-c'),
+                                StringClass.$new('exit 1')
+                            ]);
+                            return ProcessImpl.start.call(this, fake, env, dir, redirects, redirectErrorStream);
                         }
                     }
                     return ProcessImpl.start.call(this, cmdarray, env, dir, redirects, redirectErrorStream);
@@ -396,11 +420,15 @@
                 const origGet = SystemProperties.get;
                 SystemProperties.get.overload('java.lang.String').implementation = function (k) {
                     if (k in SPOOFED_PROPS) return SPOOFED_PROPS[k];
-                    return origGet.overload('java.lang.String').call(this, k);
+                    let res = origGet.overload('java.lang.String').call(this, k);
+                    if (k === 'ro.build.tags' && res && res.includes('test-keys')) return res.replace('test-keys', 'release-keys');
+                    return res;
                 };
                 SystemProperties.get.overload('java.lang.String', 'java.lang.String').implementation = function (k, d) {
                     if (k in SPOOFED_PROPS) return SPOOFED_PROPS[k];
-                    return origGet.overload('java.lang.String', 'java.lang.String').call(this, k, d);
+                    let res = origGet.overload('java.lang.String', 'java.lang.String').call(this, k, d);
+                    if (k === 'ro.build.tags' && res && res.includes('test-keys')) return res.replace('test-keys', 'release-keys');
+                    return res;
                 };
                 SystemProperties.getInt.implementation = function (k, d) {
                     if (k === 'ro.debuggable') return 0;
@@ -423,11 +451,15 @@
                 Build.HARDWARE.value = 'qcom';
             } catch (_) {}
 
-            const rootBeerClasses = ['com.scottyab.rootbeer.RootBeer', 'com.kimchangyoun.rootbeer.RootBeer'];
+            const rootBeerClasses = [
+                'com.scottyab.rootbeer.RootBeer',
+                'com.kimchangyoun.rootbeer.RootBeer',
+                'com.kimchangyoun.rootbeerFresh.RootBeer'
+            ];
             rootBeerClasses.forEach(c => {
                 try {
                     const RB = Java.use(c);
-                    ['isRooted', 'isRootedWithoutBusyBoxCheck', 'isRootedWithBusyBoxCheck', 'detectTestKeys', 'checkForSuBinary'].forEach(m => {
+                    ['isRooted', 'isRootedWithoutBusyBoxCheck', 'isRootedWithBusyBoxCheck', 'detectTestKeys', 'checkForSuBinary', 'checkForMagiskUDS', 'checkForRootNative'].forEach(m => {
                         try { if (RB[m]) RB[m].implementation = function () { return false; }; } catch (_) {}
                     });
                 } catch (_) {}
@@ -446,6 +478,24 @@
             }
         }
 
+        function hookRootBeerJni() {
+            const syms = [
+                'Java_com_kimchangyoun_rootbeerFresh_RootBeerNative_checkForMagiskUDS',
+                'Java_com_kimchangyoun_rootbeerFresh_RootBeerNative_checkForRoot',
+                'Java_com_scottyab_rootbeer_RootBeerNative_checkForRoot'
+            ];
+            syms.forEach(sym => {
+                const ptrSym = Module.findExportByName(null, sym);
+                if (ptrSym) {
+                    try {
+                        Interceptor.attach(ptrSym, {
+                            onLeave: function (retval) { retval.replace(ptr(0)); }
+                        });
+                    } catch (_) {}
+                }
+            });
+        }
+
         function bypassNative(logger) {
             const accessPtr = Module.findExportByName('libc.so', 'access');
             if (accessPtr) {
@@ -456,14 +506,56 @@
                             if (!args[0].isNull()) {
                                 try {
                                     const p = args[0].readUtf8String();
-                                    if (p && (ROOT_PATHS.indexOf(p) !== -1 || p.endsWith('/su') || p.endsWith('/magisk'))) {
-                                        this.blocked = true;
-                                    }
+                                    if (isSensitive(p)) this.blocked = true;
                                 } catch (_) {}
                             }
                         },
                         onLeave: function (retval) {
                             if (this.blocked) retval.replace(ptr(-1));
+                        }
+                    });
+                } catch (_) {}
+            }
+
+            const statSyms = ['stat', 'lstat', 'fstatat64', 'newfstatat', 'openat'];
+            statSyms.forEach(sym => {
+                const pSym = Module.findExportByName('libc.so', sym);
+                if (pSym) {
+                    try {
+                        const isAt = sym.includes('at');
+                        Interceptor.attach(pSym, {
+                            onEnter: function (args) {
+                                this.blocked = false;
+                                const pPtr = isAt ? args[1] : args[0];
+                                if (!pPtr || pPtr.isNull()) return;
+                                try {
+                                    const p = pPtr.readUtf8String();
+                                    if (isSensitive(p)) this.blocked = true;
+                                } catch (_) {}
+                            },
+                            onLeave: function (retval) {
+                                if (this.blocked) retval.replace(ptr(-1));
+                            }
+                        });
+                    } catch (_) {}
+                }
+            });
+
+            const fopenPtr = Module.findExportByName('libc.so', 'fopen');
+            if (fopenPtr) {
+                try {
+                    Interceptor.attach(fopenPtr, {
+                        onEnter: function (args) {
+                            this.blocked = false;
+                            if (!args[0].isNull()) {
+                                try {
+                                    const p = args[0].readUtf8String();
+                                    if (isSensitive(p)) this.blocked = true;
+                                } catch (_) {}
+                            }
+                        },
+                        onLeave: function (retval) {
+                            if (this.blocked) retval.replace(ptr(0));
                         }
                     });
                 } catch (_) {}
@@ -490,6 +582,26 @@
                     });
                 } catch (_) {}
             }
+
+            hookRootBeerJni();
+            const dlopenNames = ['android_dlopen_ext', 'dlopen'];
+            dlopenNames.forEach(dl => {
+                const dlPtr = Module.findExportByName(null, dl);
+                if (dlPtr) {
+                    try {
+                        Interceptor.attach(dlPtr, {
+                            onEnter: function (args) {
+                                this.lib = args[0].isNull() ? '' : args[0].readUtf8String();
+                            },
+                            onLeave: function () {
+                                if (this.lib && (this.lib.includes('libtool-checker.so') || this.lib.includes('libtoolChecker.so'))) {
+                                    hookRootBeerJni();
+                                }
+                            }
+                        });
+                    } catch (_) {}
+                }
+            });
         }
 
         function bypassXamarin(logger) {

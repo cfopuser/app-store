@@ -46,24 +46,57 @@
         '/data/adb/magisk',
         '/data/adb/magisk.db',
         '/data/adb/modules',
+        '/data/adb/.boot_count',
+        '/proc/net/unix',
         '/system/bin/.ext/.su',
         '/system/usr/we-need-root/su-backup',
         '/system/xbin/ku.sud'
     ];
 
     const ROOT_PACKAGES = [
+        // Known Root Management Apps
         'com.noshufou.android.su',
         'com.noshufou.android.su.elite',
         'eu.chainfire.supersu',
         'com.koushikdutta.superuser',
         'com.thirdparty.superuser',
         'com.yellowes.su',
+        'com.topjohnwu.magisk',
+        'com.kingroot.kinguser',
+        'com.kingo.root',
+        'com.smedialink.oneclickroot',
+        'com.zhiqupk.root.global',
+        'com.alephzain.framaroot',
+        'me.weishu.kernelsu',
+        // Known Dangerous & Cheating / Mod Apps
         'com.koushikdutta.rommanager',
         'com.koushikdutta.rommanager.license',
         'com.dimonvideo.luckypatcher',
         'com.chelpus.lackypatch',
+        'com.chelpus.luckypatcher',
         'com.ramdroid.appquarantine',
         'com.ramdroid.appquarantinepro',
+        'com.android.vending.billing.InAppBillingService.COIN',
+        'com.android.vending.billing.InAppBillingService.LUCK',
+        'com.blackmartalpha',
+        'org.blackmart.market',
+        'com.allinone.free',
+        'com.repodroid.app',
+        'org.creeplays.hack',
+        'com.baseappfull.fwd',
+        'com.zmapp',
+        'com.dv.marketmod.installer',
+        'org.mobilism.android',
+        'com.android.wp.net.log',
+        'com.android.camera.update',
+        'cc.madkite.freedom',
+        'com.solohsu.android.edxp.manager',
+        'org.meowcat.edxposed.manager',
+        'com.xmodgame',
+        'com.cih.game_cih',
+        'com.charles.lpoqasert',
+        'catch_.me_.if_.you_.can_',
+        // Known Root Cloaking & Hooking Frameworks
         'com.devadvance.rootcloak',
         'com.devadvance.rootcloakplus',
         'de.robv.android.xposed.installer',
@@ -72,9 +105,7 @@
         'com.amphoras.hidemyroot',
         'com.amphoras.hidemyrootadfree',
         'com.formyhm.hiderootPremium',
-        'com.formyhm.hideroot',
-        'com.topjohnwu.magisk',
-        'me.weishu.kernelsu'
+        'com.formyhm.hideroot'
     ];
 
     const EMULATOR_FILES = [
@@ -101,6 +132,7 @@
         'ro.debuggable': '0',
         'ro.secure': '1',
         'ro.build.flavor': 'user',
+        'ro.build.selinux': '1',
         'ro.boot.flash.locked': '1',
         'ro.boot.verifiedbootstate': 'green',
         'ro.boot.vbmeta.device_state': 'locked',
@@ -114,27 +146,36 @@
         'ro.kernel.android.qemud': '0'
     };
 
+    /**
+     * Check if a given file path is related to root binaries, artifacts, UDS or emulators.
+     */
+    function isSensitivePath(path) {
+        if (!path || typeof path !== 'string') return false;
+        for (let i = 0; i < ROOT_PATHS.length; i++) {
+            if (path === ROOT_PATHS[i]) return true;
+        }
+        for (let i = 0; i < EMULATOR_FILES.length; i++) {
+            if (path === EMULATOR_FILES[i]) return true;
+        }
+        // Strict boundary check for binary names to avoid false positive matching
+        if (/(^|\/)(su|busybox|magisk|daemonsu|supersu)$/i.test(path)) {
+            return true;
+        }
+        if (path.includes('/proc/net/unix') || path.includes('/data/adb/.boot_count')) {
+            return true;
+        }
+        return false;
+    }
+
     function bypassJavaRoot(logger) {
-        // 1. File checks (File.exists, File.length)
+        // 1. File checks (File.exists)
         try {
             const File = Java.use('java.io.File');
             const existsOriginal = File.exists;
             File.exists.implementation = function () {
                 const path = this.getAbsolutePath();
-                for (let i = 0; i < ROOT_PATHS.length; i++) {
-                    if (path === ROOT_PATHS[i]) {
-                        logger.debug(`[File.exists] Denying root file: ${path}`);
-                        return false;
-                    }
-                }
-                for (let i = 0; i < EMULATOR_FILES.length; i++) {
-                    if (path === EMULATOR_FILES[i]) {
-                        logger.debug(`[File.exists] Denying emulator file: ${path}`);
-                        return false;
-                    }
-                }
-                if (path.endsWith('/su') || path.endsWith('/busybox') || path.endsWith('/magisk')) {
-                    logger.debug(`[File.exists] Denying root binary: ${path}`);
+                if (isSensitivePath(path)) {
+                    logger.debug(`[File.exists] Denying sensitive file: ${path}`);
                     return false;
                 }
                 return existsOriginal.call(this);
@@ -150,14 +191,8 @@
             const checkAccessOriginal = UnixFileSystem.checkAccess;
             UnixFileSystem.checkAccess.implementation = function (file, access) {
                 const path = file.getAbsolutePath();
-                for (let i = 0; i < ROOT_PATHS.length; i++) {
-                    if (path === ROOT_PATHS[i]) {
-                        logger.debug(`[UnixFileSystem.checkAccess] Denied: ${path}`);
-                        return false;
-                    }
-                }
-                if (path.endsWith('/su') || path.endsWith('/busybox') || path.endsWith('/magisk')) {
-                    logger.debug(`[UnixFileSystem.checkAccess] Denied binary: ${path}`);
+                if (isSensitivePath(path)) {
+                    logger.debug(`[UnixFileSystem.checkAccess] Denied: ${path}`);
                     return false;
                 }
                 return checkAccessOriginal.call(this, file, access);
@@ -208,14 +243,14 @@
                     let isRootCmd = false;
                     for (let i = 0; i < ROOT_BINARIES.length; i++) {
                         const bin = ROOT_BINARIES[i];
-                        if (cmd === bin || cmd.endsWith('/' + bin) || fullCmd.includes('which ' + bin)) {
+                        if (cmd === bin || /(^|\/)(su|magisk|busybox|daemonsu)$/i.test(cmd) || fullCmd.includes('which ' + bin)) {
                             isRootCmd = true;
                             break;
                         }
                     }
 
-                    if (isRootCmd || fullCmd.includes('getprop ro.debuggable') || fullCmd.includes('mount')) {
-                        logger.debug(`[ProcessImpl.start] Neutralizing command: ${fullCmd}`);
+                    if (isRootCmd) {
+                        logger.debug(`[ProcessImpl.start] Neutralizing root command: ${fullCmd}`);
                         const StringClass = Java.use('java.lang.String');
                         const fakeArray = Java.array('java.lang.String', [
                             StringClass.$new('/system/bin/sh'),
@@ -223,6 +258,23 @@
                             StringClass.$new('exit 1')
                         ]);
                         return ProcessImpl.start.call(this, fakeArray, env, dir, redirects, redirectErrorStream);
+                    }
+
+                    // Simulate restricted permission on sensitive shell queries
+                    if (fullCmd.includes('getprop ro.debuggable') || fullCmd.includes('mount')) {
+                        logger.debug(`[ProcessImpl.start] Blocking inspection query: ${fullCmd}`);
+                        try {
+                            const IOException = Java.use('java.io.IOException');
+                            throw IOException.$new('Command execution restricted');
+                        } catch (err) {
+                            const StringClass = Java.use('java.lang.String');
+                            const fakeArray = Java.array('java.lang.String', [
+                                StringClass.$new('/system/bin/sh'),
+                                StringClass.$new('-c'),
+                                StringClass.$new('exit 1')
+                            ]);
+                            return ProcessImpl.start.call(this, fakeArray, env, dir, redirects, redirectErrorStream);
+                        }
                     }
                 }
                 return ProcessImpl.start.call(this, cmdarray, env, dir, redirects, redirectErrorStream);
@@ -241,7 +293,11 @@
                     logger.debug(`[SystemProperties.get] Spoofed ${key} -> ${SPOOFED_PROPS[key]}`);
                     return SPOOFED_PROPS[key];
                 }
-                return getOriginal.overload('java.lang.String').call(this, key);
+                let res = getOriginal.overload('java.lang.String').call(this, key);
+                if (key === 'ro.build.tags' && res && res.includes('test-keys')) {
+                    return res.replace('test-keys', 'release-keys');
+                }
+                return res;
             };
 
             SystemProperties.get.overload('java.lang.String', 'java.lang.String').implementation = function (key, def) {
@@ -249,7 +305,11 @@
                     logger.debug(`[SystemProperties.get] Spoofed ${key} -> ${SPOOFED_PROPS[key]}`);
                     return SPOOFED_PROPS[key];
                 }
-                return getOriginal.overload('java.lang.String', 'java.lang.String').call(this, key, def);
+                let res = getOriginal.overload('java.lang.String', 'java.lang.String').call(this, key, def);
+                if (key === 'ro.build.tags' && res && res.includes('test-keys')) {
+                    return res.replace('test-keys', 'release-keys');
+                }
+                return res;
             };
 
             SystemProperties.getInt.implementation = function (key, def) {
@@ -289,7 +349,8 @@
         // 7. RootBeer library specific method overrides
         const rootBeerClasses = [
             'com.scottyab.rootbeer.RootBeer',
-            'com.kimchangyoun.rootbeer.RootBeer'
+            'com.kimchangyoun.rootbeer.RootBeer',
+            'com.kimchangyoun.rootbeerFresh.RootBeer'
         ];
         rootBeerClasses.forEach(className => {
             try {
@@ -307,6 +368,8 @@
                     'checkForRWPaths',
                     'checkForDangerousProps',
                     'checkForRootNative',
+                    'checkForMagiskBinary',
+                    'checkForMagiskUDS',
                     'detectRootCloakingApps'
                 ];
                 falseMethods.forEach(methodName => {
@@ -386,6 +449,33 @@
         }
     }
 
+    /**
+     * Intercept RootBeer and RootBeerFresh native JNI functions dynamically
+     */
+    function hookRootBeerJniSymbols(logger) {
+        const targets = [
+            'Java_com_kimchangyoun_rootbeerFresh_RootBeerNative_checkForMagiskUDS',
+            'Java_com_kimchangyoun_rootbeerFresh_RootBeerNative_checkForRoot',
+            'Java_com_scottyab_rootbeer_RootBeerNative_checkForRoot',
+            'Java_com_kimchangyoun_rootbeerFresh_RootBeerNative_setLogDebugMessages',
+            'Java_com_scottyab_rootbeer_RootBeerNative_setLogDebugMessages'
+        ];
+
+        targets.forEach(sym => {
+            const symPtr = Module.findExportByName(null, sym);
+            if (symPtr) {
+                try {
+                    Interceptor.attach(symPtr, {
+                        onLeave: function (retval) {
+                            logger.debug(`[RootBeerNative JNI] Neutralized ${sym} -> 0`);
+                            retval.replace(ptr(0));
+                        }
+                    });
+                } catch (_) {}
+            }
+        });
+    }
+
     function bypassNativeRoot(logger) {
         const libc = Process.findModuleByName('libc.so');
         if (!libc) {
@@ -393,7 +483,7 @@
             return;
         }
 
-        // 1. Hook access(const char *pathname, int mode)
+        // 1. Hook access & faccessat
         const accessPtr = Module.findExportByName('libc.so', 'access');
         if (accessPtr) {
             try {
@@ -403,16 +493,9 @@
                         if (args[0].isNull()) return;
                         try {
                             const path = args[0].readUtf8String();
-                            if (path) {
-                                for (let i = 0; i < ROOT_PATHS.length; i++) {
-                                    if (path === ROOT_PATHS[i]) {
-                                        this.blocked = true;
-                                        break;
-                                    }
-                                }
-                                if (!this.blocked && (path.endsWith('/su') || path.endsWith('/magisk'))) {
-                                    this.blocked = true;
-                                }
+                            if (isSensitivePath(path)) {
+                                this.blocked = true;
+                                logger.debug(`[libc.access] Blocked sensitive file check: ${path}`);
                             }
                         } catch (_) {}
                     },
@@ -428,7 +511,111 @@
             }
         }
 
-        // 2. Hook __system_property_get(const char *name, char *value)
+        const faccessatPtr = Module.findExportByName('libc.so', 'faccessat');
+        if (faccessatPtr) {
+            try {
+                Interceptor.attach(faccessatPtr, {
+                    onEnter: function (args) {
+                        this.blocked = false;
+                        if (args[1].isNull()) return;
+                        try {
+                            const path = args[1].readUtf8String();
+                            if (isSensitivePath(path)) {
+                                this.blocked = true;
+                                logger.debug(`[libc.faccessat] Blocked sensitive file check: ${path}`);
+                            }
+                        } catch (_) {}
+                    },
+                    onLeave: function (retval) {
+                        if (this.blocked) {
+                            retval.replace(ptr(-1));
+                        }
+                    }
+                });
+                logger.debug('Hooked native libc.so!faccessat');
+            } catch (e) {}
+        }
+
+        // 2. Hook stat, lstat, fstatat64, newfstatat
+        const statSymbols = ['stat', 'lstat', 'fstatat64', 'newfstatat'];
+        statSymbols.forEach(sym => {
+            const symPtr = Module.findExportByName('libc.so', sym);
+            if (symPtr) {
+                try {
+                    const isAt = sym.includes('at');
+                    Interceptor.attach(symPtr, {
+                        onEnter: function (args) {
+                            this.blocked = false;
+                            const pathPtr = isAt ? args[1] : args[0];
+                            if (!pathPtr || pathPtr.isNull()) return;
+                            try {
+                                const path = pathPtr.readUtf8String();
+                                if (isSensitivePath(path)) {
+                                    this.blocked = true;
+                                    logger.debug(`[libc.${sym}] Blocked sensitive file stat: ${path}`);
+                                }
+                            } catch (_) {}
+                        },
+                        onLeave: function (retval) {
+                            if (this.blocked) {
+                                retval.replace(ptr(-1));
+                            }
+                        }
+                    });
+                } catch (_) {}
+            }
+        });
+
+        // 3. Hook fopen, open, openat (especially protecting /proc/net/unix and /data/adb/.boot_count)
+        const fopenPtr = Module.findExportByName('libc.so', 'fopen');
+        if (fopenPtr) {
+            try {
+                Interceptor.attach(fopenPtr, {
+                    onEnter: function (args) {
+                        this.blocked = false;
+                        if (args[0].isNull()) return;
+                        try {
+                            const path = args[0].readUtf8String();
+                            if (isSensitivePath(path)) {
+                                this.blocked = true;
+                                logger.debug(`[libc.fopen] Blocked opening sensitive file: ${path}`);
+                            }
+                        } catch (_) {}
+                    },
+                    onLeave: function (retval) {
+                        if (this.blocked) {
+                            retval.replace(ptr(0)); // Return NULL
+                        }
+                    }
+                });
+            } catch (_) {}
+        }
+
+        const openatPtr = Module.findExportByName('libc.so', 'openat');
+        if (openatPtr) {
+            try {
+                Interceptor.attach(openatPtr, {
+                    onEnter: function (args) {
+                        this.blocked = false;
+                        if (args[1].isNull()) return;
+                        try {
+                            const path = args[1].readUtf8String();
+                            if (isSensitivePath(path)) {
+                                this.blocked = true;
+                                logger.debug(`[libc.openat] Blocked opening sensitive file: ${path}`);
+                            }
+                        } catch (_) {}
+                    },
+                    onLeave: function (retval) {
+                        if (this.blocked) {
+                            retval.replace(ptr(-1)); // Return -1 (EACCES/ENOENT)
+                        }
+                    }
+                });
+            } catch (_) {}
+        }
+
+        // 4. Hook __system_property_get(const char *name, char *value)
         const sysPropGet = Module.findExportByName('libc.so', '__system_property_get');
         if (sysPropGet) {
             try {
@@ -455,6 +642,28 @@
                 logger.debug(`Failed to hook native __system_property_get: ${e.message}`);
             }
         }
+
+        // 5. Dynamic Linker Hook for RootBeer / RootBeerFresh JNI symbols
+        hookRootBeerJniSymbols(logger);
+        const dlopenNames = ['android_dlopen_ext', 'dlopen'];
+        dlopenNames.forEach(dlName => {
+            const dlPtr = Module.findExportByName(null, dlName);
+            if (dlPtr) {
+                try {
+                    Interceptor.attach(dlPtr, {
+                        onEnter: function (args) {
+                            this.libName = args[0].isNull() ? '' : args[0].readUtf8String();
+                        },
+                        onLeave: function (retval) {
+                            if (this.libName && (this.libName.includes('libtool-checker.so') || this.libName.includes('libtoolChecker.so'))) {
+                                logger.info(`[dlopen] Detected RootBeer library loaded: ${this.libName}`);
+                                hookRootBeerJniSymbols(logger);
+                            }
+                        }
+                    });
+                } catch (_) {}
+            }
+        });
     }
 
     function bypassXamarinMono(logger) {
