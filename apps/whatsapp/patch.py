@@ -77,11 +77,11 @@ def patch(decompiled_dir: str) -> bool:
     kotlin_fix = _patch_kotlin_null_check(decompiled_dir)
     
     # 5. שינוי מסך הבית ל-Companion Mode במקום EULA
-    #companion_redirect = _patch_companion_mode_redirect(decompiled_dir)
+    companion_redirect = _patch_companion_mode_redirect(decompiled_dir)
     nuke_conv = _patch_nuke_newsletter_conversation(decompiled_dir)
     media_provider = _patch_file_provider_media(decompiled_dir)
     
-    results = [photos, newsletter, tabs, links_nuke, spi, browser, ai_kill, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, nuke_conv, media_provider] 
+    results = [photos, newsletter, tabs, links_nuke, spi, browser, ai_kill, status_nuke, status_redirect, gifs_tab, mime_crash, sig_bypass, kotlin_fix, companion_redirect, nuke_conv, media_provider] 
      
     _upload_diffs_at_the_end()
 
