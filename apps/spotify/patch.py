@@ -96,24 +96,36 @@ def patch(decompiled_dir: str) -> bool:
 
         if "EsImage$ImageData.smali" in files:
             file_path = os.path.join(root, "EsImage$ImageData.smali")
-            with open(file_path, 'r', encoding='utf-8') as f: content = f.read()
-            new_content = re.sub(
-                r"(\.method public final getData\(\)L.*?;.*?)(\.line \d+.*?iget-object\s+[vp]\d+,\s+[vp]\d+,\s+Lcom\/spotify\/image\/esperanto\/proto\/EsImage\$ImageData;->.*?:L.*?;)(.*?.end method)",
-                r"\1\n    const/4 v0, 0x0\n    return-object v0\n\3", content, flags=re.DOTALL)
-            if new_content != content:
-                with open(file_path, 'w', encoding='utf-8') as f: f.write(new_content)
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # רג'קס שלא תלוי ב-.line ומחליף ישירות את גוף המתודה
+            pattern = r"(\.method public final getData\(\)L[^;]+;[\s\S]*?\.registers\s+\d+)[\s\S]*?(\.end method)"
+            replacement = r"\1\n\n    const/4 v0, 0x0\n\n    return-object v0\n\2"
+            
+            new_content, count = re.subn(pattern, replacement, content)
+            if count > 0:
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
                 print("[+] Patched EsImage$ImageData")
+            else:
+                print("[-] WARNING: Could not find/patch getData() in EsImage$ImageData.smali!")
 
         if "VideoSurfaceView.smali" in files:
             file_path = os.path.join(root, "VideoSurfaceView.smali")
-            with open(file_path, 'r', encoding='utf-8') as f: content = f.read()
-            new_content = re.sub(
-                r"(\.method public getTextureView\(\)Landroid\/view\/TextureView;.*?)(\.line \d+.*?iget-object\s+[vp]\d+,\s+[vp]\d+,\s+Lcom\/spotify\/betamax\/player\/VideoSurfaceView;->.*?:Landroid\/view\/TextureView;)(.*?.end method)",
-                r"\1\n    const/4 v0, 0x0\n    return-object v0\n\3", content, flags=re.DOTALL)
-            if new_content != content:
-                with open(file_path, 'w', encoding='utf-8') as f: f.write(new_content)
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            pattern = r"(\.method public getTextureView\(\)Landroid\/view\/TextureView;[\s\S]*?\.registers\s+\d+)[\s\S]*?(\.end method)"
+            replacement = r"\1\n\n    const/4 v0, 0x0\n\n    return-object v0\n\2"
+            
+            new_content, count = re.subn(pattern, replacement, content)
+            if count > 0:
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
                 print("[+] Patched VideoSurfaceView")
-
+            else:
+                print("[-] WARNING: Could not find/patch getTextureView() in VideoSurfaceView.smali!")
     # =========================================================================
     # חלק 1.5: ביטול תמונת האלבום בנגן ההתראות (MediaMetadataCompat) - חובה
     # =========================================================================
