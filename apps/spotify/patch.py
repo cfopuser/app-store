@@ -85,6 +85,10 @@ def patch(decompiled_dir: str) -> bool:
     # =========================================================================
     print("[*] Applying Spotify-specific patches...")
     target_worker_file = "sharehousekeepingworker.smali"
+    
+    es_image_patched = False
+    video_surface_patched = False
+
     for root, dirs, files in os.walk(decompiled_dir):
         for filename in files:
             if filename.lower() == target_worker_file:
@@ -94,38 +98,81 @@ def patch(decompiled_dir: str) -> bool:
                 except Exception as e:
                     print(f"[-] Failed to delete {filename}: {e}")
 
+        # --- טיפול ב-EsImage$ImageData.smali ---
         if "EsImage$ImageData.smali" in files:
             file_path = os.path.join(root, "EsImage$ImageData.smali")
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-            
-            # רג'קס שלא תלוי ב-.line ומחליף ישירות את גוף המתודה
-            pattern = r"(\.method public final getData\(\)L[^;]+;[\s\S]*?\.registers\s+\d+)[\s\S]*?(\.end method)"
-            replacement = r"\1\n\n    const/4 v0, 0x0\n\n    return-object v0\n\2"
+
+            pattern = r"(\.method public (?:final )?getData\(\)L[^;]+;)[\s\S]*?(\.end method)"
+            replacement = r"\1\n    .locals 1\n\n    const/4 v0, 0x0\n\n    return-object v0\n\2"
             
             new_content, count = re.subn(pattern, replacement, content)
             if count > 0:
                 with open(file_path, 'w', encoding='utf-8') as f:
                     f.write(new_content)
-                print("[+] Patched EsImage$ImageData")
+                print(f"[+] Patched EsImage$ImageData successfully in {file_path}")
+                es_image_patched = True
             else:
-                print("[-] WARNING: Could not find/patch getData() in EsImage$ImageData.smali!")
+                print("\n[-] CRITICAL: Failed to patch getData() in EsImage$ImageData.smali!")
+                print(f"[i] Dumping Smali context from {file_path}:")
+                lines = content.splitlines()
+                found_method = False
+                for idx, line in enumerate(lines):
+                    if 'getData(' in line:
+                        found_method = True
+                        start = max(0, idx - 2)
+                        end = min(len(lines), idx + 15)  # מציג את כל גוף המתודה
+                        print(f"--- Method context around line {idx+1} ---")
+                        for i in range(start, end):
+                            marker = ">>>" if i == idx else "   "
+                            print(f"{marker} {i+1}: {lines[i]}")
+                        print("------------------------------------------\n")
+                if not found_method:
+                    print("[-] 'getData(' was not found anywhere in the file!")
+                
+                # הכשלת התהליך במקום!
+                raise RuntimeError("Aborting build: EsImage$ImageData was not patched!")
 
+        # --- טיפול ב-VideoSurfaceView.smali ---
         if "VideoSurfaceView.smali" in files:
             file_path = os.path.join(root, "VideoSurfaceView.smali")
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
-            
-            pattern = r"(\.method public getTextureView\(\)Landroid\/view\/TextureView;[\s\S]*?\.registers\s+\d+)[\s\S]*?(\.end method)"
-            replacement = r"\1\n\n    const/4 v0, 0x0\n\n    return-object v0\n\2"
+
+            pattern = r"(\.method public (?:final )?getTextureView\(\)Landroid/view/TextureView;)[\s\S]*?(\.end method)"
+            replacement = r"\1\n    .locals 1\n\n    const/4 v0, 0x0\n\n    return-object v0\n\2"
             
             new_content, count = re.subn(pattern, replacement, content)
             if count > 0:
                 with open(file_path, 'w', encoding='utf-8') as f:
                     f.write(new_content)
-                print("[+] Patched VideoSurfaceView")
+                print(f"[+] Patched VideoSurfaceView successfully in {file_path}")
+                video_surface_patched = True
             else:
-                print("[-] WARNING: Could not find/patch getTextureView() in VideoSurfaceView.smali!")
+                print("\n[-] CRITICAL: Failed to patch getTextureView() in VideoSurfaceView.smali!")
+                print(f"[i] Dumping Smali context from {file_path}:")
+                lines = content.splitlines()
+                found_method = False
+                for idx, line in enumerate(lines):
+                    if 'getTextureView(' in line:
+                        found_method = True
+                        start = max(0, idx - 2)
+                        end = min(len(lines), idx + 15)
+                        print(f"--- Method context around line {idx+1} ---")
+                        for i in range(start, end):
+                            marker = ">>>" if i == idx else "   "
+                            print(f"{marker} {i+1}: {lines[i]}")
+                        print("------------------------------------------\n")
+                if not found_method:
+                    print("[-] 'getTextureView(' was not found anywhere in the file!")
+                
+                # הכשלת התהליך במקום!
+                raise RuntimeError("Aborting build: VideoSurfaceView was not patched!")
+
+    # בדיקת ביטחון: אם הקבצים בכלל לא נמצאו בריצת הסריקה
+    if not es_image_patched:
+        raise RuntimeError("[-] CRITICAL: EsImage$ImageData.smali was not found in the APK! Aborting.")
     # =========================================================================
     # חלק 1.5: ביטול תמונת האלבום בנגן ההתראות (MediaMetadataCompat) - חובה
     # =========================================================================
