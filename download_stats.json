@@ -1,16 +1,16 @@
 {
-  "bezeq": 23,
-  "bit": 1644,
+  "bezeq": 24,
+  "bit": 1645,
   "egg": 138,
   "hopon": 48,
-  "meld": 661,
-  "metrolist": 4692,
+  "meld": 666,
+  "metrolist": 4719,
   "mizrahi": 7,
   "osmand": 13,
-  "sealplus": 65,
-  "spotify": 327,
+  "sealplus": 66,
+  "spotify": 333,
   "termux": 29,
-  "waze": 29,
-  "whatsapp": 404,
-  "yahav": 22
+  "waze": 21,
+  "whatsapp": 405,
+  "yahav": 23
 }
