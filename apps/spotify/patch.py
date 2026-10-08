@@ -372,32 +372,54 @@ def patch(decompiled_dir: str) -> bool:
                     print("[i] Updater call already exists in MainActivity.")
                     main_activity_patched = True
                 else:
-                    method_pattern = re.compile(r"(\.method.*?onCreate\(Landroid/os/Bundle;\)V)(.*?)(\.end method)", re.DOTALL)
+                    # איתור המתודה onCreate(Bundle)V
+                    method_pattern = re.compile(
+                        r"(\.method\s+[^{}\n]*onCreate\(Landroid/os/Bundle;\)V)(.*?)(\.end\s+method)", 
+                        re.DOTALL
+                    )
                     match = method_pattern.search(main_smali_content)
                     
                     if match:
+                        method_header = match.group(1)
                         method_body = match.group(2)
-                        last_return_idx = method_body.rfind("return-void")
-                        
-                        if last_return_idx != -1:
-                            updater_call = (
-                                "\n\n    # --- START INJECTION (Universal Updater) ---\n"
-                                "    move-object v0, p0\n"
-                                "    invoke-static {v0}, Lstoreautoupdater/Updater;->check(Landroid/content/Context;)V\n"
-                                "    # --- END INJECTION ---\n\n    "
-                            )
-                            
-                            new_method_body = method_body[:last_return_idx] + updater_call + method_body[last_return_idx:]
-                            new_full_method = match.group(1) + new_method_body + match.group(3)
-                            main_smali_content = main_smali_content.replace(match.group(0), new_full_method, 1)
+                        method_footer = match.group(3)
 
-                            with open(full_path, 'w', encoding='utf-8') as f:
-                                f.write(main_smali_content)
-                                
-                            main_activity_patched = True
-                            print(f"[+] Updater call injected successfully into {target_activity_smali}")
+                        updater_call = (
+                            "\n\n    # --- START INJECTION (Universal Updater) ---\n"
+                            "    invoke-static {p0}, Lstoreautoupdater/Updater;->check(Landroid/content/Context;)V\n"
+                            "    # --- END INJECTION ---\n"
+                        )
+
+                        # חיפוש הקריאה ל-invoke-super של onCreate
+                        super_pattern = re.compile(
+                            r'(invoke-super(?:/range)?\s*\{[^}]*\}\s*,\s*L[^;]+;->onCreate\(Landroid/os/Bundle;\)V)'
+                        )
+                        super_match = super_pattern.search(method_body)
+
+                        if super_match:
+                            # הזרקה מיד לאחר super.onCreate(...)
+                            insert_idx = super_match.end()
+                            new_method_body = method_body[:insert_idx] + updater_call + method_body[insert_idx:]
+                            print(f"[+] Injecting updater call directly after super.onCreate in {target_filename}")
                         else:
-                            print(f"[-] Could not find 'return-void' in {target_filename} onCreate().")
+                            # גיבוי: הזרקה בתחילת גוף המתודה מיד לאחר הגדרת הרגיסטרים (.locals / .registers)
+                            print(f"[!] Warning: super.onCreate not matched. Falling back to method start.")
+                            locals_match = re.search(r'(\.(?:locals|registers)\s+\d+)', method_body)
+                            if locals_match:
+                                insert_idx = locals_match.end()
+                                new_method_body = method_body[:insert_idx] + updater_call + method_body[insert_idx:]
+                            else:
+                                print(f"[-] Could not find injection point in {target_filename} onCreate().")
+                                break
+
+                        new_full_method = method_header + new_method_body + method_footer
+                        main_smali_content = main_smali_content.replace(match.group(0), new_full_method, 1)
+
+                        with open(full_path, 'w', encoding='utf-8') as f:
+                            f.write(main_smali_content)
+                            
+                        main_activity_patched = True
+                        print(f"[+] Updater call injected successfully into {target_activity_smali}")
                     else:
                         print(f"[-] Could not find onCreate() in {target_filename}.")
             except Exception as e:
@@ -407,5 +429,3 @@ def patch(decompiled_dir: str) -> bool:
     if not main_activity_patched:
         print(f"[-] Error: Failed to patch {target_activity_smali}.")
         return False
-
-    return True
