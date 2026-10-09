@@ -215,97 +215,6 @@ def _inject_updater_call(activity_file_path: str) -> bool:
         return True
 
     updater_call = (
-        "\n\n    # --- START INJECTION (Universal Updater) ---\n"
-        "    invoke-static/range {p0 .. p0}, Lstoreautoupdater/Updater;->check(Landroid/content/Context;)V\n"
-        "    # --- END INJECTION ---\n\n    "
-    )
-
-    methods_to_check = [
-        r"(\.method.*?onCreate\(Landroid/os/Bundle;\)V)(.*?)(\.end method)",
-        r"(\.method.*?onResume\(\)V)(.*?)(\.end method)",
-        r"(\.method.*?onStart\(\)V)(.*?)(\.end method)",
-    ]
-
-    import re
-    for pattern in methods_to_check:
-        method_pattern = re.compile(pattern, re.DOTALL)
-        match = method_pattern.search(content)
-        if match:
-            method_body = match.group(2)
-            last_return_idx = method_body.rfind("return-void")
-            if last_return_idx != -1:
-                new_method_body = method_body[:last_return_idx] + updater_call + method_body[last_return_idx:]
-                new_method = match.group(1) + new_method_body + match.group(3)
-                new_content = content.replace(match.group(0), new_method, 1)
-                try:
-                    with open(activity_file_path, "w", encoding="utf-8") as f:
-                        f.write(new_content)
-                    print(f"[+] Updater call injected successfully into {os.path.basename(activity_file_path)}")
-                    return True
-                except Exception as exc:
-                    print(f"[-] Failed to write activity file: {exc}")
-                    return False
-
-    print("[i] Standard lifecycle methods not found. Generating onResume()...")
-    super_pattern = re.compile(r"\.super\s+(L[^;]+;)")
-    super_match = super_pattern.search(content)
-    if not super_match:
-        print("[-] Could not find .super class in MainActivity.")
-        return False
-    
-    super_class = super_match.group(1)
-    
-    injected_method = f"""
-.method protected onResume()V
-    .locals 0
-
-    invoke-super {{p0}}, {super_class}->onResume()V
-
-    # --- START INJECTION (Universal Updater) ---
-    invoke-static/range {{p0 .. p0}}, Lstoreautoupdater/Updater;->check(Landroid/content/Context;)V
-    # --- END INJECTION ---
-
-    return-void
-.end method
-"""
-    new_content = content + "\n" + injected_method
-    try:
-        with open(activity_file_path, "w", encoding="utf-8") as f:
-            f.write(new_content)
-        print(f"[+] Updater call and onResume injected successfully into {os.path.basename(activity_file_path)}")
-        return True
-    except Exception as exc:
-        print(f"[-] Failed to write activity file: {exc}")
-        return False
-
-
-def _normalize_smali_path(smali_path: str | None) -> str | None:
-    if not smali_path:
-        return None
-
-    value = smali_path.strip().lstrip("/\\")
-    if not value:
-        return None
-
-    if value.endswith(".smali"):
-        return value.replace("\\", "/")
-
-    return value.replace(".", "/") + ".smali"
-
-
-def _inject_updater_call(activity_file_path: str) -> bool:
-    try:
-        with open(activity_file_path, "r", encoding="utf-8") as activity_file:
-            content = activity_file.read()
-    except Exception as exc:
-        print(f"[-] Failed to read activity file: {exc}")
-        return False
-
-    if "Lstoreautoupdater/Updater;->check" in content:
-        print("[i] Updater call already exists in MainActivity.")
-        return True
-
-    updater_call = (
         "\n    # --- START INJECTION (Universal Updater) ---\n"
         "    invoke-static {p0}, Lstoreautoupdater/Updater;->check(Landroid/content/Context;)V\n"
         "    # --- END INJECTION ---\n\n"
@@ -317,7 +226,6 @@ def _inject_updater_call(activity_file_path: str) -> bool:
         r"(\.method.*?onStart\(\)V)(.*?)(\.end method)",
     ]
 
-    import re
     for pattern in methods_to_check:
         method_pattern = re.compile(pattern, re.DOTALL)
         match = method_pattern.search(content)
@@ -361,7 +269,6 @@ def _inject_updater_call(activity_file_path: str) -> bool:
                     print(f"[-] Failed to write activity file: {exc}")
                     return False
 
-    # אם לא נמצאה שום מתודת מחזור חיים קיימת, יוצרים onResume חדש
     print("[i] Standard lifecycle methods not found. Generating onResume()...")
     super_pattern = re.compile(r"\.super\s+(L[^;]+;)")
     super_match = super_pattern.search(content)
@@ -393,3 +300,89 @@ def _inject_updater_call(activity_file_path: str) -> bool:
     except Exception as exc:
         print(f"[-] Failed to write activity file: {exc}")
         return False
+
+
+def _normalize_smali_path(smali_path: str | None) -> str | None:
+    if not smali_path:
+        return None
+
+    value = smali_path.strip().lstrip("/\\")
+    if not value:
+        return None
+
+    if value.endswith(".smali"):
+        return value.replace("\\", "/")
+
+    return value.replace(".", "/") + ".smali"
+
+
+def inject_universal_updater(
+    decompiled_dir: str,
+    app_id: str,
+    payload_dir: str | None = None,
+    target_activity_smali: str | None = None,
+) -> bool:
+    """
+    Inject updater payload and startup hook into an APK decompile.
+    """
+    manifest_path = os.path.join(decompiled_dir, "AndroidManifest.xml")
+    if not os.path.isfile(manifest_path):
+        print("[-] CRITICAL: AndroidManifest.xml not found. Cannot inject updater.")
+        return False
+
+    package_name = _get_package_name(manifest_path)
+    if not package_name:
+        print("[-] CRITICAL: Failed to get package name. Aborting updater injection.")
+        return False
+
+    main_activity_smali = _normalize_smali_path(target_activity_smali)
+    if not main_activity_smali:
+        main_activity_smali = _get_main_activity_smali_path(manifest_path)
+    if not main_activity_smali:
+        print("[-] CRITICAL: Could not detect Main Activity automatically.")
+        return False
+
+    repo_owner, repo_name = _resolve_repository()
+    print(f"[i] Detected Repo: {repo_owner}/{repo_name}")
+    print(f"[i] App ID: {app_id}")
+    print(f"[i] Package Name: {package_name}")
+    print(f"[i] Main Activity: {main_activity_smali}")
+
+    provider_authority = f"{package_name}.provider"
+    version_txt_url = (
+        f"https://raw.githubusercontent.com/{repo_owner}/{repo_name}/refs/heads/main/apps/{app_id}/version.txt"
+    )
+    download_prefix = f"https://github.com/{repo_owner}/{repo_name}/releases/download/{app_id}-v"
+    download_middle = f"/{app_id}-patched-"
+
+    if payload_dir is None:
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        payload_dir = os.path.join(repo_root, "core", "updater_payload")
+
+    if not os.path.isdir(payload_dir):
+        print(f"[-] CRITICAL: Updater payload directory not found: {payload_dir}")
+        return False
+
+    if not _copy_payload_and_replace_placeholders(
+        decompiled_dir=decompiled_dir,
+        payload_dir=payload_dir,
+        provider_authority=provider_authority,
+        version_txt_url=version_txt_url,
+        download_prefix=download_prefix,
+        download_middle=download_middle,
+    ):
+        return False
+
+    if not _patch_manifest(manifest_path, provider_authority):
+        return False
+
+    main_activity_file = _find_activity_file(decompiled_dir, main_activity_smali)
+    if not main_activity_file:
+        print(f"[-] Error: Failed to locate {main_activity_smali}.")
+        return False
+
+    if not _inject_updater_call(main_activity_file):
+        return False
+
+    print("[+] Universal updater injected successfully.")
+    return True
